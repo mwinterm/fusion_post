@@ -49,10 +49,11 @@ properties = {
   useCycles: true, //use Heidenhain cycles if available  
   expandCycles: true, // expands unhandled cycles
   useRigidTapping: false, // rigid tapping
-  optionalStop: true, // optional stop
+  optionalStop: false, // optional stop
   // structureComments: false, // show structure comments
   useParametricFeed: false, // specifies that feed should be output using Q values
-  useM92: false // use M92 instead of M91
+  useM92: false, // use M92 instead of M91
+  discreteSpindleSpeeds: true //sets spindle speeds only to discrete values provieded in the PP
 };
 
 // user-defined property definitions
@@ -67,7 +68,8 @@ propertyDefinitions = {
   optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
   // structureComments: {title:"Structure comments", description:"Shows structure comments.", type:"boolean"},
   useParametricFeed:  {title:"Parametric feed", description:"Specifies the feed value that should be output using a Q value.", type:"boolean"},
-  useM92: {title:"Use M92", description:"If enabled, M91 is used instead of M91.", type:"boolean"}
+  useM92: {title:"Use M92", description:"If enabled, M92 is used instead of M91.", type:"boolean"},
+  discreteSpindleSpeeds: {title:"Discrete Spindle Speeds", description:"Sets spindle speeds only to machine specific discrete values", type:"boolean"}
 };
 
 // samples:
@@ -122,6 +124,31 @@ var bOutput = createVariable({prefix:" B"}, abcFormat);
 var cOutput = createVariable({prefix:" C"}, abcFormat);
 var feedOutput = createVariable({prefix:" F"}, feedFormat);
 
+/** Rounds spindle speeds to provided discrete values */
+function discreteSpindleSpeed(mySpindleSpeed){
+	 var DiscreteSpeeds = [0, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000,  1250, 1600, 2000, 2500, 3150, 4000];	//augmenting list of available spindle speeds
+  
+  if (mySpindleSpeed == DiscreteSpeeds[0]){ //handles speed 0 if in the list
+	  return DiscreteSpeeds[0];
+  } else if(mySpindleSpeed > DiscreteSpeeds[DiscreteSpeeds.length - 1]){
+	  return DiscreteSpeeds[DiscreteSpeeds.length - 1]; //handles speeds in excess of maximum speed
+  }else if(DiscreteSpeeds[0] == 0 && mySpindleSpeed < DiscreteSpeeds[1]){
+	  return DiscreteSpeeds[1]; //avoids rounding non-zero spindle speeds to zero
+  }else{
+    for (var i = 2; i < DiscreteSpeeds.length; i++){
+	  if(mySpindleSpeed <= DiscreteSpeeds[i]){
+		var lowdiff = mySpindleSpeed - DiscreteSpeeds[i-1];
+		var highdiff = DiscreteSpeeds[i] - mySpindleSpeed;
+		if(lowdiff < highdiff){
+		  return DiscreteSpeeds[i-1];	
+		}else{
+		  return DiscreteSpeeds[i];
+		}
+		break;
+	  }
+    }
+  }
+}
 
 /** Force output of X, Y, and Z. */
 function forceXYZ() {
@@ -520,16 +547,20 @@ function onSection() {
     Vector.diff(getPreviousSection().getFinalToolAxisABC(), currentSection.getInitialToolAxisABC()).length > 1e-4) ||
     (!machineConfiguration.isMultiAxisConfiguration() && currentSection.isMultiAxis()) ||
     (!getPreviousSection().isMultiAxis() && currentSection.isMultiAxis()); // force newWorkPlane between indexing and simultaneous operations
-  if (newWorkOffset || newWorkPlane) {
+  if (insertToolCall || newWorkOffset || newWorkPlane) {
     // retract to safe plane
     writeRetract(Z);
 	writeRetract(Y);
   }
   
   if (insertToolCall) {
-    onCommand(COMMAND_STOP_SPINDLE);
-    // writeBlock("STOP " + mFormat.format(25)); // stop program, spindle stop, coolant off
-
+	writeSeparator();
+    writeComment(getParameter("autodeskcam:path")); //Writes out section Name
+	writeComment("T" + tool.number + " - D" + spatialFormat.format(tool.diameter) + " - " + getToolTypeName(tool.type)); //Writes out tool
+	writeSeparator();
+	
+	onCommand(COMMAND_LOAD_TOOL); //Stops the spindel and unlocks for tool change
+	
     if (!isFirstSection() && properties.optionalStop) {
       onCommand(COMMAND_STOP_CHIP_TRANSPORT);
       onCommand(COMMAND_OPTIONAL_STOP);
@@ -551,11 +582,17 @@ function onSection() {
         zRange.expandToRange(section.getGlobalZRange());
       }
 
-      writeStructureComment("T" + tool.number + "-D" + spatialFormat.format(tool.diameter) + "-CR:" + spatialFormat.format(tool.cornerRadius) + "-ZMIN:" + spatialFormat.format(zRange.getMinimum()) + "-ZMAX:" + spatialFormat.format(zRange.getMaximum()));
+      writeComment("T" + tool.number + "-D" + spatialFormat.format(tool.diameter) + "-CR:" + spatialFormat.format(tool.cornerRadius) + "-ZMIN:" + spatialFormat.format(zRange.getMinimum()) + "-ZMAX:" + spatialFormat.format(zRange.getMaximum()));
     }
 
+	var machineSpindleSpeed = 0;
+	if (properties.discreteSpindleSpeeds) {
+		machineSpindleSpeed = discreteSpindleSpeed(spindleSpeed);
+	}else{
+		machineSpindleSpeed = spindleSpeed;
+	}
     writeBlock(
-      "TOOL CALL " + tool.number + SP + getSpindleAxisLetter(machineConfiguration.getSpindleAxis()) + " S" + rpmFormat.format(spindleSpeed)
+      "TOOL CALL " + tool.number + SP + getSpindleAxisLetter(machineConfiguration.getSpindleAxis()) + " S" + rpmFormat.format(machineSpindleSpeed)
     );
     if (tool.comment) {
       writeComment(tool.comment);
@@ -1163,13 +1200,13 @@ function forceCoolant() {
 var mapCommand = {
   COMMAND_STOP:0,
   COMMAND_OPTIONAL_STOP:1,
-  COMMAND_END:30,
+  COMMAND_END:30, //or 2
   COMMAND_SPINDLE_CLOCKWISE:3,
   COMMAND_SPINDLE_COUNTERCLOCKWISE:4,
   // COMMAND_START_SPINDLE
-  COMMAND_STOP_SPINDLE:5
+  COMMAND_STOP_SPINDLE:5,
   //COMMAND_ORIENTATE_SPINDLE:19,
-  //COMMAND_LOAD_TOOL:6, // do not use
+  COMMAND_LOAD_TOOL:6
   //COMMAND_COOLANT_ON,
   //COMMAND_COOLANT_OFF,
   //COMMAND_ACTIVATE_SPEED_FEED_SYNCHRONIZATION
@@ -1283,7 +1320,8 @@ function onClose() {
   }
 
   onCommand(COMMAND_STOP_CHIP_TRANSPORT);
-  writeBlock(mFormat.format(2)); // stop program, spindle stop, coolant off
+  
+  onCommand(COMMAND_END);
 
   writeBlock(
     "END PGM" + (programName ? (SP + programName) : "") + ((unit == MM) ? " MM" : " INCH")
