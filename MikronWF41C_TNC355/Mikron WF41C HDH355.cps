@@ -338,6 +338,13 @@ function onComment(message) {
   writeComment(message);
 }
 
+function onPassThrough(command) {
+  if (isTextSupported(command)) {
+     writeln(blockNumber + SP + command); // some controls may require a block number
+     ++blockNumber;
+  }	
+}
+
 function invalidateXYZ() {
   xOutput.reset();
   yOutput.reset();
