@@ -48,7 +48,10 @@ properties = {
   useRadius: true, // specifies that arcs should be output using the radius (R word) instead of the I, J, and K words.
   dwellInSeconds: true, // specifies the unit for dwelling: true:seconds and false:milliseconds.
   useDustCollector: false, // specifies if M7 and M9 are output for dust collector
-  useRigidTapping: "whitout" // output rigid tapping block
+  useRigidTapping: "whitout", // output rigid tapping block
+  homeOnToolChange: true,  //homes all axis after tool is changed and before it is potentailly probed
+  probeToolOnChange: true, // probes a tool after changed in with by calling /macros/Tool Probe Auto
+  manualToolChange: true //Asks for manual tool change and program is interrupted until tool change is confirmed.
 };
 
 // user-defined property definitions
@@ -75,7 +78,10 @@ propertyDefinitions = {
       {title:"No", id:"no"},
       {title:"Without spindle direction", id:"without"}
     ]
-  }
+  },
+  homeOnToolChange: {title:"Home axis on tool change", description:"Homes all axis after tool is changed and before it is potentailly probed."}, 
+  probeToolOnChange: {title:"Probe tool on tool change", description:"Probes a tool after changed in with by calling /macros/Tool Probe Auto."},
+  manualToolChange: {title:"Manual tool change", description:"Asks for manual tool change and program is interrupted until tool change is confirmed."}
 };
 
 // samples:
@@ -480,11 +486,24 @@ function onSection() {
       warning(localize("Tool number exceeds maximum value."));
     }
 
+	if(properties.manualToolChange){
+		writeBlock(mFormat.format(291) + " P\"Insert Tool " + toolFormat.format(tool.number) + ", D=" + xyzFormat.format(tool.diameter) + "\" R\"Tool Change\" S2");
+	}
+
     if (properties.useM6) {
       writeBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
     } else {
       writeBlock("T" + toolFormat.format(tool.number));
     }
+	
+	if(properties.homeOnToolChange){
+		writeBlock(gFormat.format(28));
+	}
+	
+	if (properties.probeToolOnChange){
+		writeBlock(mFormat.format(98) + " P\"/macros/Tool Probe Auto\"");
+	}
+	
     if (tool.comment) {
       writeComment(tool.comment);
     }
