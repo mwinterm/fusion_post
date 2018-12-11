@@ -720,8 +720,13 @@ function onParameter(name, value) {
 }
 
 function onSpindleSpeed(spindleSpeed) {
+  if (properties.discreteSpindleSpeeds) {
+  	machineSpindleSpeed = discreteSpindleSpeed(spindleSpeed);
+  }else{
+	machineSpindleSpeed = spindleSpeed;
+  }
   writeBlock(
-    "TOOL CALL " + getSpindleAxisLetter(machineConfiguration.getSpindleAxis()) + " S" + rpmFormat.format(spindleSpeed)
+    "TOOL CALL " + getSpindleAxisLetter(machineConfiguration.getSpindleAxis()) + " S" + rpmFormat.format(machineSpindleSpeed)
   );
 }
 
