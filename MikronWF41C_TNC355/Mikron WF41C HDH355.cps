@@ -4,8 +4,8 @@
 
   Heidenhain post processor configuration.
 
-  $Revision: 42078 4cafccbb6fad94cad7d0059607d0c2d1f0a0364b $
-  $Date: 2018-08-09 16:20:01 $
+  $Revision: 42174 d5bb8e27cffa2298ba10e28fc516c35fa00fd065 $
+  $Date: 2018-11-07 11:55:00 $
   
   FORKID {3F192E9F-68B9-4453-B200-5807827EADD3}
 */
@@ -43,7 +43,8 @@ allowedCircularPlanes = undefined; // allow any circular motion
 // user-defined properties
 properties = {
   writeMachine: true, // write machine
-  writeTools: true, // writes the tools
+  writeToolsComment: true, // writes the tool information as comment
+  writeTools: false, // writes Tool Def commands
   writeVersion: true, // include version info
   preloadTool: false, // preloads next tool on tool change if any
   useCycles: true, //use Heidenhain cycles if available  
@@ -59,7 +60,8 @@ properties = {
 // user-defined property definitions
 propertyDefinitions = {
   writeMachine: {title:"Write machine", description:"Output the machine settings in the header of the code.", group:0, type:"boolean"},
-  writeTools: {title:"Write tool list", description:"Output a tool list in the header of the code.", group:0, type:"boolean"},
+  writeToolsComment: {title:"Write tool list as comment", description:"Output a tool list in the header of the code.", group:0, type:"boolean"},
+  writeTools: {title:"Write Tool Def commands", description:"Writes a list of all Tool Def commands at the beginning of the program", group:0, type:"boolean"},
   writeVersion: {title:"Write version", description:"Write the version number in the header of the code.", group:0, type:"boolean"},
   preloadTool: {title:"Preload tool", description:"Preloads the next tool at a tool change (if any).", group:1, type:"boolean"},
   useCycles: {title:"Use Cycles", description:"If enabled, Heidenhain cycles are employed if available.", type:"boolean"},  
@@ -274,7 +276,7 @@ function onOpen() {
   }
 
   // dump tool information
-  if (properties.writeTools) {
+  if (properties.writeToolsComment) {
     var tools = getToolTable();
     if (tools.getNumberOfTools() > 0) {
       var zRanges = {};
@@ -322,16 +324,16 @@ function onOpen() {
     }
   }
 
-  //disable tool-definition for working with tool-table
-  /*{
+
+  if(properties.writeTools){
     var tools = getToolTable();
     if (tools.getNumberOfTools() > 0) {
       for (var i = 0; i < tools.getNumberOfTools(); ++i) {
         var tool = tools.getTool(i);
-        writeBlock("TOOL DEF " + tool.number + " L0 R" + xyzFormat.format(tool.diameter/2.0));
+        writeBlock("TOOL DEF " + tool.number + " L" + xyzFormat.format(tool.overallLength) + " R" + xyzFormat.format(tool.diameter/2.0));
       }
     }
-  }*/
+  }
 }
 
 function onComment(message) {
@@ -658,18 +660,18 @@ function onSection() {
     
   if (!retracted && !insertToolCall) {
     if (getCurrentPosition().z < initialPosition.z) {
-      writeBlock("L" + zOutput.format(initialPosition.z) + " F9998");
+      writeBlock("L" + zOutput.format(initialPosition.z) + " F MAX");
     }
   }
 
   if (!machineConfiguration.isHeadConfiguration()) {
-    writeBlock("L" + xOutput.format(initialPosition.x) + yOutput.format(initialPosition.y) + " R0 F9998");
+    writeBlock("L" + xOutput.format(initialPosition.x) + yOutput.format(initialPosition.y) + " R0 F MAX");
     z = zOutput.format(initialPosition.z);
     if (z) {
-      writeBlock("L" + z + " R0 F9998");
+      writeBlock("L" + z + " R0 F MAX");
     }
   } else {
-    writeBlock("L" + xOutput.format(initialPosition.x) + yOutput.format(initialPosition.y) + zOutput.format(initialPosition.z) + " R0 F9998");
+    writeBlock("L" + xOutput.format(initialPosition.x) + yOutput.format(initialPosition.y) + zOutput.format(initialPosition.z) + " R0 F MAX");
   }
 
   // set coolant after we have positioned at Z
@@ -731,8 +733,6 @@ function onSpindleSpeed(spindleSpeed) {
 }
 
 function onDrilling(cycle) {
-  writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-
   writeBlock("CYCL DEF 1.0 PECKING");
   writeBlock("CYCL DEF 1.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
   writeBlock("CYCL DEF 1.2 DEPTH " + xyzFormat.format(-cycle.depth));
@@ -742,8 +742,6 @@ function onDrilling(cycle) {
 }
 
 function onCounterBoring(cycle) {
-  writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-
   writeBlock("CYCL DEF 1.0 PECKING");
   writeBlock("CYCL DEF 1.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
   writeBlock("CYCL DEF 1.2 DEPTH " + xyzFormat.format(-cycle.depth));
@@ -753,8 +751,6 @@ function onCounterBoring(cycle) {
 }
 
 function onChipBreaking(cycle) {
-  writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-
   writeBlock("CYCL DEF 1.0 PECKING");
   writeBlock("CYCL DEF 1.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
   writeBlock("CYCL DEF 1.2 DEPTH " + xyzFormat.format(-cycle.depth));
@@ -764,8 +760,6 @@ function onChipBreaking(cycle) {
 }
 
 function onDeepDrilling(cycle) {
-  writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-
   writeBlock("CYCL DEF 1.0 PECKING");
   writeBlock("CYCL DEF 1.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
   writeBlock("CYCL DEF 1.2 DEPTH " + xyzFormat.format(-cycle.depth));
@@ -776,8 +770,6 @@ function onDeepDrilling(cycle) {
 
 function onLeftTapping(cycle) {
   if (properties.useRigidTapping) {
-    writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-  
     writeBlock("CYCL DEF 17.0 TAPPING");
     writeBlock("CYCL DEF 17.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
     writeBlock("CYCL DEF 17.2 DEPTH " + xyzFormat.format(-cycle.depth));
@@ -792,15 +784,11 @@ function onLeftTapping(cycle) {
 
 function onRightTapping(cycle) {
   if (properties.useRigidTapping) {
-    writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-    
     writeBlock("CYCL DEF 17.0 TAPPING");
     writeBlock("CYCL DEF 17.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
     writeBlock("CYCL DEF 17.2 DEPTH " + xyzFormat.format(-cycle.depth));
     writeBlock("CYCL DEF 17.3 PITCH " + pitchFormat.format(tool.threadPitch));
   } else {
-    writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-
     writeBlock("CYCL DEF 2.0 TAPPING");
     writeBlock("CYCL DEF 2.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
     writeBlock("CYCL DEF 2.2 DEPTH " + xyzFormat.format(-cycle.depth));
@@ -814,9 +802,6 @@ function onCircularPocketMilling(cycle) {
     error(localize("Circular pocket milling is not supported for taper tools."));
     return;
   }
-  
-  writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
-
   writeBlock("CYCL DEF 5.0 CIRCULAR POCKET");
   writeBlock("CYCL DEF 5.1 SET UP " + xyzFormat.format(-cycle.clearance + cycle.stock));
   writeBlock("CYCL DEF 5.2 DEPTH " + xyzFormat.format(-cycle.depth));
@@ -845,6 +830,13 @@ var expandCurrentCycle = false;
 var useCycles = true;
 
 function onCycle() {
+  if (!isSameDirection(getRotation().forward, new Vector(0, 0, 1))) {
+    expandCurrentCycle = properties.expandCycles;
+    if (!expandCurrentCycle) {
+      cycleNotSupported();
+    }
+    return;
+  }
   if (pendingRadiusCompensation >= 0) {
     error(localize("Radius compensation cannot be activated/deactivated for a cycle."));
     return;
@@ -859,37 +851,38 @@ function onCycle() {
   
     if (cycle.clearance != undefined) {
       if (getCurrentPosition().z < cycle.clearance) {
-        writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
+        writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F MAX");
         setCurrentPositionZ(cycle.clearance);
       }
     }
+  }
 
-    switch (cycleType) {
-    case "drilling": // G81 style
-      onDrilling(cycle);
-      break;
-    case "counter-boring":
-      onCounterBoring(cycle);
-      break;
-    case "chip-breaking":
-      onChipBreaking(cycle);
-      break;
-    case "deep-drilling":
-      onDeepDrilling(cycle);
-      break;
-    case "tapping":
-      if (tool.type == TOOL_TAP_LEFT_HAND) {
-        onLeftTapping(cycle);
-      } else {
-        onRightTapping(cycle);
-      }
-      break;
-    case "left-tapping":
+  switch (cycleType) {
+  case "drilling": // G81 style
+    onDrilling(cycle);
+    break;
+  case "counter-boring":
+    onCounterBoring(cycle);
+    break;
+  case "chip-breaking":
+    onChipBreaking(cycle);
+    break;
+  case "deep-drilling":
+    onDeepDrilling(cycle);
+    break;
+  case "tapping":
+    if (tool.type == TOOL_TAP_LEFT_HAND) {
       onLeftTapping(cycle);
-      break;
-    case "right-tapping":
+    } else {
       onRightTapping(cycle);
-      break;
+    }
+    break;
+  case "left-tapping":
+    onLeftTapping(cycle);
+    break;
+  case "right-tapping":
+    onRightTapping(cycle);
+    break;
 /*
   case "reaming":
     onReaming(cycle);
@@ -914,15 +907,22 @@ function onCycle() {
     expandCurrentCycle = properties.expandCycles;
     if (!expandCurrentCycle) {
       cycleNotSupported();
-      }
     }
   }
 }
 
 function onCyclePoint(x, y, z) {
   if (!expandCurrentCycle) {
+    var xy = xOutput.format(x) + yOutput.format(y);
     // execute current cycle after this positioning block
-    writeBlock("L" + xOutput.format(x) + yOutput.format(y) + " F9998 " + mFormat.format(99));
+    if (spatialFormat.areDifferent(getCurrentPosition().z, cycle.clearance)) { // old heidenhain cycles do not support "2nd set-up clearance"
+      if (xy) {
+        writeBlock("L" + xy + " F MAX");
+      }
+      writeBlock("L" + zOutput.format(cycle.clearance) + radiusCompensationTable.lookup(radiusCompensation) + " F MAX " + mFormat.format(99));
+    } else {
+      writeBlock("L" + xy + " F MAX " + mFormat.format(99));
+    }
   } else {
     expandCyclePoint(x, y, z);
   }
@@ -942,7 +942,7 @@ function onRapid(x, y, z) {
   var xyz = xOutput.format(x) + yOutput.format(y) + zOutput.format(z);
   if (xyz) {
     pendingRadiusCompensation = -1;
-    writeBlock("L" + xyz + radiusCompensationTable.lookup(radiusCompensation) + " F9998");
+    writeBlock("L" + xyz + radiusCompensationTable.lookup(radiusCompensation) + " F MAX");
   }
   forceFeed();
 }
@@ -1212,7 +1212,7 @@ function forceCoolant() {
 var mapCommand = {
   COMMAND_STOP:0,
   COMMAND_OPTIONAL_STOP:1,
-  COMMAND_END:30, //or 2
+  COMMAND_END:30,
   COMMAND_SPINDLE_CLOCKWISE:3,
   COMMAND_SPINDLE_COUNTERCLOCKWISE:4,
   // COMMAND_START_SPINDLE
@@ -1306,7 +1306,7 @@ function writeRetract() {
     }
   }
   if (words.length > 0) {
-    writeBlock("L " + words.join(" ") + " R0 F9998 " + mFormat.format(91));
+    writeBlock("L " + words.join(" ") + " R0 F MAX " + mFormat.format(91));
   }
   zOutput.reset();
 }
