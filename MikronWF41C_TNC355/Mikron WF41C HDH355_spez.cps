@@ -37,7 +37,9 @@ minimumCircularSweep = toRad(0.01);
 maximumCircularSweep = toRad(5400); // 15 revolutions
 allowHelicalMoves = true;
 allowedCircularPlanes = undefined; // allow any circular motion
-
+sinRotAngle = 0.0;
+cosRotAngle = 1.0;
+toolLength = 0.0;
 
 
 // user-defined properties
@@ -47,7 +49,7 @@ properties = {
   writeTools: true, // writes Tool Def commands
   writeVersion: true, // include version info
   preloadTool: false, // preloads next tool on tool change if any
-  useCycles: true, //use Heidenhain cycles if available  
+  useCycles: false, //use Heidenhain cycles if available  
   expandCycles: true, // expands unhandled cycles
   useRigidTapping: false, // rigid tapping
   optionalStop: false, // optional stop
@@ -57,7 +59,8 @@ properties = {
   homeAtEnd: true,  //specifies to move the machine to the home position at the end of the program
   homeX: 0.0, //home position of x-axis in absolute machine coordinates for tool-change
   homeY: -526.0, //home position of y-axis in absolute machine coordinates for tool-change
-  homeZ: -26.0 //home position of z-axis in absolute machine coordinates for tool-change
+  homeZ: -26.0, //home position of z-axis in absolute machine coordinates for tool-change
+  rotRadius: 548.0 //length of the center of rotation of the head to the tip of the 0-length tool
 };
 
 // user-defined property definitions
@@ -77,7 +80,8 @@ propertyDefinitions = {
   homeAtEnd: {title:"Home at end", description:"Specifies that the machine moves to the home position in the end of the program.", type:"boolean"},
   homeX: {title:"X home position", description:"Home position of X-axis in absolut machine coordinates", type:"double"},
   homeY: {title:"Y home position", description:"Home position of Y-axis in absolut machine coordinates", type:"double"},
-  homeZ: {title:"Z home position", description:"Home position of Z-axis in absolut machine coordinates", type:"double"}
+  homeZ: {title:"Z home position", description:"Home position of Z-axis in absolut machine coordinates", type:"double"},
+  rotRadius: {title:"Y-axis rotation radius", description:"Angle head is tilted around Y-Axis", type:"double"}
 };
 
 // samples:
@@ -157,6 +161,13 @@ function discreteSpindleSpeed(mySpindleSpeed){
     }
   }
 }
+
+/** Transforms coordinates when head is tilted */
+function tiltTransform(obj){
+	obj.x = obj.x + sinRotAngle * (properties.rotRadius + toolLength);
+    obj.z = obj.z + (cosRotAngle-1) * (properties.rotRadius + toolLength);
+}
+
 
 /** Force output of X, Y, and Z. */
 function forceXYZ() {
@@ -544,6 +555,9 @@ function initializeActiveFeeds() {
 }
 
 function onSection() {
+	currentSection.workPlane
+	
+	
   var insertToolCall = isFirstSection() ||
    (currentSection.getForceToolChange && currentSection.getForceToolChange()) ||
    (tool.number != getPreviousSection().getTool().number) ||
@@ -658,26 +672,33 @@ function onSection() {
       return;
     } */
     setRotation(remaining);
+	sinRotAngle = remaining.forward.x;
+	cosRotAngle = remaining.forward.z
+	toolLength = tool.overallLength;
   }
   
   invalidate();
 
   var initialPosition = getFramePosition(currentSection.getInitialPosition());
+  var myPosX = initialPosition.x + sinRotAngle * (properties.rotRadius + toolLength);
+  var myPosY = initialPosition.y;
+  var myPosZ = initialPosition.z + (cosRotAngle-1.0) * (properties.rotRadius + toolLength);
+  
     
   if (!retracted && !insertToolCall) {
-    if (getCurrentPosition().z < initialPosition.z) {
-      writeBlock("L" + zOutput.format(initialPosition.z) + " F MAX");
+    if (getCurrentPosition().z < myPosZ) {
+      writeBlock("L" + xOutput.format(myPosX) + zOutput.format(myPosZ) + " F MAX");
     }
   }
 
   if (!machineConfiguration.isHeadConfiguration()) {
-    writeBlock("L" + xOutput.format(initialPosition.x) + yOutput.format(initialPosition.y) + " R0 F MAX");
-    z = zOutput.format(initialPosition.z);
+    writeBlock("L" + xOutput.format(myPosX) + yOutput.format(myPosY) + " R0 F MAX");
+    z = zOutput.format(myPosZ);
     if (z) {
       writeBlock("L" + z + " R0 F MAX");
     }
   } else {
-    writeBlock("L" + xOutput.format(initialPosition.x) + yOutput.format(initialPosition.y) + zOutput.format(initialPosition.z) + " R0 F MAX");
+    writeBlock("L" + xOutput.format(myPosX) + yOutput.format(myPosY) + zOutput.format(myPos.Z) + " R0 F MAX");
   }
 
   // set coolant after we have positioned at Z
@@ -945,6 +966,8 @@ function onRadiusCompensation() {
 }
 
 function onRapid(x, y, z) {
+  x = x + sinRotAngle * (properties.rotRadius + toolLength);
+  z = z + (cosRotAngle-1.0) * (properties.rotRadius + toolLength);	
   var xyz = xOutput.format(x) + yOutput.format(y) + zOutput.format(z);
   if (xyz) {
     pendingRadiusCompensation = -1;
@@ -954,6 +977,8 @@ function onRapid(x, y, z) {
 }
 
 function onLinear(x, y, z, feed) {
+  x = x + sinRotAngle * (properties.rotRadius + toolLength);
+  z = z + (cosRotAngle-1.0) * (properties.rotRadius + toolLength);
   var xyz = xOutput.format(x) + yOutput.format(y) + zOutput.format(z);
   var f = getFeed(feed);
   if (xyz) {
