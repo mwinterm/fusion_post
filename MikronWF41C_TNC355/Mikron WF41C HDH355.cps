@@ -51,10 +51,13 @@ properties = {
   expandCycles: true, // expands unhandled cycles
   useRigidTapping: false, // rigid tapping
   optionalStop: false, // optional stop
-  // structureComments: false, // show structure comments
+  structureComments: false, // show structure comments
   useParametricFeed: false, // specifies that feed should be output using Q values
-  useM92: false, // use M92 instead of M91
-  discreteSpindleSpeeds: true //sets spindle speeds only to discrete values provieded in the PP
+  discreteSpindleSpeeds: true, //sets spindle speeds only to discrete values provieded in the PP
+  homeAtEnd: true,  //specifies to move the machine to the home position at the end of the program
+  homeX: 0.0, //home position of x-axis in absolute machine coordinates for tool-change
+  homeY: -526.0, //home position of y-axis in absolute machine coordinates for tool-change
+  homeZ: -26.0 //home position of z-axis in absolute machine coordinates for tool-change
 };
 
 // user-defined property definitions
@@ -68,10 +71,13 @@ propertyDefinitions = {
   expandCycles: {title:"Expand cycles", description:"If enabled, unhandled cycles are expanded.", type:"boolean"},
   useRigidTapping:{title:"Use rigid tapping", description:"Enable to allow rigid tapping.", type:"boolean"},
   optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
-  // structureComments: {title:"Structure comments", description:"Shows structure comments.", type:"boolean"},
+  structureComments: {title:"Structure comments", description:"Shows structure comments.", type:"boolean"},
   useParametricFeed:  {title:"Parametric feed", description:"Specifies the feed value that should be output using a Q value.", type:"boolean"},
-  useM92: {title:"Use M92", description:"If enabled, M92 is used instead of M91.", type:"boolean"},
-  discreteSpindleSpeeds: {title:"Discrete Spindle Speeds", description:"Sets spindle speeds only to machine specific discrete values", type:"boolean"}
+  discreteSpindleSpeeds: {title:"Discrete Spindle Speeds", description:"Sets spindle speeds only to machine specific discrete values", type:"boolean"},
+  homeAtEnd: {title:"Home at end", description:"Specifies that the machine moves to the home position in the end of the program.", type:"boolean"},
+  homeX: {title:"X home position", description:"Home position of X-axis in absolut machine coordinates", type:"double"},
+  homeY: {title:"Y home position", description:"Home position of Y-axis in absolut machine coordinates", type:"double"},
+  homeZ: {title:"Z home position", description:"Home position of Z-axis in absolut machine coordinates", type:"double"}
 };
 
 // samples:
@@ -224,9 +230,9 @@ function onOpen() {
 
 
   // NOTE: setup your home positions here
-  machineConfiguration.setRetractPlane(-26); // home position Z
-  machineConfiguration.setHomePositionX(0); // home position X
-  machineConfiguration.setHomePositionY(-526); // home position Y
+  machineConfiguration.setRetractPlane(properties.homeZ); // home position Z
+  machineConfiguration.setHomePositionX(properties.homeX); // home position X
+  machineConfiguration.setHomePositionY(properties.homeY); // home position Y
 
 
   writeBlock(
@@ -1264,12 +1270,6 @@ function onSectionEnd() {
 }
 
 
-properties.homeXYAtEnd = false;
-if (propertyDefinitions === undefined) {
-  propertyDefinitions = {};
-}
-propertyDefinitions.homeXYAtEnd = {title:"Home XY at end", description:"Specifies that the machine moves to the home position in XY at the end of the program.", type:"boolean"};
-
 /** Output block to do safe retract and/or move to home position. */
 function writeRetract() {
   if (arguments.length == 0) {
@@ -1322,13 +1322,11 @@ function onClose() {
 
   //writeBlock("CYCL DEF 7.0 " + localize("DATUM SHIFT"));
   //writeBlock("CYCL DEF 7.1 #" + 0);
-
-  writeRetract(Z);
-  writeRetract(Y);
   
 
-  if (properties.homeXYAtEnd) {
-    writeRetract(X, Y);
+  if (properties.homeAtEnd) {
+	  writeRetract(Z);
+	  writeRetract(X,Y);
   }
 
   onCommand(COMMAND_STOP_CHIP_TRANSPORT);
