@@ -46,7 +46,7 @@ toolLength = 0.0;
 properties = {
   writeMachine: true, // write machine
   writeToolsComment: true, // writes the tool information as comment
-  writeTools: true, // writes Tool Def commands
+  writeTools: false, // writes Tool Def commands
   writeVersion: true, // include version info
   preloadTool: false, // preloads next tool on tool change if any
   useCycles: false, //use Heidenhain cycles if available  
@@ -60,7 +60,7 @@ properties = {
   homeX: 0.0, //home position of x-axis in absolute machine coordinates for tool-change
   homeY: -526.0, //home position of y-axis in absolute machine coordinates for tool-change
   homeZ: -26.0, //home position of z-axis in absolute machine coordinates for tool-change
-  rotRadius: 548.0 //length of the center of rotation of the head to the tip of the 0-length tool
+  rotRadius: 163.051 //length of the center of rotation of the head to the tip of the 0-length tool
 };
 
 // user-defined property definitions
