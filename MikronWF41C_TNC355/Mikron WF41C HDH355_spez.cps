@@ -313,12 +313,14 @@ function onOpen() {
 
       writeSeparator();
       writeComment(localize("Tools"));
+	  writeComment(localize("!!! Overall Length of tools need to correspond to tool-length in HDH Tool Table + 100.0 !!!"));
       for (var i = 0; i < tools.getNumberOfTools(); ++i) {
         var tool = tools.getTool(i);
         var comment = "  #" + tool.number + " " +
           localize("D") + "=" + spatialFormat.format(tool.diameter) +
           conditional(tool.cornerRadius > 0, " " + localize("CR") + "=" + spatialFormat.format(tool.cornerRadius)) +
-          conditional((tool.taperAngle > 0) && (tool.taperAngle < Math.PI), " " + localize("TAPER") + "=" + taperFormat.format(tool.taperAngle) + localize("deg"));
+          conditional((tool.taperAngle > 0) && (tool.taperAngle < Math.PI), " " + localize("TAPER") + "=" + taperFormat.format(tool.taperAngle) + localize("deg")) +
+		  " " + localize("tool.bodyLength") + "=" + spatialFormat.format(tool.bodyLength) + " " + localize("tool.overallLength") + "=" + spatialFormat.format(tool.overallLength); 
           // conditional(tool.tipAngle > 0, " " + localize("TIP:") + "=" + taperFormat.format(tool.tipAngle) + localize("deg"));
         if (zRanges[tool.number]) {
           comment += " - " + localize("ZMIN") + "=" + xyzFormat.format(zRanges[tool.number].getMinimum());
@@ -585,7 +587,8 @@ function onSection() {
   if (insertToolCall) {
 	writeSeparator();
     writeComment(getParameter("autodeskcam:path")); //Writes out section Name
-	writeComment("T" + tool.number + " - D" + spatialFormat.format(tool.diameter) + " - " + getToolTypeName(tool.type)); //Writes out tool
+	writeComment("T" + tool.number + " - D" + spatialFormat.format(tool.diameter) + " - " + getToolTypeName(tool.type) 
+	+ " - Overall Length:" + spatialFormat.format(getParameter("operation:tool_overallLength"))); //Writes out tool
 	writeSeparator();
 	
 	onCommand(COMMAND_LOAD_TOOL); //Stops the spindel and unlocks for tool change
@@ -675,6 +678,7 @@ function onSection() {
 	sinRotAngle = remaining.forward.x;
 	cosRotAngle = remaining.forward.z
 	toolLength = tool.overallLength;
+	toolLength = getParameter("operation:tool_overallLength"); //temporary to avoid wrong overallLength from section
   }
   
   invalidate();
