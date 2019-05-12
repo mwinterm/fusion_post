@@ -95,7 +95,7 @@ var coolants = [
   {id: COOLANT_FLOOD, on: 8, off: 9},
   {id: COOLANT_MIST, on: 25, off: 9},
   {id: COOLANT_THROUGH_TOOL, on: 7, off: 9},
-  {id: COOLANT_AIR},
+  {id: COOLANT_AIR, on: 35, off: 36},
   {id: COOLANT_AIR_THROUGH_TOOL},
   {id: COOLANT_SUCTION},
   {id: COOLANT_FLOOD_MIST},
@@ -2614,12 +2614,16 @@ function onCommand(command) {
     onCommand(tool.clockwise ? COMMAND_SPINDLE_CLOCKWISE : COMMAND_SPINDLE_COUNTERCLOCKWISE);
     return;
   case COMMAND_LOCK_MULTI_AXIS:
+    writeBlock(mFormat.format(64));
     return;
   case COMMAND_UNLOCK_MULTI_AXIS:
+    writeBlock(mFormat.format(44));
     return;
   case COMMAND_START_CHIP_TRANSPORT:
+    writeBlock(mFormat.format(51));
     return;
   case COMMAND_STOP_CHIP_TRANSPORT:
+    writeBlock(mFormat.format(50));
     return;
   case COMMAND_BREAK_CONTROL:
     return;
