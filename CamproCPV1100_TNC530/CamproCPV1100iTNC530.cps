@@ -1105,7 +1105,9 @@ function onSection() {
     var comment = getParameter("operation-comment");
     if (comment && ((comment !== lastOperationComment) || !patternIsActive || insertToolCall)) {
       writeSeparator();
-	  writeStructureComment(comment + "  - T" + tool.number + "-D" + spatialFormat.format(tool.diameter));
+	  //writeStructureComment(comment + "  - T" + tool.number + "-D" + spatialFormat.format(tool.diameter));
+	  writeStructureComment(getParameter("autodeskcam:path") + " - T" + tool.number + ", D" + spatialFormat.format(tool.diameter)); //Writes out section Name
+	  //writeComment("T" + tool.number + " - D" + spatialFormat.format(tool.diameter) + " - " + getToolTypeName(tool.type)); //Writes out tool
 	  writeSeparator();
       lastOperationComment = comment;
     }
