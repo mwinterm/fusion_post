@@ -267,8 +267,8 @@ function onOpen() {
 
   // NOTE: setup your home positions here
   machineConfiguration.setRetractPlane(0); // home position Z
-  machineConfiguration.setHomePositionX(550); // home position X
-  machineConfiguration.setHomePositionY(-560); // home position Y
+  //machineConfiguration.setHomePositionX(550); // home position X
+  machineConfiguration.setHomePositionY(0); // home position Y
 
   if (!machineConfiguration.isMachineCoordinate(0)) {
     aOutput.disable();
