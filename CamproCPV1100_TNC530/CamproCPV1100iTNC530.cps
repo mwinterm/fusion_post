@@ -262,7 +262,7 @@ function onOpen() {
 
 
     setMachineConfiguration(machineConfiguration);
-    optimizeMachineAngles2(0); // using M128 mode
+    optimizeMachineAngles2(0); // 0:using M128 mode
   }
 
   // NOTE: setup your home positions here
@@ -2622,10 +2622,10 @@ function onCommand(command) {
     writeBlock(mFormat.format(44));
     return;
   case COMMAND_START_CHIP_TRANSPORT:
-    writeBlock(mFormat.format(51));
+    writeBlock(mFormat.format(50));
     return;
   case COMMAND_STOP_CHIP_TRANSPORT:
-    writeBlock(mFormat.format(50));
+    writeBlock(mFormat.format(51));
     return;
   case COMMAND_BREAK_CONTROL:
     return;
