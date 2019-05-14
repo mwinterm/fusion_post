@@ -234,6 +234,10 @@ function onOpen() {
     //machineConfiguration = new MachineConfiguration(bAxis, cAxis);
   
     machineConfiguration = new MachineConfiguration();
+	
+	machineConfiguration.setVendor("Mikron");
+	machineConfiguration.setModel("WF41C");
+	machineConfiguration.setDescription("3-axis milling machine with Heidenhain TNC355");
 
     setMachineConfiguration(machineConfiguration);
     optimizeMachineAngles2(0); // using M128 mode
@@ -270,6 +274,12 @@ function onOpen() {
       writeComment(localize("post modified") + ": " + getHeaderDate());
     }
   }
+  
+  //write program generation date and time
+  let current_datetime = new Date();
+  let formatted_date = current_datetime.getDate() + "." + current_datetime.getMonth() + "." + current_datetime.getFullYear() + " - " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+  writeSeparator();
+  writeComment( localize("Program created: ") + formatted_date);
 
   // dump machine configuration
   var vendor = machineConfiguration.getVendor();
@@ -557,9 +567,6 @@ function initializeActiveFeeds() {
 }
 
 function onSection() {
-	currentSection.workPlane
-	
-	
   var insertToolCall = isFirstSection() ||
    (currentSection.getForceToolChange && currentSection.getForceToolChange()) ||
    (tool.number != getPreviousSection().getTool().number) ||
@@ -1355,7 +1362,7 @@ function onClose() {
 
   if (properties.homeAtEnd) {
 	  writeRetract(Z);
-	  writeRetract(X,Y);
+	  //writeRetract(X,Y);
   }
 
   onCommand(COMMAND_STOP_CHIP_TRANSPORT);
