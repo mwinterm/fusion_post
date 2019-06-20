@@ -60,7 +60,8 @@ properties = {
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: false, // specifies that operation notes should be output.
   preferTilt: -1, // -1: negative, 0:dont care, 1: positive
-  toolAsName: false // specifies if the tool should be called with a number or with the tool description
+  toolAsName: false,  // specifies if the tool should be called with a number or with the tool description
+  fourthAxis: false //specify if 4th axis is installed
 };
 
 // user-defined property definitions
@@ -84,7 +85,8 @@ propertyDefinitions = {
   useParametricFeed:  {title:"Parametric feed", description:"Specifies the feed value that should be output using a Q value.", type:"boolean"},
   showNotes: {title:"Show notes", description:"Writes operation notes as comments in the outputted code.", type:"boolean"},
   preferTilt: {title:"Prefer tilt", description:"Specifies which tilt direction is preferred.", type:"integer", values:[{id:-1, title:"Negative"}, {id:0, title:"Either"}, {id:1, title:"Positive"}]},
-  toolAsName: {title:"Tool as name", description:"If enabled, the tool will be called with the tool description rather than the tool number.", type:"boolean"}
+  toolAsName: {title:"Tool as name", description:"If enabled, the tool will be called with the tool description rather than the tool number.", type:"boolean"}, 
+  fourthAxis: {title: "4th axis", description:"Specifies if the 4th Axis is connected to the machine.", type:"boolean"}
 };
 
 var singleLineCoolant = false; // specifies to output multiple coolant codes in one line rather than in separate lines
@@ -255,7 +257,11 @@ function onOpen() {
     //var bAxis = createAxis({coordinate:1, table:true, axis:[0, 1, 0], range:[-120.0001, 120.0001], preference:1});
     //var cAxis = createAxis({coordinate:2, table:true, axis:[0, 0, 1], range:[0, 360], cyclic:true});
     //machineConfiguration = new MachineConfiguration(aAxis, cAxis);
-	machineConfiguration = new MachineConfiguration(aAxis);
+	if(properties.fourthAxis){
+		machineConfiguration = new MachineConfiguration(aAxis);
+	}else{
+		machineConfiguration = new MachineConfiguration();
+	}
 	machineConfiguration.setVendor("Campro");
 	machineConfiguration.setModel("CPV1100");
 	machineConfiguration.setDescription("4-achs Maschine (A-Achse) mit Heidenhain iTNC530");
@@ -2616,10 +2622,14 @@ function onCommand(command) {
     onCommand(tool.clockwise ? COMMAND_SPINDLE_CLOCKWISE : COMMAND_SPINDLE_COUNTERCLOCKWISE);
     return;
   case COMMAND_LOCK_MULTI_AXIS:
-    writeBlock(mFormat.format(64));
+    if(properties.fourthAxis){
+	  writeBlock(mFormat.format(64));
+	}
     return;
   case COMMAND_UNLOCK_MULTI_AXIS:
-    writeBlock(mFormat.format(44));
+     if(properties.fourthAxis){
+	  writeBlock(mFormat.format(44));
+	 }
     return;
   case COMMAND_START_CHIP_TRANSPORT:
     writeBlock(mFormat.format(50));
