@@ -48,19 +48,20 @@ highFeedrate = (unit == IN) ? 400 : 5000;
 
 // user-defined properties
 properties = {
-  writeMachine: false, // write machine
+  writeMachine: true, // write machine
   writeTools: true, // writes the tools
-  preloadTool: false, // preloads next tool on tool change if any
+  preloadTool: true, // preloads next tool on tool change if any
   showSequenceNumbers: true, // show sequence numbers
   sequenceNumberStart: 10, // first sequence number
   sequenceNumberIncrement: 10, // increment for sequence numbers
   sequenceNumberOnlyOnToolChange: true, // only output sequence numbers on tool change
+  numberOfToolDigits: 2, // Number of tool digites, can be 2 or 3 (T01 or T001)
   //optionalStop: true, // optional stop
   separateWordsWithSpace: true, // specifies that the words should be separated with a white space
   useRadius: true, // specifies that arcs should be output using the radius (R word) instead of the I, J, and K words.
-  maximumSpindleSpeed: 2500, // specifies the maximum spindle speed
+  maximumSpindleSpeed: 4000, // specifies the maximum spindle speed
   useParametricFeed: false, // specifies that feed should be output using Q values
-  showNotes: false, // specifies that operation notes should be output.
+  showNotes: true, // specifies that operation notes should be output.
   useCycles: true, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   g53HomePositionX: 99999, // home position for X-axis
@@ -78,6 +79,7 @@ propertyDefinitions = {
   sequenceNumberStart: {title:"Start sequence number", description:"The number at which to start the sequence numbers.", group:1, type:"integer"},
   sequenceNumberIncrement: {title:"Sequence number increment", description:"The amount by which the sequence number is incremented by in each block.", group:1, type:"integer"},
   sequenceNumberOnlyOnToolChange: {title:"Sequence number only on tool change", description:"If enabled, sequence numbers are only outputted when a toolchange is called", type:"boolean"},
+  numberOfToolDigits: {title:"Tool digits", description:"Number of digits used for a tool call. Can be 2 or 3 i.e. T01 or T001", group:1, type:"integer"},
   //optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
   separateWordsWithSpace: {title:"Separate words with space", description:"Adds spaces between words if 'yes' is selected.", type:"boolean"},
   useRadius: {title:"Radius arcs", description:"If yes is selected, arcs are outputted using radius values rather than IJK.", type:"boolean"},
@@ -164,9 +166,9 @@ var g53HomePositionZParameter = 101;
 var g53HomePositionYParameter = 102;
 var g53HomePositionSubZParameter = 103;
 var gotYAxis = true;
-var yAxisMinimum = toPreciseUnit(gotYAxis ? -20 : 0, MM); // specifies the minimum range for the Y-axis
-var yAxisMaximum = toPreciseUnit(gotYAxis ? 20 : 0, MM); // specifies the maximum range for the Y-axis
-var xAxisMinimum = toPreciseUnit(-30, MM); // specifies the maximum range for the X-axis (RADIUS MODE VALUE)
+var yAxisMinimum = toPreciseUnit(gotYAxis ? -105 : 0, MM); // specifies the minimum range for the Y-axis
+var yAxisMaximum = toPreciseUnit(gotYAxis ? 105 : 0, MM); // specifies the maximum range for the Y-axis
+var xAxisMinimum = toPreciseUnit(-20, MM); // specifies the maximum range for the X-axis (RADIUS MODE VALUE)
 
 var gotPolarInterpolation = false; // specifies if the machine has XY polar interpolation (G112) capabilities
 var gotBAxis = true;
@@ -711,7 +713,7 @@ function onOpen() {
 
   // dump tool information
   var toolData = new Array();
-  var toolFormat = createFormat({decimals:0, zeropad:false});
+  var toolFormat = createFormat({decimals: 0, width: properties.numberOfToolDigits, zeropad: true});
   if (properties.writeTools) {
     var zRanges = {};
     var numberOfSections = getNumberOfSections();
@@ -748,13 +750,13 @@ function onOpen() {
         var tool = tools.getTool(i);
         if (tool.isTurningTool()) {
           var compensationOffset = tool.compensationOffset;
-          var comment = "T" + toolFormat.format(tool.number) + conditional(tool.comment, ".") + tool.comment+ " " +
+          var comment = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment) + " " +
             "DIA=" + spatialFormat.format(toolData[tool.number].dia) + " " +
             localize("RAD=") + spatialFormat.format(toolData[tool.number].rad) + " " +
             localize("HGT=") + spatialFormat.format(toolData[tool.number].hgt);
         } else {
           var compensationOffset = tool.lengthOffset;
-          var comment = "T" + toolFormat.format(tool.number) + conditional(tool.comment, ".") + tool.comment+ " " +
+          var comment = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment) + " " +
             "D=" + spatialFormat.format(tool.diameter) + " " +
             localize("CR") + "=" + spatialFormat.format(tool.cornerRadius);
           if ((tool.taperAngle > 0) && (tool.taperAngle < Math.PI)) {
@@ -1349,8 +1351,9 @@ function onSection() {
     gPlaneModal.reset();
 
     setCoolant(COOLANT_OFF, machineState.currentTurret);
-    var toolFormat = createFormat({decimals: 0, width: 2, zeropad: true});
-    if (properties.preloadTool) {
+    var toolFormat = createFormat({decimals: 0, width: properties.numberOfToolDigits, zeropad: true});
+    var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
+	if (properties.preloadTool) {
       if (properties.preloadTool) {
         var nextTool = getNextTool(tool.number);
         if (nextTool) {
@@ -1366,15 +1369,14 @@ function onSection() {
           }
         }
       }
-      var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.number;
-      writeToolBlock("T" + toolFormat.format(tool.number) + conditional(tool.comment, "." + tool.comment), nextool, mFormat.format(6));
+      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment), nextool, mFormat.format(6));
     } else {
-      writeToolBlock("T" + toolFormat.format(tool.number) + conditional(tool.comment, "." + tool.comment), mFormat.format(6));
+      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment), mFormat.format(6));
     }
 
-    if (tool.comment) {
-      writeComment(tool.comment);
-    }
+    //if (tool.comment) {
+    //  writeComment(tool.comment);
+    //}
 
     writeRetract(X);
     writeRetract(Z);
@@ -1483,7 +1485,7 @@ function onSection() {
       newSpindle ||
       isFirstSection() ||
       isSpindleSpeedDifferent()) {
-    if (spindleSpeed < 1) {
+    if (spindleSpeed < 1 && tool.getSpindleMode() != SPINDLE_CONSTANT_SURFACE_SPEED) {
       error(localize("Spindle speed out of range."));
       return;
     }
