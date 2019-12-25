@@ -51,10 +51,10 @@ properties = {
   writeMachine: true, // write machine
   writeTools: true, // writes the tools
   preloadTool: true, // preloads next tool on tool change if any
-  showSequenceNumbers: true, // show sequence numbers
+  showSequenceNumbers: false, // show sequence numbers
   sequenceNumberStart: 10, // first sequence number
   sequenceNumberIncrement: 10, // increment for sequence numbers
-  sequenceNumberOnlyOnToolChange: true, // only output sequence numbers on tool change
+  sequenceNumberOnlyOnToolChange: false, // only output sequence numbers on tool change
   numberOfToolDigits: 2, // Number of tool digites, can be 2 or 3 (T01 or T001)
   //optionalStop: true, // optional stop
   separateWordsWithSpace: true, // specifies that the words should be separated with a white space
@@ -521,7 +521,7 @@ function getCClosest(x, y, _c, clockwise) {
 
 function getCWithinRange(x, y, _c, clockwise) {
   var c = getCClosest(x, y, _c, clockwise);
-  
+
   var cyclicLimit;
   var cyclic;
   if (Vector.dot(machineConfiguration.getAxisU().getAxis(), new Vector(0, 0, 1)) != 0) {
@@ -536,7 +536,7 @@ function getCWithinRange(x, y, _c, clockwise) {
     error(localize("Unsupported rotary axis direction."));
     return 0;
   }
-  
+
   // see if rewind is required
   forceRewind = false;
   if ((cFormat.getResultingValue(c) < cFormat.getResultingValue(cyclicLimit[0])) || (cFormat.getResultingValue(c) > cFormat.getResultingValue(cyclicLimit[1]))) {
@@ -712,49 +712,71 @@ function onOpen() {
   }
 
   // dump tool information
-  var toolData = new Array();
+  var toolData = {};
   var toolFormat = createFormat({decimals: 0, width: properties.numberOfToolDigits, zeropad: true});
   if (properties.writeTools) {
+	writeln("");
+	writeComment("--- TOOL LIST ---");  
     var zRanges = {};
     var numberOfSections = getNumberOfSections();
     for (var i = 0; i < numberOfSections; ++i) {
       var section = getSection(i);
       var tool = section.getTool();
+	  var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
+	  var toolID = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment);
       if (is3D()) {
         var zRange = section.getGlobalZRange();
-        if (zRanges[tool.number]) {
-          zRanges[tool.number].expandToRange(zRange);
+        if (zRanges[toolID]) {
+          zRanges[toolID].expandToRange(zRange);
         } else {
-          zRanges[tool.number] = zRange;
+          zRanges[toolID] = zRange;
         }
       }
+	  
+	  var comment;
       if (tool.isTurningTool()) {
-        toolData[tool.number] = {dia:0, rad:0, hgt:0};
-        toolData[tool.number].dia = section.hasParameter("operation:tool_diameter") ?
+	 	var dia = section.hasParameter("operation:tool_diameter") ?
           section.getParameter("operation:tool_diameter") : 0;
-        toolData[tool.number].rad = section.hasParameter("operation:tool_cornerRadius") ?
+        var rad = section.hasParameter("operation:tool_cornerRadius") ?
           section.getParameter("operation:tool_cornerRadius") : 0;
-        toolData[tool.number].hgt = section.hasParameter("operation:tool_thickness") ?
+        var hgt = section.hasParameter("operation:tool_thickness") ?
           section.getParameter("operation:tool_thickness") : 0;
+        
         if (unit == IN) {   // TAG: Tool parameters are always in MM?
-          toolData[tool.number].dia /= 25.4;
-          toolData[tool.number].rad /= 25.4;
-          toolData[tool.number].hgt /= 25.4;
+          dia /= 25.4;
+          rad /= 25.4;
+          hgt /= 25.4;
         }
-      }
+		
+		comment = "DIA=" + spatialFormat.format(dia) + " " +
+            localize("RAD=") + spatialFormat.format(rad) + " " +
+            localize("HGT=") + spatialFormat.format(hgt) + " - " + getToolTypeName(tool.type);
+			
+      } else{
+		 var comment = "D=" + spatialFormat.format(tool.diameter) + " " +
+            localize("CR") + "=" + spatialFormat.format(tool.cornerRadius);
+          if ((tool.taperAngle > 0) && (tool.taperAngle < Math.PI)) {
+            comment += " " + localize("TAPER") + "=" + taperFormat.format(tool.taperAngle) + localize("deg");
+          }
+		  comment += " - " + getToolTypeName(tool.type);
+	  } 
+	  toolData[toolID] = comment; 
     }
 
-    var tools = getToolTable();
-    if (tools.getNumberOfTools() > 0) {
-      for (var i = 0; i < tools.getNumberOfTools(); ++i) {
-        var tool = tools.getTool(i);
-        if (tool.isTurningTool()) {
-          var compensationOffset = tool.compensationOffset;
-          var comment = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment) + " " +
-            "DIA=" + spatialFormat.format(toolData[tool.number].dia) + " " +
-            localize("RAD=") + spatialFormat.format(toolData[tool.number].rad) + " " +
-            localize("HGT=") + spatialFormat.format(toolData[tool.number].hgt);
-        } else {
+    //var tools = getToolTable();
+	//writeComment("Number of tools in tooltable: " + tools.getNumberOfTools());
+    //if (tools.getNumberOfTools() > 0) {
+      //for (var i = 0; i < tools.getNumberOfTools(); ++i) {
+	  for(var i in toolData){	  
+        //var tool = tools.getTool(i);
+/*         if (tool.isTurningTool()) {
+          //var compensationOffset = tool.compensationOffset;
+          //var comment = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment) + " " +
+          var comment = i +  
+			"DIA=" + spatialFormat.format(toolData[i].dia) + " " +
+            localize("RAD=") + spatialFormat.format(toolData[i].rad) + " " +
+            localize("HGT=") + spatialFormat.format(toolData[i].hgt);
+         } else {
           var compensationOffset = tool.lengthOffset;
           var comment = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment) + " " +
             "D=" + spatialFormat.format(tool.diameter) + " " +
@@ -765,11 +787,16 @@ function onOpen() {
           if (zRanges[tool.number]) {
             comment += " - " + localize("ZMIN") + "=" + spatialFormat.format(zRanges[tool.number].getMinimum());
           }
-        }
-        comment += " - " + getToolTypeName(tool.type);
+        } */ 
+        //comment += " - " + getToolTypeName(tool.type);
+		comment = i + " - " + toolData[i];
+		if (zRanges[i]) {
+            comment += " - " + localize("ZMIN") + "=" + spatialFormat.format(zRanges[i].getMinimum());
+          } 
+		
         writeComment(comment);
       }
-    }
+    //}
   }
 
   if (false) {
@@ -814,7 +841,7 @@ function onOpen() {
       break;
     }
   }
-  
+
   if ((getNumberOfSections() > 0) && (getSection(0).workOffset == 0)) {
     for (var i = 0; i < getNumberOfSections(); ++i) {
       if (getSection(i).workOffset > 0) {
@@ -823,8 +850,9 @@ function onOpen() {
       }
     }
   }
-  
+
   writeln("");
+  writeComment("--- PARAMETERS ---");
   writeBlock("#" + g53HomePositionXParameter + "=" + spatialFormat.format(properties.g53HomePositionX) + "(PARAMETER FOR X HOME POSITION)"); // retract
   writeBlock("#" + g53HomePositionZParameter + "=" + spatialFormat.format(properties.g53HomePositionZ) + "(PARAMETER FOR Z HOME POSITION)"); // retract
   if (gotSecondarySpindle) {
@@ -1241,6 +1269,14 @@ function getBAxisOrientationTurning(section) {
 var bAxisOrientationTurning = new Vector(0, 0, 0);
 
 function onSection() {
+	writeln("");
+    if (hasParameter("operation-comment")) {
+      var comment = "-- Section - " + getParameter("operation-comment");
+	
+    if (comment) {
+      writeComment(comment);
+    }
+  }
 /** detect machine configuration */
   machineConfiguration = (currentSection.spindle == SPINDLE_PRIMARY) ? machineConfigurationMainSpindle : machineConfigurationSubSpindle;
   if (!gotBAxis) {
@@ -1294,7 +1330,7 @@ function onSection() {
       abcFormat.areDifferent(bAxisOrientationTurning.y, machineState.currentBAxisOrientationTurning.y) ||
       abcFormat.areDifferent(bAxisOrientationTurning.z, machineState.currentBAxisOrientationTurning.z)) ||
       (!getPreviousSection().isMultiAxis() && currentSection.isMultiAxis());
-  
+
   if (insertToolCall || newSpindle || newWorkOffset || newWorkPlane) {
     // retract to safe plane
     writeRetract(X);
@@ -1324,13 +1360,6 @@ function onSection() {
 
   writeln("");
 
-  if (hasParameter("operation-comment")) {
-    var comment = getParameter("operation-comment");
-    if (comment) {
-      writeComment(comment);
-    }
-  }
-
   if (properties.showNotes && hasParameter("notes")) {
     var notes = getParameter("notes");
     if (notes) {
@@ -1347,6 +1376,7 @@ function onSection() {
   }
 
   if (insertToolCall) {
+	writeComment("- Tool Call");  
     forceWorkPlane();
     gPlaneModal.reset();
 
@@ -1381,6 +1411,7 @@ function onSection() {
     writeRetract(X);
     writeRetract(Z);
     writeRetract(Y);
+	writeln("");
   }
   /** Handle multiple turrets. */
   if (gotMultiTurret) {
@@ -1674,14 +1705,14 @@ function onSection() {
   if (tool.getSpindleMode() == SPINDLE_CONSTANT_SURFACE_SPEED) {
     startSpindle(false);
   }
-  
+
   // set coolant after we have positioned at Z
   setCoolant(tool.coolant, machineState.currentTurret);
-  
+
   if (machineState.usePolarMode) {
     setPolarMode(true); // enable polar interpolation mode
   }
-  
+
   if (writeDebug) { // DEBUG
     for (var key in machineState) {
       writeComment(key + " = " + machineState[key]);
@@ -2045,7 +2076,7 @@ function onLinear(_x, _y, _z, feed) {
   if (properties.useSmoothing) {
     setSmoothing(true);
   }
-  
+
   if (machineState.useXZCMode) {
     if (pendingRadiusCompensation >= 0) {
       error(subst(localize("Radius compensation is not supported by using XZC mode for operation \"%1\"."), getOperationComment()));
@@ -2196,7 +2227,7 @@ function onRapid5D(_x, _y, _z, _a, _b, _c) {
   if (!currentSection.isOptimizedForMachine()) {
     forceXYZ();
   }
-  
+
   var x = xOutput.format(_x);
   var y = yOutput.format(_y);
   var z = zOutput.format(_z);
@@ -2293,7 +2324,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
       }
       break;
     }
-    
+
     linearize(getTolerance());
     return;
   }
@@ -2315,7 +2346,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
 
   var start = getCurrentPosition();
   forceXYZ();
-  
+
   if (isSpiral()) {
     var startRadius = getCircularStartRadius();
     var endRadius = getCircularRadius();
@@ -2746,7 +2777,7 @@ function getCoolantCodes(coolant, turret) {
     coolantOff = (turret == 1) ? coolants.floodThroughTool.turret1.off : coolants.floodThroughTool.turret2.off;
     break;
   }
-  
+
   if (!m) {
     onUnsupportedCoolant(coolant);
     m = 9;
