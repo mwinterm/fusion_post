@@ -288,7 +288,7 @@ function getCode(code) {
     return cAxisBrakeModal.format(115);
   case "FEED_MODE_UNIT_REV":
     machineState.feedPerRevolution = true;
-    return gFeedModeModal.format(95);
+    return gFeedModeModal.format(95) + writeDebugInfo("Synchronous feed");
   case "FEED_MODE_UNIT_MIN":
     machineState.feedPerRevolution = false;
     return gFeedModeModal.format(94);
@@ -870,8 +870,7 @@ function onOpen() {
   writeln("");
 
   writeBlock(gMotionModal.format(0), gAbsIncModal.format(90), getCode("FEED_MODE_UNIT_MIN"), gFormat.format(54), getCode("CONSTANT_SURFACE_SPEED_OFF"));
-  writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), gFormat.format(69), gPlaneModal.format(18));
-
+  writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver"), gPlaneModal.format(18));
   switch (unit) {
   case IN:
     writeBlock(gUnitModal.format(20));
@@ -882,13 +881,13 @@ function onOpen() {
   }
 
   if (usesPrimarySpindle) {
-    writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R1"); // spindle 1 is the default
+    writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R1", writeDebugInfo("Spindle 1 speed limit")); // spindle 1 is the default
     sOutput.reset();
   }
 
   if (gotSecondarySpindle) {
     if (usesSecondarySpindle) {
-      writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R2");
+      writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R2", writeDebugInfo("Spindle 2 speed limit"));
       sOutput.reset();
     }
   }
@@ -1122,7 +1121,7 @@ function setWorkPlane(abc) {
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(abc.x), "J" + abcFormat.format(abc.y), "K" + abcFormat.format(abc.z)); // set frame
       writeBlock(gFormat.format(53.1) + "(" + "B" + abcFormat.format(initialToolAxisBC.y) + " C" + abcFormat.format(initialToolAxisBC.z) + ")"); // turn machine
     } else {
-      // writeBlock(gFormat.format(69)); // cancel frame
+      writeBlock(gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver")); // cancel frame
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(0), "J" + abcFormat.format(0), "K" + abcFormat.format(0)); // cancel frame
       writeBlock(gFormat.format(53.1)); // turn machine
     }
@@ -1345,7 +1344,7 @@ function onSection() {
   }
 
   if (newWorkPlane || insertToolCall) {
-    writeBlock(gFormat.format(69)); // cancel frame
+    writeBlock(gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver")); // cancel frame
     forceWorkPlane();
   }
 
@@ -2966,7 +2965,7 @@ function onClose() {
     writeBlock(getCode("TAILSTOCK_OFF"));
   }
 
-  writeBlock(gFormat.format(69));
+  writeBlock(gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver"));
   if (gotSecondarySpindle) {
     writeBlock(gSpindleModal.format(111));
   }
