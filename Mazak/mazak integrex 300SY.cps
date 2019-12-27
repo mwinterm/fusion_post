@@ -59,7 +59,7 @@ properties = {
   //optionalStop: true, // optional stop
   separateWordsWithSpace: true, // specifies that the words should be separated with a white space
   useRadius: true, // specifies that arcs should be output using the radius (R word) instead of the I, J, and K words.
-  maximumSpindleSpeed: 4000, // specifies the maximum spindle speed
+  maximumSpindleSpeed: 3500, // specifies the maximum spindle speed
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: true, // specifies that operation notes should be output.
   useCycles: true, // specifies that drilling cycles should be used.
