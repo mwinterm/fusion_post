@@ -297,17 +297,17 @@ function getCode(code) {
     case "CONSTANT_SURFACE_SPEED_OFF":
       return combineCommands(gSpindleModeModal.format(97), writeDebugInfo("Cancel constant surface speed"));
     case "CLAMP_B_AXIS":
-      return mFormat.format(107);
+      return combineCommands(mFormat.format(251), writeDebugInfo("B-axis clamp"));
     case "UNCLAMP_B_AXIS":
-      return mFormat.format(108);
+      return combineCommands(mFormat.format(250), writeDebugInfo("B-axis unclamp"));
     case "CLAMP_PRIMARY_SPINDLE":
-      return mFormat.format(210);
+      return combineCommands( mFormat.format(210), writeDebugInfo("Clamp main spindle") );
     case "UNCLAMP_PRIMARY_SPINDLE":
-      return mFormat.format(212);
+      return combineCommands( mFormat.format(212), writeDebugInfo("Unclamp main spindle") );
     case "CLAMP_SECONDARY_SPINDLE":
-      return mFormat.format(310);
+      return combineCommands( gFormat.format(112), mFormat.format(210), writeDebugInfo("Clamp sub spindle") );
     case "UNCLAMP_SECONDARY_SPINDLE":
-      return mFormat.format(312);
+      return combineCommands( gFormat.format(112), mFormat.format(212), writeDebugInfo("Unclamp sub spindle") );
     // case "SPINDLE_SYNCHRONIZATION_ON":
     // machineState.spindleSynchronizationIsActive = true;
     // return gSynchronizedSpindleModal.format(undefined);
@@ -605,7 +605,6 @@ function writeBlock() {
 */
 function combineCommands() {
   var args = Array.prototype.slice.call(arguments);
-  writeln(args.join(" "));
   return args.join(" ");
 }
 
