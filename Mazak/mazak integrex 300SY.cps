@@ -100,12 +100,12 @@ propertyDefinitions = {
 var coolants = {
   flood: { turret1: { on: 8, off: 9 }, turret2: { on: 8, off: 9 } },
   mist: { turret1: {}, turret2: {} },
-  throughTool: { turret1: { on: 51, off: 163 }, turret2: { on: 51, off: 163 } },
-  air: { turret1: { on: 129, off: 9 }, turret2: { on: 129, off: 9 } },
-  airThroughTool: { turret1: {}, turret2: {} },
+  throughTool: { turret1: { on: 153, off: 154 }, turret2: { on: 153, off: 154 } },
+  air: { turret1: { on: 45, off: 9 }, turret2: { on: 45, off: 9 } },
+  airThroughTool: { turret1: {on: 151, off: 152}, turret2: {} },
   suction: { turret1: {}, turret2: {} },
   floodMist: { turret1: {}, turret2: {} },
-  floodThroughTool: { turret1: {}, turret2: {} },
+  floodThroughTool: { },
   off: 9
 };
 
@@ -2707,7 +2707,7 @@ function setCoolant(coolant, turret) {
   var coolantCodes = getCoolantCodes(coolant, gotMultiTurret ? turret : 1);
   if (Array.isArray(coolantCodes)) {
     for (var c in coolantCodes) {
-      writeBlock(coolantCodes[c]);
+      writeBlock(coolantCodes[c], writeDebugInfo("Coolant"));
     }
     return undefined;
   }
