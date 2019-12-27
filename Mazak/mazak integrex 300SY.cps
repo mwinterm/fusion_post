@@ -210,6 +210,12 @@ var machineState = {
   currentTurret: undefined
 };
 
+function writeDebugInfo(text){
+	if(writeDebug){
+		return "(" + text + ")";
+	}
+}
+
 /** G/M codes setup. */
 function getCode(code) {
   switch(code) {
@@ -387,7 +393,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
       gSpindleModeModal.reset();
       sOutput.reset();
       if (useConstantSurfaceSpeed && !forceRPMMode) {
-        writeBlock(gFormat.format(92), sOutput.format(maximumSpindleSpeed), "R1"); // spindle 1 is the default;
+        writeBlock(gFormat.format(92), sOutput.format(maximumSpindleSpeed), "R1", writeDebugInfo("Maxium speed spindle 1")); // spindle 1 is the default;
       }
       writeBlock(
         spindleMode,
@@ -408,7 +414,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
       gSpindleModeModal.reset();
       sOutput.reset();
       if (useConstantSurfaceSpeed && !forceRPMMode) {
-        writeBlock(gFormat.format(92), sOutput.format(maximumSpindleSpeed), "R2"); // spindle 1 is the default;
+        writeBlock(gFormat.format(92), sOutput.format(maximumSpindleSpeed), "R2", writeDebugInfo("Maxiumum speed spindle 2")); // spindle 1 is the default;
       }
       writeBlock(
         spindleMode,
@@ -864,7 +870,7 @@ function onOpen() {
   writeln("");
 
   writeBlock(gMotionModal.format(0), gAbsIncModal.format(90), getCode("FEED_MODE_UNIT_MIN"), gFormat.format(54), getCode("CONSTANT_SURFACE_SPEED_OFF"));
-  writeBlock(gFormat.format(40), gFormat.format(49), gFormat.format(80), gFormat.format(67), gFormat.format(69), gPlaneModal.format(18));
+  writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), gFormat.format(69), gPlaneModal.format(18));
 
   switch (unit) {
   case IN:
@@ -1441,11 +1447,11 @@ function onSection() {
 
   if (!currentWorkPlaneABC) {
     if (machineState.isTurningOperation) { // diameter mode
-      writeBlock(gFormat.format(10.9), "X1"); // diameter input mode
+      writeBlock(gFormat.format(123.1), writeDebugInfo("Diameter Mode")); // diameter input mode
       xFormat.setScale(2); // diameter mode
       xOutput = createVariable({prefix:"X"}, xFormat);
     } else { // radius mode
-      writeBlock(gFormat.format(10.9), "X0"); // radius input mode
+      writeBlock(gFormat.format(122.1), writeDebugInfo("Radius Mode")); // radius input mode
       xFormat.setScale(1); // radius mode
       xOutput = createVariable({prefix:"X"}, xFormat);
     }
@@ -1453,7 +1459,7 @@ function onSection() {
   if (true) {
     switch (currentSection.spindle) {
     case SPINDLE_PRIMARY: // main spindle
-      writeBlock(mFormat.format(901));
+      writeBlock(mFormat.format(302), writeDebugInfo("Primary Spindle"));
       yFormat.setScale(1);
       yOutput = createVariable({prefix:"Y"}, yFormat);
       zFormat.setScale(1);
@@ -1463,7 +1469,7 @@ function onSection() {
       }
       break;
     case SPINDLE_SECONDARY: // sub spindle
-      writeBlock(mFormat.format(902));
+      writeBlock(mFormat.format(300), writeDebugInfo("Secondary Spindle"));
       if (currentSection.isMultiAxis() || machineState.isTurningOperation) {
         yFormat.setScale(-1);
         yOutput = createVariable({prefix:"Y"}, yFormat);
@@ -2927,7 +2933,7 @@ function onSectionEnd() {
   }
 
   if (currentSection.isMultiAxis()) {
-    writeBlock(gFormat.format(49));
+    //writeBlock(gFormat.format(49));
   }
 
   forceAny();
