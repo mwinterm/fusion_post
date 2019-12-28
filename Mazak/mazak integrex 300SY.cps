@@ -172,7 +172,7 @@ var xAxisMinimum = toPreciseUnit(-20, MM); // specifies the maximum range for th
 
 var gotPolarInterpolation = false; // specifies if the machine has XY polar interpolation (G112) capabilities
 var gotBAxis = true;
-var useMultiAxisFeatures = gotBAxis;
+var useMultiAxisFeatures = false;
 var gotSecondarySpindle = true;
 var gotMultiTurret = false; // specifies if the machine has several turrets
 var gotTailStock = false;
