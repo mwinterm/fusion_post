@@ -20,8 +20,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-description = "Mazak Integrex 300SY";
+description = "Werkzeugbaumueller GmbH - Fraesdrehzentrum";
 vendor = "Mazak";
+model = "Integrex 300SY"
 vendorUrl = "https://www.mazak.com";
 legal = "Copyright (C) 2012-2018 by Autodesk, Inc.";
 certificationLevel = 2;
@@ -62,12 +63,12 @@ properties = {
   maximumSpindleSpeed: 3500, // specifies the maximum spindle speed
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: true, // specifies that operation notes should be output.
-  useCycles: true, // specifies that drilling cycles should be used.
+  useCycles: false, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
-  g53HomePositionX: 99999, // home position for X-axis
-  g53HomePositionY: 0, // home position for Y-axis
-  g53HomePositionZ: 99999, // home position for Z-axis
-  g53HomePositionSubZ: 99999 // home Position for Z when the operation uses the secondary spindle
+  g53HomePositionX: 0.0, // home position for X-axis
+  g53HomePositionY: 0.0, // home position for Y-axis
+  g53HomePositionZ: 0.0, // home position for Z-axis
+  g53HomePositionSubZ: 0.0 // home Position for Z when the operation uses the secondary spindle
 };
 
 // user-defined property definitions
@@ -212,7 +213,7 @@ var machineState = {
 
 function writeDebugInfo(text) {
   if (writeDebug) {
-    return "(" + text + ")";
+    return formatComment(text);
   }
 }
 
@@ -291,7 +292,7 @@ function getCode(code) {
       return combineCommands(gFeedModeModal.format(95), writeDebugInfo("Synchronous feed"));
     case "FEED_MODE_UNIT_MIN":
       machineState.feedPerRevolution = false;
-      return gFeedModeModal.format(94);
+      return combineCommands(gFeedModeModal.format(94), writeDebugInfo("Asynchronous feed"));
     case "CONSTANT_SURFACE_SPEED_ON":
       return combineCommands(gSpindleModeModal.format(96), writeDebugInfo("Constant surface speed"));
     case "CONSTANT_SURFACE_SPEED_OFF":
@@ -708,20 +709,20 @@ function onOpen() {
   }
 
   // dump machine configuration
-  var vendor = machineConfiguration.getVendor();
-  var model = machineConfiguration.getModel();
-  var description = machineConfiguration.getDescription();
+  // var vendor = machineConfiguration.getVendor();
+  // var model = machineConfiguration.getModel();
+  // var description = machineConfiguration.getDescription();
 
   if (properties.writeMachine && (vendor || model || description)) {
-    writeComment(localize("Machine"));
+    writeComment(localize("--- Machine ---"));
     if (vendor) {
-      writeComment("  " + localize("vendor") + ": " + vendor);
+      writeComment("  " + localize("vendor") + " - " + vendor);
     }
     if (model) {
-      writeComment("  " + localize("model") + ": " + model);
+      writeComment("  " + localize("model") + " - " + model);
     }
     if (description) {
-      writeComment("  " + localize("description") + ": " + description);
+      writeComment("  " + localize("description") + " - " + description);
     }
   }
 
@@ -881,10 +882,10 @@ function onOpen() {
   writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), writeDebugInfo("Cancel makro"), gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver"), gPlaneModal.format(18));
   switch (unit) {
     case IN:
-      writeBlock(gUnitModal.format(20));
+      writeBlock(gUnitModal.format(20), writeDebugInfo("Unit: Inch"));
       break;
     case MM:
-      writeBlock(gUnitModal.format(21));
+      writeBlock(gUnitModal.format(21), writeDebugInfo("Unit: mm"));
       break;
   }
 
@@ -2530,7 +2531,7 @@ function onCyclePoint(x, y, z) {
     switch (cycleType) {
       case "drilling":
         writeBlock(
-          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(81),
+          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
           getCommonCycle(x, y, z, cycle.retract),
           feedOutput.format(F)
         );
@@ -2555,7 +2556,7 @@ function onCyclePoint(x, y, z) {
         break;
       case "chip-breaking":
         writeBlock(
-          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(73),
+          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
           getCommonCycle(x, y, z, cycle.retract),
           "Q" + spatialFormat.format(cycle.incrementalDepth),
           "D" + spatialFormat.format(cycle.chipBreakDistance),
