@@ -657,10 +657,10 @@ function onOpen() {
 
   if (true) {
     // make sure parameter F85 Bit 2 is set for 5 axis simultaneous
-    var bAxisMain = createAxis({ coordinate: 1, table: false, axis: [0, -1, 0], range: [-30, 210], preference: 0 });
+    var bAxisMain = createAxis({ coordinate: 1, table: false, axis: [0, -1, 0], range: [-30, 195], preference: 0 });
     var cAxisMain = createAxis({ coordinate: 2, table: true, axis: [0, 0, 1], range: [-360, 360], cyclic: true, preference: 0 });
 
-    var bAxisSub = createAxis({ coordinate: 1, table: false, axis: [0, 1, 0], range: [-30, 210], preference: 0 });
+    var bAxisSub = createAxis({ coordinate: 1, table: false, axis: [0, 1, 0], range: [-30, 195], preference: 0 });
     var cAxisSub = createAxis({ coordinate: 2, table: true, axis: [0, 0, -1], range: [-360, 360], cyclic: true, preference: 0 });
 
     machineConfigurationMainSpindle = gotBAxis ? new MachineConfiguration(bAxisMain, cAxisMain) : new MachineConfiguration(cAxisMain);
