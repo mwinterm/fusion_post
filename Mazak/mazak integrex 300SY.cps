@@ -102,7 +102,7 @@ var coolants = {
   flood: { turret1: { on: 8, off: 9 }, turret2: { on: 8, off: 9 } },
   mist: { turret1: {}, turret2: {} },
   throughTool: { turret1: { on: 153, off: 154 }, turret2: { on: 153, off: 154 } },
-  air: { turret1: { on: 45, off: 9 }, turret2: { on: 45, off: 9 } },
+  air: { turret1: {}, turret2: {} },
   airThroughTool: { turret1: { on: 151, off: 152 }, turret2: {} },
   suction: { turret1: {}, turret2: {} },
   floodMist: { turret1: {}, turret2: {} },
@@ -257,12 +257,18 @@ function getCode(code) {
     case "STOP_SUB_SPINDLE":
       machineState.subSpindleIsActive = false;
       return combineCommands(gFormat.format(112), mFormat.format(5), writeDebugInfo("Stop sub-spindle"));
+    case "UNLOCK_MILLING_SPINDLE":
+      machineState.millingSpindleLocked = false;
+      return combineCommands(mFormat.format(252), writeDebugInfo("Unlock milling spindle"));
+    case "LOCK_MILLING_SPINDLE":
+      machineState.millingSpindleLocked = true;
+      return combineCommands(mFormat.format(253), writeDebugInfo("Lock milling spindle"));
     case "START_LIVE_TOOL_CW":
       machineState.liveToolIsActive = true;
       return combineCommands(mFormat.format(203), writeDebugInfo("Start live tool CW"));
     case "START_LIVE_TOOL_CCW":
       machineState.liveToolIsActive = true;
-      return combineCommands(mFormat.format(203), writeDebugInfo("Start live tool CCW"));
+      return combineCommands(mFormat.format(204), writeDebugInfo("Start live tool CCW"));
     case "START_MAIN_SPINDLE_CW":
       machineState.mainSpindleIsActive = true;
       return combineCommands(mFormat.format(3), writeDebugInfo("Start main spindle CW"));
@@ -1506,10 +1512,12 @@ function onSection() {
     }
   }
   writeln("G");
-  if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
+  if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) { //turning
     writeBlock(conditional(machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("DISENGAGE_C_AXIS"));
+    writeBlock(conditional(machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("LOCK_MILLING_SPINDLE"));
   } else { // milling
     writeBlock(conditional(!machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("ENGAGE_C_AXIS"));
+    writeBlock(conditional(!machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("UNLOCK_MILLING_SPINDLE"));
   }
   writeln("H");
   if ((currentSection.feedMode == FEED_PER_REVOLUTION) || machineState.tapping || machineState.axialCenterDrilling) {
