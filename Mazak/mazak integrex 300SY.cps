@@ -895,13 +895,13 @@ function onOpen() {
       break;
   }
 
-  if (usesPrimarySpindle) {
+  if (true /*usesPrimarySpindle*/) {
     writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R1", writeDebugInfo("Spindle 1 speed limit")); // spindle 1 is the default
     sOutput.reset();
   }
 
   if (gotSecondarySpindle) {
-    if (usesSecondarySpindle) {
+    if (true /*usesSecondarySpindle*/) {
       writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R2", writeDebugInfo("Spindle 2 speed limit"));
       sOutput.reset();
     }
