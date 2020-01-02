@@ -110,7 +110,7 @@ var coolants = {
   off: 9
 };
 
-var writeDebug = true; // specifies to output debug information
+var writeDebug = false; // specifies to output debug information
 
 var permittedCommentChars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,=_-";
 
@@ -1413,9 +1413,9 @@ function onSection() {
           }
         }
       }
-      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment), nextool, mFormat.format(6));
+      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment), nextool/*, mFormat.format(6)*/);
     } else {
-      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment), mFormat.format(6));
+      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment)/*, mFormat.format(6)*/);
     }
 
     //if (tool.comment) {
