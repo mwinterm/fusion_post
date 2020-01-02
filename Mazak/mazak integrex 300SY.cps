@@ -103,14 +103,14 @@ var coolants = {
   mist: { turret1: {}, turret2: {} },
   throughTool: { turret1: { on: 153, off: 154 }, turret2: { on: 153, off: 154 } },
   air: { turret1: { on: 45, off: 9 }, turret2: { on: 45, off: 9 } },
-  airThroughTool: { turret1: {on: 151, off: 152}, turret2: {} },
+  airThroughTool: { turret1: { on: 151, off: 152 }, turret2: {} },
   suction: { turret1: {}, turret2: {} },
   floodMist: { turret1: {}, turret2: {} },
-  floodThroughTool: { },
+  floodThroughTool: {},
   off: 9
 };
 
-var writeDebug = false; // specifies to output debug information
+var writeDebug = true; // specifies to output debug information
 
 var permittedCommentChars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,=_-";
 
@@ -302,13 +302,13 @@ function getCode(code) {
     case "UNCLAMP_B_AXIS":
       return combineCommands(mFormat.format(250), writeDebugInfo("B-axis unclamp"));
     case "CLAMP_PRIMARY_SPINDLE":
-      return combineCommands( mFormat.format(210), writeDebugInfo("Clamp main spindle") );
+      return combineCommands(mFormat.format(210), writeDebugInfo("Clamp main spindle"));
     case "UNCLAMP_PRIMARY_SPINDLE":
-      return combineCommands( mFormat.format(212), writeDebugInfo("Unclamp main spindle") );
+      return combineCommands(mFormat.format(212), writeDebugInfo("Unclamp main spindle"));
     case "CLAMP_SECONDARY_SPINDLE":
-      return combineCommands( gFormat.format(112), mFormat.format(210), writeDebugInfo("Clamp sub spindle") );
+      return combineCommands(gFormat.format(112), mFormat.format(210), writeDebugInfo("Clamp sub spindle"));
     case "UNCLAMP_SECONDARY_SPINDLE":
-      return combineCommands( gFormat.format(112), mFormat.format(212), writeDebugInfo("Unclamp sub spindle") );
+      return combineCommands(gFormat.format(112), mFormat.format(212), writeDebugInfo("Unclamp sub spindle"));
     // case "SPINDLE_SYNCHRONIZATION_ON":
     // machineState.spindleSynchronizationIsActive = true;
     // return gSynchronizedSpindleModal.format(undefined);
@@ -390,7 +390,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
   }
   switch (currentSection.spindle) {
     case SPINDLE_PRIMARY: // main spindle
-      if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+      if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
         gSpindleModeModal.reset();
         sOutput.reset();
         if (useConstantSurfaceSpeed && !forceRPMMode) {
@@ -411,7 +411,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         error(localize("Secondary spindle is not available."));
         return;
       }
-      if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+      if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
         gSpindleModeModal.reset();
         sOutput.reset();
         if (useConstantSurfaceSpeed && !forceRPMMode) {
@@ -1291,6 +1291,9 @@ function onSection() {
       writeComment(comment);
     }
   }
+
+  writeln("A");
+
   /** detect machine configuration */
   machineConfiguration = (currentSection.spindle == SPINDLE_PRIMARY) ? machineConfigurationMainSpindle : machineConfigurationSubSpindle;
   if (!gotBAxis) {
@@ -1357,6 +1360,8 @@ function onSection() {
     forceWorkPlane();
   }
 
+  writeln("B");
+
   updateMachiningMode(currentSection); // sets the needed machining mode to machineState (usePolarMode, useXZCMode, axialCenterDrilling)
 
   if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
@@ -1371,7 +1376,7 @@ function onSection() {
       writeBlock(getCode("STOP_SUB_SPINDLE"));
     }
   }
-
+  writeln("C");
   writeln("");
 
   if (properties.showNotes && hasParameter("notes")) {
@@ -1389,6 +1394,7 @@ function onSection() {
     }
   }
 
+  writeln("D");
   if (insertToolCall) {
     writeComment("- Tool Call");
     forceWorkPlane();
@@ -1452,7 +1458,7 @@ function onSection() {
     }
     machineState.currentTurret = turret;
   }
-
+  writeln("E");
   if (!currentWorkPlaneABC) {
     if (machineState.isTurningOperation) { // diameter mode
       writeBlock(gFormat.format(123.1), writeDebugInfo("Diameter Mode")); // diameter input mode
@@ -1464,6 +1470,7 @@ function onSection() {
       xOutput = createVariable({ prefix: "X" }, xFormat);
     }
   }
+  writeln("F");
   if (true) {
     switch (currentSection.spindle) {
       case SPINDLE_PRIMARY: // main spindle
@@ -1498,19 +1505,19 @@ function onSection() {
       yOutput.disable();
     }
   }
-
-  if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+  writeln("G");
+  if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
     writeBlock(conditional(machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("DISENGAGE_C_AXIS"));
   } else { // milling
     writeBlock(conditional(!machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("ENGAGE_C_AXIS"));
   }
-
+  writeln("H");
   if ((currentSection.feedMode == FEED_PER_REVOLUTION) || machineState.tapping || machineState.axialCenterDrilling) {
     writeBlock(getCode("FEED_MODE_UNIT_REV")); // mm/rev
   } else {
     writeBlock(getCode("FEED_MODE_UNIT_MIN")); // mm/min
   }
-
+  writeln("I");
   // Engage tailstock
   if (gotTailStock) {
     if (machineState.axialCenterDrilling || (currentSection.spindle == SPINDLE_SECONDARY) ||
@@ -1545,7 +1552,7 @@ function onSection() {
     }
     startSpindle(true, getFramePosition(currentSection.getInitialPosition()));
   }
-
+  writeln("J");
   // wcs
   if (insertToolCall) { // force work offset when changing tool
     currentWorkOffset = undefined;
@@ -1573,7 +1580,7 @@ function onSection() {
       }
     }
   }
-
+  writeln("K");
   /*
     if (gotYAxis) {
       writeBlock(gMotionModal.format(0), "Y" + yFormat.format(0));
@@ -1596,31 +1603,39 @@ function onSection() {
   } else {
     activeMovements = undefined;
   }
-
+  writeln("L");
   gMotionModal.reset();
 
   var abc;
   if (machineConfiguration.isMultiAxisConfiguration()) {
-    if (machineState.isTurningOperation) { // turning toolpath
+    if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) { // turning toolpath
       if (gotBAxis) {
         cancelTransformation();
         abc = bAxisOrientationTurning;
+        writeBlock(getCode("UNCLAMP_B_AXIS"));
         writeBlock(gMotionModal.format(0), gFormat.format(53), "B" + abcFormat.format(bAxisOrientationTurning.y));
+        writeBlock(getCode("CLAMP_B_AXIS"));
         machineState.currentBAxisOrientationTurning = abc;
       } else {
         setRotation(currentSection.workPlane);
       }
     } else { // milling toolpath
+      writeln("L.1");
       if (currentSection.isMultiAxis()) {
+        writeln("L.1.1");
         forceWorkPlane();
         cancelTransformation();
         onCommand(COMMAND_UNLOCK_MULTI_AXIS);
       } else {
+        writeln("L.1.2");
         if (machineState.useXZCMode) {
+          writeln("L.1.2.1");
           setRotation(currentSection.workPlane); // enables calculation of the C-axis by tool XY-position
           abc = useMultiAxisFeatures ? new Vector(0, 0, 0) : new Vector(0, 0, getCWithinRange(getFramePosition(currentSection.getInitialPosition()).x, getFramePosition(currentSection.getInitialPosition()).y, cOutput.getCurrent()));
         } else {
+          writeln("L.1.2.2");
           if (useMultiAxisFeatures) {
+            writeln("L.1.2.2.1");
             if (currentSection.spindle == SPINDLE_PRIMARY) {
               abc = currentSection.workPlane.getEuler2(EULER_ZXZ_R);
             } else {
@@ -1630,6 +1645,7 @@ function onSection() {
               abc = new Vector(-abc.x, abc.y, -abc.z); // needed for secondary spindle
             }
           } else {
+            writeln("L.1.2.2.2");
             abc = getWorkPlaneMachineABC(currentSection, currentSection.workPlane);
           }
         }
@@ -1645,14 +1661,14 @@ function onSection() {
     setRotation(remaining);
   }
   forceAny();
-
+  writeln("M");
   if (abc !== undefined) {
     if (!currentSection.isMultiAxis()) {
       cOutput.format(abc.z); // make C current - we do not want to output here
     }
   }
   gMotionModal.reset();
-
+  writeln("N");
   /*
     if (!retracted) {
       // TAG: need to retract along X or Z
@@ -1667,7 +1683,7 @@ function onSection() {
     gPlaneModal.reset();
     gFeedModeModal.reset();
   }
-
+  writeln("O");
   // assumes a Head configuration uses TCP on a Fanuc controller
   var offsetCode = 43;
   if (currentSection.isMultiAxis()) {
@@ -1677,7 +1693,7 @@ function onSection() {
       offsetCode = 43.5;
     }
   }
-
+  writeln("P");
   if (currentSection.isMultiAxis()) {
     // turn
     var abc;
@@ -1714,15 +1730,15 @@ function onSection() {
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
     }
   }
-
+  writeln("Q");
   // enable SFM spindle speed
   if (tool.getSpindleMode() == SPINDLE_CONSTANT_SURFACE_SPEED) {
     startSpindle(false);
   }
-
+  writeln("R");
   // set coolant after we have positioned at Z
   setCoolant(tool.coolant, machineState.currentTurret);
-
+  writeln("S");
   if (machineState.usePolarMode) {
     setPolarMode(true); // enable polar interpolation mode
   }
@@ -2853,13 +2869,13 @@ function onCommand(command) {
       break;
     case COMMAND_SPINDLE_CLOCKWISE:
       if (currentSection.spindle == SPINDLE_PRIMARY) {
-        if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+        if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
           writeBlock(getCode("START_MAIN_SPINDLE_CW"));
         } else {
           writeBlock(getCode("START_LIVE_TOOL_CW"));
         }
       } else {
-        if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+        if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
           writeBlock(getCode("START_SUB_SPINDLE_CW"));
         } else {
           writeBlock(getCode("START_LIVE_TOOL_CW"));
@@ -2868,13 +2884,13 @@ function onCommand(command) {
       break;
     case COMMAND_SPINDLE_COUNTERCLOCKWISE:
       if (currentSection.spindle == SPINDLE_PRIMARY) {
-        if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+        if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
           writeBlock(getCode("START_MAIN_SPINDLE_CCW"));
         } else {
           writeBlock(getCode("START_LIVE_TOOL_CCW"));
         }
       } else { // secondary
-        if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+        if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
           writeBlock(getCode("START_SUB_SPINDLE_CCW"));
         } else {
           writeBlock(getCode("START_LIVE_TOOL_CCW"));
@@ -2883,13 +2899,13 @@ function onCommand(command) {
       break;
     case COMMAND_STOP_SPINDLE:
       if (currentSection.spindle == SPINDLE_PRIMARY) {
-        if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+        if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
           writeBlock(getCode("STOP_MAIN_SPINDLE"));
         } else {
           writeBlock(getCode("STOP_LIVE_TOOL"));
         }
       } else {
-        if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
+        if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
           writeBlock(getCode("STOP_SUB_SPINDLE"));
         } else {
           writeBlock(getCode("STOP_LIVE_TOOL"));
