@@ -51,8 +51,10 @@ highFeedrate = (unit == IN) ? 400 : 5000;
 properties = {
   writeMachine: true, // write machine
   writeTools: true, // writes the tools
+  writeStructureComments: true, //write program structure comments
+  writeDebugInformation: false, // writes the tools
   preloadTool: true, // preloads next tool on tool change if any
-  showSequenceNumbers: false, // show sequence numbers
+  showSequenceNumbers: true, // show sequence numbers
   sequenceNumberStart: 10, // first sequence number
   sequenceNumberIncrement: 10, // increment for sequence numbers
   sequenceNumberOnlyOnToolChange: false, // only output sequence numbers on tool change
@@ -75,6 +77,8 @@ properties = {
 propertyDefinitions = {
   writeMachine: { title: "Write machine", description: "Output the machine settings in the header of the code.", group: 0, type: "boolean" },
   writeTools: { title: "Write tool list", description: "Output a tool list in the header of the code.", group: 0, type: "boolean" },
+  writeStructureComments: { title: "Structure comments", description: "Writes program structure comments", group: 0, type: "boolean" },
+  writeDebugInformation: { title: "Write some debug information", description: "Adds comments reagrding most G- and M-codes", group: 0, type: "boolean" },
   preloadTool: { title: "Preload tool", description: "Preloads the next tool at a tool change (if any).", type: "boolean" },
   showSequenceNumbers: { title: "Use sequence numbers", description: "Use sequence numbers for each block of outputted code.", group: 1, type: "boolean" },
   sequenceNumberStart: { title: "Start sequence number", description: "The number at which to start the sequence numbers.", group: 1, type: "integer" },
@@ -110,7 +114,8 @@ var coolants = {
   off: 9
 };
 
-var writeDebug = true; // specifies to output debug information
+var writeDebug = false; // specifies to output debug information
+var writeStructComments = false;
 
 var permittedCommentChars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,=_-";
 
@@ -214,6 +219,8 @@ var machineState = {
 function writeDebugInfo(text) {
   if (writeDebug) {
     return formatComment(text);
+  } else {
+    return "";
   }
 }
 
@@ -653,10 +660,22 @@ function writeComment(text) {
   writeln(formatComment(text));
 }
 
+/**
+  Output a structure comment.
+*/
+function writeStructureComment(text) {
+  if (writeStructComments) {
+    writeln(formatComment(text));
+  }
+}
+
 var machineConfigurationMainSpindle;
 var machineConfigurationSubSpindle;
 
 function onOpen() {
+  writeDebug = properties.writeDebugInformation;
+  writeStructComments = properties.writeStructureComments;
+  
   if (properties.useRadius) {
     maximumCircularSweep = toRad(90); // avoid potential center calculation errors for CNC
   }
@@ -713,6 +732,25 @@ function onOpen() {
     error(localize("Program name has not been specified."));
     return;
   }
+
+  //write program generation date and time
+  let current_datetime = new Date();
+  let formatted_date = current_datetime.getDate() + "." + current_datetime.getMonth() + "." + current_datetime.getFullYear() + " - " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+  var date = current_datetime.getDate();
+  var month = current_datetime.getMonth()+1;
+  var year = current_datetime.getFullYear();
+  var hours = current_datetime.getHours();
+  var minutes = current_datetime.getMinutes();
+  var seconds = current_datetime.getSeconds();
+  yearFormatted = year;
+  monthFormatted = month < 10 ? "0" + month : month;
+  dateFormatted = date < 10 ? "0" + date : date;
+  hoursFormatted = hours < 10 ? "0" + hours : hours;
+  minutesFormatted = minutes < 10 ? "0" + minutes : minutes;
+  secondsFormatted = seconds < 10 ? "0" + seconds : seconds;
+  writeln("");
+  writeStructureComment("Program created " + yearFormatted + "-" + monthFormatted + "-" + dateFormatted  + "  " + hoursFormatted + "-" + minutesFormatted + "-" + secondsFormatted);
+  writeln("");
 
   // dump machine configuration
   // var vendor = machineConfiguration.getVendor();
@@ -873,14 +911,14 @@ function onOpen() {
   }
 
   writeln("");
-  writeComment("--- PARAMETERS ---");
-  writeBlock("#" + g53HomePositionXParameter + "=" + spatialFormat.format(properties.g53HomePositionX) + "(PARAMETER FOR X HOME POSITION)"); // retract
-  writeBlock("#" + g53HomePositionZParameter + "=" + spatialFormat.format(properties.g53HomePositionZ) + "(PARAMETER FOR Z HOME POSITION)"); // retract
+  writeStructureComment("--- PARAMETERS ---");
+  writeBlock("#" + g53HomePositionXParameter + "=" + spatialFormat.format(properties.g53HomePositionX), writeDebugInfo("PARAMETER FOR X HOME POSITION")); // retract
+  writeBlock("#" + g53HomePositionZParameter + "=" + spatialFormat.format(properties.g53HomePositionZ), writeDebugInfo("PARAMETER FOR Z HOME POSITION")); // retract
   if (gotSecondarySpindle) {
-    writeBlock("#" + g53HomePositionSubZParameter + "=" + spatialFormat.format(properties.g53HomePositionSubZ) + "(PARAMETER FOR SUB Z HOME POSITION)"); // retract
+    writeBlock("#" + g53HomePositionSubZParameter + "=" + spatialFormat.format(properties.g53HomePositionSubZ), writeDebugInfo("PARAMETER FOR SUB Z HOME POSITION")); // retract
   }
   if (gotYAxis) {
-    writeBlock("#" + g53HomePositionYParameter + "=" + spatialFormat.format(properties.g53HomePositionY) + "(PARAMETER FOR Y HOME POSITION)"); // retract
+    writeBlock("#" + g53HomePositionYParameter + "=" + spatialFormat.format(properties.g53HomePositionY) + writeDebugInfo("PARAMETER FOR Y HOME POSITION")); // retract
   }
   writeln("");
 
@@ -1294,11 +1332,9 @@ function onSection() {
     var comment = "-- Section - " + getParameter("operation-comment");
 
     if (comment) {
-      writeComment(comment);
+      writeStructureComment(comment);
     }
   }
-
-  writeln("A");
 
   /** detect machine configuration */
   machineConfiguration = (currentSection.spindle == SPINDLE_PRIMARY) ? machineConfigurationMainSpindle : machineConfigurationSubSpindle;
@@ -1366,8 +1402,6 @@ function onSection() {
     forceWorkPlane();
   }
 
-  writeln("B");
-
   updateMachiningMode(currentSection); // sets the needed machining mode to machineState (usePolarMode, useXZCMode, axialCenterDrilling)
 
   if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
@@ -1382,7 +1416,6 @@ function onSection() {
       writeBlock(getCode("STOP_SUB_SPINDLE"));
     }
   }
-  writeln("C");
   writeln("");
 
   if (properties.showNotes && hasParameter("notes")) {
@@ -1400,9 +1433,8 @@ function onSection() {
     }
   }
 
-  writeln("D");
   if (insertToolCall) {
-    writeComment("- Tool Call");
+    writeStructureComment("- Tool Call");
     forceWorkPlane();
     gPlaneModal.reset();
 
@@ -1464,7 +1496,6 @@ function onSection() {
     }
     machineState.currentTurret = turret;
   }
-  writeln("E");
   if (!currentWorkPlaneABC) {
     if (machineState.isTurningOperation) { // diameter mode
       writeBlock(gFormat.format(123.1), writeDebugInfo("Diameter Mode")); // diameter input mode
@@ -1476,7 +1507,6 @@ function onSection() {
       xOutput = createVariable({ prefix: "X" }, xFormat);
     }
   }
-  writeln("F");
   if (true) {
     switch (currentSection.spindle) {
       case SPINDLE_PRIMARY: // main spindle
@@ -1511,7 +1541,6 @@ function onSection() {
       yOutput.disable();
     }
   }
-  writeln("G");
   if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) { //turning
     writeBlock(conditional(machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("DISENGAGE_C_AXIS"));
     writeBlock(conditional(machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("LOCK_MILLING_SPINDLE"));
@@ -1519,13 +1548,11 @@ function onSection() {
     writeBlock(conditional(!machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("ENGAGE_C_AXIS"));
     writeBlock(conditional(!machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("UNLOCK_MILLING_SPINDLE"));
   }
-  writeln("H");
   if ((currentSection.feedMode == FEED_PER_REVOLUTION) || machineState.tapping || machineState.axialCenterDrilling) {
     writeBlock(getCode("FEED_MODE_UNIT_REV")); // mm/rev
   } else {
     writeBlock(getCode("FEED_MODE_UNIT_MIN")); // mm/min
   }
-  writeln("I");
   // Engage tailstock
   if (gotTailStock) {
     if (machineState.axialCenterDrilling || (currentSection.spindle == SPINDLE_SECONDARY) ||
@@ -1560,7 +1587,7 @@ function onSection() {
     }
     startSpindle(true, getFramePosition(currentSection.getInitialPosition()));
   }
-  writeln("J");
+
   // wcs
   if (insertToolCall) { // force work offset when changing tool
     currentWorkOffset = undefined;
@@ -1588,7 +1615,6 @@ function onSection() {
       }
     }
   }
-  writeln("K");
   /*
     if (gotYAxis) {
       writeBlock(gMotionModal.format(0), "Y" + yFormat.format(0));
@@ -1611,7 +1637,6 @@ function onSection() {
   } else {
     activeMovements = undefined;
   }
-  writeln("L");
   gMotionModal.reset();
 
   var abc;
@@ -1628,22 +1653,16 @@ function onSection() {
         setRotation(currentSection.workPlane);
       }
     } else { // milling toolpath
-      writeln("L.1");
       if (currentSection.isMultiAxis()) {
-        writeln("L.1.1");
         forceWorkPlane();
         cancelTransformation();
         onCommand(COMMAND_UNLOCK_MULTI_AXIS);
       } else {
-        writeln("L.1.2");
         if (machineState.useXZCMode) {
-          writeln("L.1.2.1");
           setRotation(currentSection.workPlane); // enables calculation of the C-axis by tool XY-position
           abc = useMultiAxisFeatures ? new Vector(0, 0, 0) : new Vector(0, 0, getCWithinRange(getFramePosition(currentSection.getInitialPosition()).x, getFramePosition(currentSection.getInitialPosition()).y, cOutput.getCurrent()));
         } else {
-          writeln("L.1.2.2");
           if (useMultiAxisFeatures) {
-            writeln("L.1.2.2.1");
             if (currentSection.spindle == SPINDLE_PRIMARY) {
               abc = currentSection.workPlane.getEuler2(EULER_ZXZ_R);
             } else {
@@ -1653,7 +1672,6 @@ function onSection() {
               abc = new Vector(-abc.x, abc.y, -abc.z); // needed for secondary spindle
             }
           } else {
-            writeln("L.1.2.2.2");
             abc = getWorkPlaneMachineABC(currentSection, currentSection.workPlane);
           }
         }
@@ -1669,14 +1687,12 @@ function onSection() {
     setRotation(remaining);
   }
   forceAny();
-  writeln("M");
   if (abc !== undefined) {
     if (!currentSection.isMultiAxis()) {
       cOutput.format(abc.z); // make C current - we do not want to output here
     }
   }
   gMotionModal.reset();
-  writeln("N");
   /*
     if (!retracted) {
       // TAG: need to retract along X or Z
@@ -1691,17 +1707,15 @@ function onSection() {
     gPlaneModal.reset();
     gFeedModeModal.reset();
   }
-  writeln("O");
   // assumes a Head configuration uses TCP on a Fanuc controller
-  var offsetCode = 43;
-  if (currentSection.isMultiAxis()) {
-    if (machineConfiguration.isMultiAxisConfiguration() && (currentSection.getOptimizedTCPMode() == 0)) {
-      offsetCode = 43.4;
-    } else if (!machineConfiguration.isMultiAxisConfiguration()) {
-      offsetCode = 43.5;
-    }
-  }
-  writeln("P");
+  var offsetCode = 40; //tip comopensation to be calculated in in Fusion
+  /*   if (currentSection.isMultiAxis()) {
+      if (machineConfiguration.isMultiAxisConfiguration() && (currentSection.getOptimizedTCPMode() == 0)) {
+        offsetCode = 43.4;
+      } else if (!machineConfiguration.isMultiAxisConfiguration()) {
+        offsetCode = 43.5;
+      }
+    } */
   if (currentSection.isMultiAxis()) {
     // turn
     var abc;
@@ -1738,15 +1752,12 @@ function onSection() {
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
     }
   }
-  writeln("Q");
   // enable SFM spindle speed
   if (tool.getSpindleMode() == SPINDLE_CONSTANT_SURFACE_SPEED) {
     startSpindle(false);
   }
-  writeln("R");
   // set coolant after we have positioned at Z
   setCoolant(tool.coolant, machineState.currentTurret);
-  writeln("S");
   if (machineState.usePolarMode) {
     setPolarMode(true); // enable polar interpolation mode
   }
