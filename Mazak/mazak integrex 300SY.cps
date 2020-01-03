@@ -675,7 +675,7 @@ var machineConfigurationSubSpindle;
 function onOpen() {
   writeDebug = properties.writeDebugInformation;
   writeStructComments = properties.writeStructureComments;
-  
+
   if (properties.useRadius) {
     maximumCircularSweep = toRad(90); // avoid potential center calculation errors for CNC
   }
@@ -737,7 +737,7 @@ function onOpen() {
   let current_datetime = new Date();
   let formatted_date = current_datetime.getDate() + "." + current_datetime.getMonth() + "." + current_datetime.getFullYear() + " - " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
   var date = current_datetime.getDate();
-  var month = current_datetime.getMonth()+1;
+  var month = current_datetime.getMonth() + 1;
   var year = current_datetime.getFullYear();
   var hours = current_datetime.getHours();
   var minutes = current_datetime.getMinutes();
@@ -749,7 +749,7 @@ function onOpen() {
   minutesFormatted = minutes < 10 ? "0" + minutes : minutes;
   secondsFormatted = seconds < 10 ? "0" + seconds : seconds;
   writeln("");
-  writeStructureComment("Program created " + yearFormatted + "-" + monthFormatted + "-" + dateFormatted  + "  " + hoursFormatted + "-" + minutesFormatted + "-" + secondsFormatted);
+  writeStructureComment("Program created " + yearFormatted + "-" + monthFormatted + "-" + dateFormatted + "  " + hoursFormatted + "-" + minutesFormatted + "-" + secondsFormatted);
   writeln("");
 
   // dump machine configuration
