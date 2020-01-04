@@ -67,6 +67,7 @@ properties = {
   showNotes: true, // specifies that operation notes should be output.
   useCycles: false, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
+  mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
   g53HomePositionX: 0.0, // home position for X-axis
   g53HomePositionY: 0.0, // home position for Y-axis
   g53HomePositionZ: 0.0, // home position for Z-axis
@@ -93,6 +94,7 @@ propertyDefinitions = {
   showNotes: { title: "Show notes", description: "Writes operation notes as comments in the outputted code.", type: "boolean" },
   useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", type: "boolean" },
   useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", type: "boolean" },
+  mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", type: "boolean" },
   g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", type: "number" },
   g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", type: "number" },
   g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", type: "number" },
@@ -143,7 +145,8 @@ var bOutput = createVariable({ prefix: "B" }, abcFormat);
 var cOutput = createVariable({ prefix: "C" }, cFormat);
 var feedOutput = createVariable({ prefix: "F" }, feedFormat);
 var pitchOutput = createVariable({ prefix: "F", force: true }, pitchFormat);
-var sOutput = createVariable({ prefix: "S", force: true }, rpmFormat);
+var sLatheOutput = createVariable({ prefix: "S", force: true }, rpmFormat);
+var sMillOutput = createVariable({ prefix: "S", force: true }, rpmFormat);
 
 // circular output
 var iOutput = createReferenceVariable({ prefix: "I", force: true }, spatialFormat);
@@ -164,6 +167,9 @@ var gRetractModal = createModal({}, gFormat); // modal group 10 // G98-99
 var gSpindleModal = createModal({}, gFormat);
 var cAxisEngageModal = createModal({}, mFormat);
 var tailStockModal = createModal({}, mFormat);
+var gCSModal = createModal({}, gFormat); // modal group 52.5, 53.5
+var gG50Modal = createModal({}, gFormat); // modal group G54, G55, G56..., G59
+
 
 // fixed settings
 var firstFeedParameter = 105;
@@ -213,7 +219,8 @@ var machineState = {
   tapping: undefined,
   feedPerRevolution: undefined,
   currentBAxisOrientationTurning: new Vector(0, 0, 0),
-  currentTurret: undefined
+  currentTurret: undefined,
+  mazatrolCS: undefined
 };
 
 function writeDebugInfo(text) {
@@ -237,6 +244,12 @@ function getCode(code) {
     // case "TAILSTOCK_OFF":
     // machineState.tailstockIsActive = false;
     // return tailStockModal.format(undefined);
+    case "MAZATROL_CS":
+      machineState.mazatrolCS = true;
+      return combineCommands(gCSModal.format(53.5), writeDebugInfo("Use Mazatrol Work Offsets i.e. G54, G55... inactive"));
+    case "G50_CS":
+      machineState.mazatrolCS = false;
+      return combineCommands(gCSModal.format(52.5), writeDebugInfo("G54, G55... active, Mazatrol Work Offsets inactive"));
     case "ENGAGE_C_AXIS":
       machineState.cAxisIsEngaged = true;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
@@ -372,7 +385,7 @@ function isSpindleSpeedDifferent() {
 }
 
 function onSpindleSpeed(spindleSpeed) {
-  if (rpmFormat.areDifferent(spindleSpeed, sOutput.getCurrent())) {
+  if (rpmFormat.areDifferent(spindleSpeed, sMillOutput.getCurrent())) {
     startSpindle(false, getFramePosition(currentSection.getInitialPosition()), spindleSpeed);
   }
 }
@@ -405,18 +418,18 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
     case SPINDLE_PRIMARY: // main spindle
       if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
         gSpindleModeModal.reset();
-        sOutput.reset();
+        sLatheOutput.reset();
         if (useConstantSurfaceSpeed && !forceRPMMode) {
-          writeBlock(gFormat.format(92), sOutput.format(maximumSpindleSpeed), "R1", writeDebugInfo("Maxium speed spindle 1")); // spindle 1 is the default;
+          writeBlock(gFormat.format(92), sLatheOutput.format(maximumSpindleSpeed), "R1", writeDebugInfo("Maxium speed spindle 1")); // spindle 1 is the default;
         }
         writeBlock(
           spindleMode,
-          sOutput.format(_spindleSpeed),
+          sLatheOutput.format(_spindleSpeed),
           tool.clockwise ? getCode("START_MAIN_SPINDLE_CW") : getCode("START_MAIN_SPINDLE_CCW")
         ); // R1 is the default
-        sOutput.reset();
+        sLatheOutput.reset();
       } else {
-        writeBlock(getCode("CONSTANT_SURFACE_SPEED_OFF"), sOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
+        writeBlock(getCode("CONSTANT_SURFACE_SPEED_OFF"), sMillOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
       }
       break;
     case SPINDLE_SECONDARY: // sub spindle
@@ -426,18 +439,18 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
       }
       if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
         gSpindleModeModal.reset();
-        sOutput.reset();
+        sLatheOutput.reset();
         if (useConstantSurfaceSpeed && !forceRPMMode) {
-          writeBlock(gFormat.format(92), sOutput.format(maximumSpindleSpeed), "R2", writeDebugInfo("Maxiumum speed spindle 2")); // spindle 1 is the default;
+          writeBlock(gFormat.format(92), sLatheOutput.format(maximumSpindleSpeed), "R2", writeDebugInfo("Maxiumum speed spindle 2")); // spindle 1 is the default;
         }
         writeBlock(
           spindleMode,
-          sOutput.format(_spindleSpeed),
+          sLatheOutput.format(_spindleSpeed),
           tool.clockwise ? getCode("START_SUB_SPINDLE_CW") : getCode("START_SUB_SPINDLE_CCW")
         ); // R1 is the default
-        sOutput.reset();
+        sLatheOutput.reset();
       } else {
-        writeBlock(spindleMode, sOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
+        writeBlock(spindleMode, sMillOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
       }
       break;
   }
@@ -619,7 +632,8 @@ function writeBlock() {
 */
 function combineCommands() {
   var args = Array.prototype.slice.call(arguments);
-  return args.join(" ");
+  args.join(" ");
+  return args;
 }
 
 /**
@@ -922,7 +936,13 @@ function onOpen() {
   }
   writeln("");
 
-  writeBlock(gMotionModal.format(0), gAbsIncModal.format(90), getCode("FEED_MODE_UNIT_MIN"), gFormat.format(54), getCode("CONSTANT_SURFACE_SPEED_OFF"));
+  if (properties.mazatrolCS) {
+    writeBlock(getCode("MAZATROL_CS"), writeDebugInfo("Mazatrol CS used, G54, G55... inactive"));
+  } else {
+    writeBlock(getCode("G50_CS"), gG50Modal.format(54), writeDebugInfo("G54, G55... used, Mazatrol CS inactive"));
+  }
+
+  writeBlock(gMotionModal.format(0), gAbsIncModal.format(90), getCode("FEED_MODE_UNIT_MIN"), getCode("CONSTANT_SURFACE_SPEED_OFF"));
   writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), writeDebugInfo("Cancel makro"), gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver"), gPlaneModal.format(18));
   switch (unit) {
     case IN:
@@ -934,14 +954,16 @@ function onOpen() {
   }
 
   if (true /*usesPrimarySpindle*/) {
-    writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R1", writeDebugInfo("Spindle 1 speed limit")); // spindle 1 is the default
-    sOutput.reset();
+    sLatheOutput.reset();
+    writeBlock(gFormat.format(92), sLatheOutput.format(properties.maximumSpindleSpeed), "R1", writeDebugInfo("Spindle 1 speed limit")); // spindle 1 is the default
+    sLatheOutput.reset();
   }
 
   if (gotSecondarySpindle) {
     if (true /*usesSecondarySpindle*/) {
-      writeBlock(gFormat.format(92), sOutput.format(properties.maximumSpindleSpeed), "R2", writeDebugInfo("Spindle 2 speed limit"));
-      sOutput.reset();
+      sLatheOutput.reset();
+      writeBlock(gFormat.format(92), sLatheOutput.format(properties.maximumSpindleSpeed), "R2", writeDebugInfo("Spindle 2 speed limit"));
+      sLatheOutput.reset();
     }
   }
 
@@ -1445,15 +1467,15 @@ function onSection() {
       if (properties.preloadTool) {
         var nextTool = getNextTool(tool.number);
         if (nextTool) {
-          nextool = "T" + toolFormat.format(nextTool.number);
+          nextool = "B" + toolFormat.format(nextTool.number);
         } else {
           // preload first tool
           var section = getSection(0);
           var firstToolNumber = section.getTool().number;
           if (tool.number != firstToolNumber) {
-            nextool = "T" + toolFormat.format(firstToolNumber);
+            nextool = "B" + toolFormat.format(firstToolNumber);
           } else {
-            nextool = "T" + toolFormat.format(0);
+            nextool = "B" + toolFormat.format(0);
           }
         }
       }
@@ -1610,7 +1632,7 @@ function onSection() {
       }
     } else {
       if (workOffset != currentWorkOffset) {
-        writeBlock(gFormat.format(53 + workOffset)); // G54->G59
+        writeBlock(gG50Modal.format(53 + workOffset)); // G54->G59
         currentWorkOffset = workOffset;
       }
     }
