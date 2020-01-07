@@ -182,9 +182,9 @@ var yAxisMinimum = toPreciseUnit(gotYAxis ? -105 : 0, MM); // specifies the mini
 var yAxisMaximum = toPreciseUnit(gotYAxis ? 105 : 0, MM); // specifies the maximum range for the Y-axis
 var xAxisMinimum = toPreciseUnit(-20, MM); // specifies the maximum range for the X-axis (RADIUS MODE VALUE)
 
-var gotPolarInterpolation = false; // specifies if the machine has XY polar interpolation (G112) capabilities
+var gotPolarInterpolation = true; // specifies if the machine has XY polar interpolation (G12.1) capabilities
 var gotBAxis = true;
-var useMultiAxisFeatures = false;
+var useMultiAxisFeatures = true;
 var gotSecondarySpindle = true;
 var gotMultiTurret = false; // specifies if the machine has several turrets
 var gotTailStock = false;
@@ -1631,7 +1631,7 @@ function onSection() {
         currentWorkOffset = workOffset;
       }
     } else {
-      if (workOffset != currentWorkOffset) {
+      if (workOffset != currentWorkOffset && !properties.mazatrolCS) {
         writeBlock(gG50Modal.format(53 + workOffset)); // G54->G59
         currentWorkOffset = workOffset;
       }
