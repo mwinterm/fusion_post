@@ -131,6 +131,7 @@ var zFormat = createFormat({ decimals: (unit == MM ? 3 : 4), forceDecimal: true 
 var rFormat = createFormat({ decimals: (unit == MM ? 3 : 4), forceDecimal: true }); // radius
 var abcFormat = createFormat({ decimals: 4, forceDecimal: true, scale: DEG });
 var cFormat = createFormat({ decimals: 4, forceDecimal: true, scale: DEG });
+var degFormat = createFormat({ decimals: 4, forceDecimal: true });
 var feedFormat = createFormat({ decimals: (unit == MM ? 2 : 3), forceDecimal: true });
 var pitchFormat = createFormat({ decimals: (unit == MM ? 3 : 4), forceDecimal: true });
 var rpmFormat = createFormat({ decimals: 0 });
@@ -1667,9 +1668,37 @@ function onSection() {
       if (gotBAxis) {
         cancelTransformation();
         abc = bAxisOrientationTurning;
-        writeBlock(getCode("UNCLAMP_B_AXIS"));
-        writeBlock(gMotionModal.format(0), gFormat.format(53), "B" + abcFormat.format(bAxisOrientationTurning.y));
-        writeBlock(getCode("CLAMP_B_AXIS"));
+
+        //check if tool-orientation corresponds to machine operation        
+        var throw_error = false;
+        var valid_code = false;
+        if (tool.comment == "00" || tool.comment == "02" || tool.comment == "04" || tool.comment == "06" || tool.comment == "08" || tool.comment == "13") {
+          if (abcFormat.format(abc.y) != degFormat.format(0.0)) {
+            throw_error = true;
+          }
+          valid_code = true;
+        } else if (tool.comment == "01" || tool.comment == "03" || tool.comment == "05" || tool.comment == "07" || tool.comment == "14") {
+          if (abcFormat.format(abc.y) != degFormat.format(90.0)) {
+            throw_error = true;
+          }
+          valid_code = true;
+        } else if (tool.comment == "11" || tool.comment == "15") {
+          if (abcFormat.format(abc.y) != degFormat.format(180.0)) {
+            throw_error = true;
+          }
+          valid_code = true;
+        } else if (!valid_code) {
+          throw_error = true;
+        }
+
+        writeDebugInfo("tool.comment: " + tool.comment + "   B-Axis: " + abcFormat.format(abc.y));
+
+        if (throw_error) {
+          error(localize("No correct tool orientation specified for turning or axial center drilling. " + "tool.comment: " + tool.comment + "   B-Axis: " + abcFormat.format(abc.y)));
+        }
+        // writeBlock(getCode("UNCLAMP_B_AXIS"));
+        // writeBlock(gMotionModal.format(0), gFormat.format(53), "B" + abcFormat.format(bAxisOrientationTurning.y));
+        // writeBlock(getCode("CLAMP_B_AXIS")); 
         machineState.currentBAxisOrientationTurning = abc;
       } else {
         setRotation(currentSection.workPlane);
