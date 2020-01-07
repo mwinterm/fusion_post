@@ -54,6 +54,7 @@ properties = {
   writeStructureComments: true, //write program structure comments
   writeDebugInformation: false, // writes the tools
   preloadTool: true, // preloads next tool on tool change if any
+  useToolCompensation: false, // specifies if tool compensation table should be employed
   showSequenceNumbers: true, // show sequence numbers
   sequenceNumberStart: 10, // first sequence number
   sequenceNumberIncrement: 10, // increment for sequence numbers
@@ -81,6 +82,7 @@ propertyDefinitions = {
   writeStructureComments: { title: "Structure comments", description: "Writes program structure comments", group: 0, type: "boolean" },
   writeDebugInformation: { title: "Write some debug information", description: "Adds comments reagrding most G- and M-codes", group: 0, type: "boolean" },
   preloadTool: { title: "Preload tool", description: "Preloads the next tool at a tool change (if any).", type: "boolean" },
+  useToolCompensation: { title: "Use tool compensation", description: "Specifies if tool compensation table should be employed.", type: "boolean" },
   showSequenceNumbers: { title: "Use sequence numbers", description: "Use sequence numbers for each block of outputted code.", group: 1, type: "boolean" },
   sequenceNumberStart: { title: "Start sequence number", description: "The number at which to start the sequence numbers.", group: 1, type: "integer" },
   sequenceNumberIncrement: { title: "Sequence number increment", description: "The amount by which the sequence number is incremented by in each block.", group: 1, type: "integer" },
@@ -797,7 +799,7 @@ function onOpen() {
       var section = getSection(i);
       var tool = section.getTool();
       var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
-      var toolID = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment);
+      var toolID = "T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + tool.comment);
       if (is3D()) {
         var zRange = section.getGlobalZRange();
         if (zRanges[toolID]) {
@@ -1480,9 +1482,9 @@ function onSection() {
           }
         }
       }
-      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment), nextool/*, mFormat.format(6)*/);
+      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + tool.comment), nextool/*, mFormat.format(6)*/);
     } else {
-      writeToolBlock("T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment)/*, mFormat.format(6)*/);
+      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + tool.comment)/*, mFormat.format(6)*/);
     }
 
     //if (tool.comment) {
