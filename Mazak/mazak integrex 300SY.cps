@@ -1466,6 +1466,22 @@ function onSection() {
     setCoolant(COOLANT_OFF, machineState.currentTurret);
     var toolFormat = createFormat({ decimals: 0, width: properties.numberOfToolDigits, zeropad: true });
     var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
+    var toolOrientation = "--";
+    var toolType = "--";
+
+    if (tool.comment.length == 0) {
+      toolOrientation = "";
+      toolType = "";
+    } else if (tool.comment.length == 2) {
+      toolOrientation = tool.comment;
+      toolType = "";
+    } else if (tool.comment.length == 4) {
+      toolOrientation = tool.comment.slice(0, 2);
+      toolType = tool.comment.slice(2, 4);
+    } else {
+      error(localize("Tool comment not correct. Needs to be 0, 2 or 4 digits according Mazotrol. "));
+    }
+
     if (properties.preloadTool) {
       if (properties.preloadTool) {
         var nextTool = getNextTool(tool.number);
@@ -1482,9 +1498,9 @@ function onSection() {
           }
         }
       }
-      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + tool.comment), nextool/*, mFormat.format(6)*/);
+      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(toolOrientation, "." + toolOrientation) + conditional(toolType, toolType), nextool/*, mFormat.format(6)*/);
     } else {
-      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + tool.comment)/*, mFormat.format(6)*/);
+      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(toolOrientation, "." + toolOrientation) + conditional(toolType, toolType)/*, mFormat.format(6)*/);
     }
 
     //if (tool.comment) {
@@ -1674,17 +1690,17 @@ function onSection() {
         //check if tool-orientation corresponds to machine operation        
         var throw_error = false;
         var valid_code = false;
-        if (tool.comment == "00" || tool.comment == "02" || tool.comment == "04" || tool.comment == "06" || tool.comment == "08" || tool.comment == "13") {
+        if (toolOrientation == "00" || toolOrientation == "02" || toolOrientation == "04" || toolOrientation == "06" || toolOrientation == "08" || toolOrientation == "13") {
           if (abcFormat.format(abc.y) != degFormat.format(0.0)) {
             throw_error = true;
           }
           valid_code = true;
-        } else if (tool.comment == "01" || tool.comment == "03" || tool.comment == "05" || tool.comment == "07" || tool.comment == "14") {
+        } else if (toolOrientation == "01" || toolOrientation == "03" || toolOrientation == "05" || toolOrientation == "07" || toolOrientation == "14") {
           if (abcFormat.format(abc.y) != degFormat.format(90.0)) {
             throw_error = true;
           }
           valid_code = true;
-        } else if (tool.comment == "11" || tool.comment == "15") {
+        } else if (toolOrientation == "11" || toolOrientation == "15") {
           if (abcFormat.format(abc.y) != degFormat.format(180.0)) {
             throw_error = true;
           }
@@ -1693,10 +1709,10 @@ function onSection() {
           throw_error = true;
         }
 
-        writeDebugInfo("tool.comment: " + tool.comment + "   B-Axis: " + abcFormat.format(abc.y));
+        writeDebugInfo("toolOrientation: " + toolOrientation + "   B-Axis: " + abcFormat.format(abc.y));
 
         if (throw_error) {
-          error(localize("No correct tool orientation specified for turning or axial center drilling. " + "tool.comment: " + tool.comment + "   B-Axis: " + abcFormat.format(abc.y)));
+          //          error(localize("No correct tool orientation specified for turning or axial center drilling. " + "toolOrientation: " + toolOrientation + "   B-Axis: " + abcFormat.format(abc.y)));
         }
         // writeBlock(getCode("UNCLAMP_B_AXIS"));
         // writeBlock(gMotionModal.format(0), gFormat.format(53), "B" + abcFormat.format(bAxisOrientationTurning.y));
