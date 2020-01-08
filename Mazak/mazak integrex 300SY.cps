@@ -125,6 +125,7 @@ var permittedCommentChars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,=_-";
 
 var gFormat = createFormat({ prefix: "G", decimals: 1 });
 var mFormat = createFormat({ prefix: "M", decimals: 0 });
+var toolFormat = createFormat({ decimals: 0, width: properties.numberOfToolDigits, zeropad: true });
 
 var spatialFormat = createFormat({ decimals: (unit == MM ? 3 : 4), forceDecimal: true });
 var xFormat = createFormat({ decimals: (unit == MM ? 3 : 4), forceDecimal: true, scale: 2 }); // diameter mode & IS SCALING POLAR COORDINATES
@@ -789,7 +790,6 @@ function onOpen() {
 
   // dump tool information
   var toolData = {};
-  var toolFormat = createFormat({ decimals: 0, width: properties.numberOfToolDigits, zeropad: true });
   if (properties.writeTools) {
     writeln("");
     writeComment("--- TOOL LIST ---");
@@ -839,40 +839,14 @@ function onOpen() {
       toolData[toolID] = comment;
     }
 
-    //var tools = getToolTable();
-    //writeComment("Number of tools in tooltable: " + tools.getNumberOfTools());
-    //if (tools.getNumberOfTools() > 0) {
-    //for (var i = 0; i < tools.getNumberOfTools(); ++i) {
+
     for (var i in toolData) {
-      //var tool = tools.getTool(i);
-      /*         if (tool.isTurningTool()) {
-                //var compensationOffset = tool.compensationOffset;
-                //var comment = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment) + " " +
-                var comment = i +  
-            "DIA=" + spatialFormat.format(toolData[i].dia) + " " +
-                  localize("RAD=") + spatialFormat.format(toolData[i].rad) + " " +
-                  localize("HGT=") + spatialFormat.format(toolData[i].hgt);
-               } else {
-                var compensationOffset = tool.lengthOffset;
-                var comment = "T" + toolFormat.format(tool.number) + toolFormat.format(compensationOffset) + conditional(tool.comment, "." + tool.comment) + " " +
-                  "D=" + spatialFormat.format(tool.diameter) + " " +
-                  localize("CR") + "=" + spatialFormat.format(tool.cornerRadius);
-                if ((tool.taperAngle > 0) && (tool.taperAngle < Math.PI)) {
-                  comment += " " + localize("TAPER") + "=" + taperFormat.format(tool.taperAngle) + localize("deg");
-                }
-                if (zRanges[tool.number]) {
-                  comment += " - " + localize("ZMIN") + "=" + spatialFormat.format(zRanges[tool.number].getMinimum());
-                }
-              } */
-      //comment += " - " + getToolTypeName(tool.type);
       comment = i + " - " + toolData[i];
       if (zRanges[i]) {
         comment += " - " + localize("ZMIN") + "=" + spatialFormat.format(zRanges[i].getMinimum());
       }
-
       writeComment(comment);
     }
-    //}
   }
 
   if (false) {
@@ -1482,6 +1456,11 @@ function onSection() {
       error(localize("Tool comment not correct. Needs to be 0, 2 or 4 digits according Mazotrol. "));
     }
 
+    if (tool.manualToolChange) {
+      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)));
+      writeBlock("#3006=1(MANUAL*TOOL*CHANGE*-*INSERT*TOOL*" + "T" + toolFormat.format(tool.number) + ")");
+    }
+
     if (properties.preloadTool) {
       if (properties.preloadTool) {
         var nextTool = getNextTool(tool.number);
@@ -1498,14 +1477,10 @@ function onSection() {
           }
         }
       }
-      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(toolOrientation, "." + toolOrientation) + conditional(toolType, toolType), nextool/*, mFormat.format(6)*/);
+      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(toolOrientation, "." + toolOrientation) + conditional(toolType, toolType), nextool);
     } else {
-      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(toolOrientation, "." + toolOrientation) + conditional(toolType, toolType)/*, mFormat.format(6)*/);
+      writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(toolOrientation, "." + toolOrientation) + conditional(toolType, toolType));
     }
-
-    //if (tool.comment) {
-    //  writeComment(tool.comment);
-    //}
 
     writeRetract(X);
     writeRetract(Z);
@@ -3051,6 +3026,14 @@ function onSectionEnd() {
   forceAny();
   forceXZCMode = false;
   forcePolarMode = false;
+
+  if (tool.manualToolChange) {
+    writeRetract(X);
+    writeRetract(Z);
+    writeRetract(Y);
+    writeBlock("#3006=1(MANUAL*TOOL*CHANGE*-*REMOVE*TOOL*" + "T" + toolFormat.format(tool.number) + ")");
+  }
+
 }
 
 function onClose() {
