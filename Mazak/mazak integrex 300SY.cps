@@ -224,7 +224,8 @@ var machineState = {
   feedPerRevolution: undefined,
   currentBAxisOrientationTurning: new Vector(0, 0, 0),
   currentTurret: undefined,
-  mazatrolCS: undefined
+  mazatrolCS: undefined,
+  manualToolNumber: 0
 };
 
 function writeDebugInfo(text) {
@@ -1456,9 +1457,16 @@ function onSection() {
       error(localize("Tool comment not correct. Needs to be 0, 2 or 4 digits according Mazotrol. "));
     }
 
-    if (tool.manualToolChange) {
+    if (machineState.manualToolNumber && (machineState.manualToolNumber != tool.number)) {
+      writeToolBlock("T" + toolFormat.format(machineState.manualToolNumber) + toolFormat.format(0));
+      writeBlock("#3006=1(MANUAL*TOOL*CHANGE*-*REMOVE*TOOL*" + "T" + toolFormat.format(machineState.manualToolNumber) + "*DO*NOT*INSERT*NEW*TOOL)");
+      machineState.manualToolNumber = 0;
+    }
+
+    if (tool.manualToolChange && (machineState.manualToolNumber != tool.number)) {
       writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)));
       writeBlock("#3006=1(MANUAL*TOOL*CHANGE*-*INSERT*TOOL*" + "T" + toolFormat.format(tool.number) + ")");
+      machineState.manualToolNumber = tool.number;
     }
 
     if (properties.preloadTool) {
@@ -3027,13 +3035,6 @@ function onSectionEnd() {
   forceXZCMode = false;
   forcePolarMode = false;
 
-  if (tool.manualToolChange) {
-    writeRetract(X);
-    writeRetract(Z);
-    writeRetract(Y);
-    writeBlock("#3006=1(MANUAL*TOOL*CHANGE*-*REMOVE*TOOL*" + "T" + toolFormat.format(tool.number) + ")");
-  }
-
 }
 
 function onClose() {
@@ -3068,5 +3069,16 @@ function onClose() {
   writeln("");
   onImpliedCommand(COMMAND_END);
   onImpliedCommand(COMMAND_STOP_SPINDLE);
+
+  if (machineState.manualToolNumber) {
+    writeRetract(X);
+    writeRetract(Z);
+    writeRetract(Y);
+    writeToolBlock("T" + toolFormat.format(machineState.manualToolNumber) + toolFormat.format(0));
+    writeBlock("#3006=1(MANUAL*TOOL*CHANGE*-*REMOVE*TOOL*" + "T" + toolFormat.format(machineState.manualToolNumber) + "*DO*NOT*INSERT*NEW*TOOL)");
+    machineState.manualToolNumber = 0;
+    writeln("");
+  }
+
   writeBlock(mFormat.format(30)); // stop program, spindle stop, coolant off
 }
