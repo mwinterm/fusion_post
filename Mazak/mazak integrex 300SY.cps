@@ -188,7 +188,8 @@ var xAxisMinimum = toPreciseUnit(-20, MM); // specifies the maximum range for th
 
 var gotPolarInterpolation = true; // specifies if the machine has XY polar interpolation (G12.1) capabilities
 var gotBAxis = true;
-var useMultiAxisFeatures = true;
+var useMultiAxisFeatures = false;
+var usePartialMultiAxisFeature = true; // multi-axis mode for Mazak Integrex 300Y/SY only allowing to move 4 axis simultanously and using special G69.5 to move/rotate coordinate systems
 var gotSecondarySpindle = true;
 var gotMultiTurret = false; // specifies if the machine has several turrets
 var gotTailStock = false;
@@ -921,7 +922,7 @@ function onOpen() {
   }
 
   writeBlock(gMotionModal.format(0), gAbsIncModal.format(90), getCode("FEED_MODE_UNIT_MIN"), getCode("CONSTANT_SURFACE_SPEED_OFF"));
-  writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), writeDebugInfo("Cancel makro"), gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver"), gPlaneModal.format(18));
+  writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), writeDebugInfo("Cancel makro"), gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation"), gPlaneModal.format(18));
   switch (unit) {
     case IN:
       writeBlock(gUnitModal.format(20), writeDebugInfo("Unit: Inch"));
@@ -1174,10 +1175,24 @@ function setWorkPlane(abc) {
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(abc.x), "J" + abcFormat.format(abc.y), "K" + abcFormat.format(abc.z)); // set frame
       writeBlock(gFormat.format(53.1) + "(" + "B" + abcFormat.format(initialToolAxisBC.y) + " C" + abcFormat.format(initialToolAxisBC.z) + ")"); // turn machine
     } else {
-      writeBlock(gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver")); // cancel frame
+      writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(0), "J" + abcFormat.format(0), "K" + abcFormat.format(0)); // cancel frame
       writeBlock(gFormat.format(53.1)); // turn machine
     }
+  } else if (usePartialMultiAxisFeature) {
+    var initialToolAxisBC = machineConfiguration.getABC(currentSection.workPlane);
+    writeBlock(
+      gMotionModal.format(0),
+      conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(initialToolAxisBC.y)),
+      conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(initialToolAxisBC.z))); //turn machine
+    if (abc.isNonZero()) {
+      writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+      writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(abc.y)); // set frame
+    } else {
+      writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+      writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(0)); // cancel frame
+    }
+    writeBlock(gFormat.format(17));
   } else {
     writeBlock(
       gMotionModal.format(0),
@@ -1398,7 +1413,7 @@ function onSection() {
   }
 
   if (newWorkPlane || insertToolCall) {
-    writeBlock(gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver")); // cancel frame
+    writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
     forceWorkPlane();
   }
 
@@ -1459,12 +1474,14 @@ function onSection() {
 
     if (machineState.manualToolNumber && (machineState.manualToolNumber != tool.number)) {
       writeToolBlock("T" + toolFormat.format(machineState.manualToolNumber) + toolFormat.format(0));
+      writeRetract(Z);
       writeBlock("#3000=112(MANUALLY#REMOVE#TOOL#" + "T" + toolFormat.format(machineState.manualToolNumber) + ")");
       machineState.manualToolNumber = 0;
     }
 
     if (tool.manualToolChange && (machineState.manualToolNumber != tool.number)) {
       writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)));
+      writeRetract(Z);
       writeBlock("#3000=111(MANUALLY#INSERT#" + "T" + toolFormat.format(tool.number) + ")");
       machineState.manualToolNumber = tool.number;
     }
@@ -3062,7 +3079,7 @@ function onClose() {
     writeBlock(getCode("TAILSTOCK_OFF"));
   }
 
-  writeBlock(gFormat.format(69), writeDebugInfo("Cancel mirror mode for second revolver"));
+  writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation"));
   if (gotSecondarySpindle) {
     writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining control"));
   }
