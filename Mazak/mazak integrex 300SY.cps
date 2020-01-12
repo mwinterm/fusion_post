@@ -196,6 +196,16 @@ var gotTailStock = false;
 
 var WARNING_WORK_OFFSET = 0;
 
+// axis definition
+var X = 0;
+var Y = 1;
+var Z = 2;
+var Z2 = 3;
+var A = 10;
+var B = 11;
+var C = 12;
+var C2 = 13;
+
 // collected state
 var sequenceNumber;
 var currentWorkOffset;
@@ -203,7 +213,7 @@ var optionalSection = false;
 var forceSpindleSpeed = false;
 var activeMovements; // do not use by default
 var currentFeedId;
-var forcePolarMode = true; // force Polar output, activated by Action:usePolarMode
+var forcePolarMode = false; // force Polar output, activated by Action:usePolarMode
 var forceXZCMode = false; // forces XZC output, activated by Action:useXZCMode
 var maximumCircularRadiiDifference = toPreciseUnit(0.005, MM);
 var bestABCIndex = undefined;
@@ -465,6 +475,23 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
 /** Output block to do safe retract and/or move to home position. */
 function writeRetract() {
   var words = []; // store all retracted axes in an array
+
+  //check if there are Z and Z2 retracts in the same command
+  var Z2retracts = 0;
+  var Zretracts = 0;
+  for (var i = 0; i < arguments.length; ++i) {
+    if (arguments[i] == Z2) {
+      ++Z2retracts;
+    } else if (arguments[i] == Z) {
+      ++Zretracts;
+    }
+  }
+
+  if (Z2retracts && Zretracts) {
+    error(localize("Cannot retract Z and Z2 in the same block"));
+    return;
+  }
+
   for (var i = 0; i < arguments.length; ++i) {
     let instances = 0; // checks for duplicate retract calls
     for (var j = 0; j < arguments.length; ++j) {
@@ -490,9 +517,17 @@ function writeRetract() {
         break;
       case Z:
         zOutput.reset();
-        words.push("Z#" + ((currentSection.spindle == SPINDLE_SECONDARY) ? g53HomePositionSubZParameter : g53HomePositionZParameter));
+        words.push("Z#" + g53HomePositionZParameter);
         retracted = true; // specifies that the tool has been retracted to the safe plane
         break;
+      case Z2:
+        zOutput.reset();
+
+        words.push("Z#" + g53HomePositionSubZParameter);
+
+        retracted = true; // specifies that the tool has been retracted to the safe plane
+        break;
+
       default:
         error(localize("Bad axis specified for writeRetract()."));
         return;
@@ -500,7 +535,13 @@ function writeRetract() {
   }
   gMotionModal.reset();
   if (words.length > 0) {
+    if (Z2retracts) {
+      writeBlock(gFormat.format(110), "Z2");
+    }
     writeBlock(gAbsIncModal.format(90), gMotionModal.format(0), gFormat.format(53), words); // retract
+    if (Z2retracts) {
+      writeBlock(gFormat.format(111));
+    }
   }
   forceXYZ();
 }
@@ -1169,7 +1210,7 @@ function setWorkPlane(abc) {
 
   onCommand(COMMAND_UNLOCK_MULTI_AXIS);
 
-  if (useMultiAxisFeatures) {
+  if (useMultiAxisFeatures && !usePartialMultiAxisFeature) {
     var initialToolAxisBC = machineConfiguration.getABC(currentSection.workPlane);
     if (abc.isNonZero()) {
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(abc.x), "J" + abcFormat.format(abc.y), "K" + abcFormat.format(abc.z)); // set frame
@@ -1183,8 +1224,8 @@ function setWorkPlane(abc) {
     var initialToolAxisBC = machineConfiguration.getABC(currentSection.workPlane);
     writeBlock(
       gMotionModal.format(0),
-      conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(initialToolAxisBC.y)),
-      conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(initialToolAxisBC.z))); //turn machine
+      conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
+      conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))); //turn machine
     if (abc.isNonZero()) {
       writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
       writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(abc.y)); // set frame
@@ -2584,7 +2625,71 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
 
 function onCycle() {
   if (isSubSpindleCycle && isSubSpindleCycle(cycleType)) {
-    error(localize("Stock transfer is not supported."));
+    writeStructureComment("(-- " + cycleType + ")");
+    //switch coolant off
+    onCommand(COMMAND_COOLANT_OFF);
+    //stop spindles
+    if (machineState.liveToolIsActive) {
+      writeBlock(getCode("STOP_LIVE_TOOL"));
+    } else if (machineState.mainSpindleIsActive) {
+      writeBlock(getCode("STOP_MAIN_SPINDLE"));
+    } else if (machineState.subSpindleIsActive) {
+      writeBlock(getCode("STOP_SUB_SPINDLE"));
+    }
+    //retract revolver
+    writeRetract(X);
+    writeRetract(Z);
+    writeRetract(Y);
+
+    switch (cycleType) {
+      case "secondary-spindle-grab":
+        writeBlock(mFormat.format(300), writeDebugInfo("Second spindle selection"));
+        writeBlock(gFormat.format(112), mFormat.format(202), writeDebugInfo("second spindle lathe mode"));
+        writeBlock(mFormat.format(200), writeDebugInfo("Main spindle milling mode"));
+        writeBlock(gAbsIncModal.format(90), gFormat.format(0), cOutput.format(0.0), writeDebugInfo("position main spindle to C0.0"));
+        writeBlock(gFormat.format(112), mFormat.format(200), writeDebugInfo("Secondary spindle milling mode"));
+        writeBlock(gFormat.format(110), "C2", writeDebugInfo("C-axis position active for second spindle"));
+        writeBlock(gAbsIncModal.format(90), gFormat.format(0), cOutput.format(cycle.spindleOrientation), writeDebugInfo("position secondary spindle relative to main spindle"));
+        writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
+        writeBlock(gFormat.format(112), mFormat.format(6), writeDebugInfo("Open second chuck"));
+        writeBlock(mFormat.format(540), writeDebugInfo("Transfer-Chuck-Mode"));
+        writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
+        writeBlock(gAbsIncModal.format(90), gFormat.format(1), zOutput.format(cycle.feedPosition), feedOutput.format(cycle.feedrate), writeDebugInfo("Move second spindle close to the transfer position"));
+        writeBlock(gFormat.format(112), mFormat.format(508), writeDebugInfo("Start pressing mode of second spindle"));
+        writeBlock(gFormat.format(31), zOutput.format(cycle.chuckPosition), feedOutput.format(50), writeDebugInfo("Start pressing mode of second spindle"));
+        writeBlock(mFormat.format(202), writeDebugInfo("Main spindle lathe mode"));
+        writeBlock(gFormat.format(112), mFormat.format(509), writeDebugInfo("Cancel pressing mode of second spindle"));
+        writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
+        writeBlock(mFormat.format(541), writeDebugInfo("Cancel Transfer-Chuck-Mode"));
+        writeBlock(gFormat.format(112), mFormat.format(7), writeDebugInfo("Close second chuck"));
+        break;
+      case "secondary-spindle-return":
+        if (cycle.unclampMode == "unclamp-primary") {
+          writeBlock(mFormat.format(6), writeDebugInfo("Open main chuck"));
+        } else if (cycle.unclampMode == "unclamp-secondary") {
+          writeBlock(gFormat.format(112), mFormat.format(6), writeDebugInfo("Open secondary chuck"));
+        } else if (cycle.unclampMode == "keep-clamped") {
+          //do nothing
+        } else {
+          error(localize("Unsupported clamp method in secondary-spindle-return method."));
+        }
+        writeBlock(gFormat.format(112), mFormat.format(202), writeDebugInfo("Secondary spindle lathe mode"));
+        if (getParameter("operation:feedPlaneHeight_mode") == "machine coordinates") {
+          writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
+          writeBlock(gAbsIncModal.format(90), gFormat.format(1), gFormat.format(53), zOutput.format(cycle.feedPosition), feedOutput.format(cycle.feedrate));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
+        } else {
+          writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
+          writeBlock(gAbsIncModal.format(90), gFormat.format(1), gFormat.format(53), zOutput.format(cycle.feedPosition), feedOutput.format(cycle.feedrate));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
+        }
+        break;
+      default:
+        error(localize("Unsupported transfer method."));
+    }
+
+    writeStructureComment("(-- Spindle transfer cycle complete)");
+    writeln("");
     return;
   }
 }
@@ -3028,6 +3133,11 @@ function onSectionEnd() {
     setPolarMode(false); // disable polar interpolation mode
   }
 
+  if (machineState.axialCenterDrilling) {
+    cOutput.enable();
+    machineState.axialCenterDrilling = false; //reset axial-center-drilling mode
+  }
+
   // cancel SFM mode to preserve spindle speed
   if (tool.getSpindleMode() == SPINDLE_CONSTANT_SURFACE_SPEED) {
     startSpindle(true, getFramePosition(currentSection.getFinalPosition()));
@@ -3071,9 +3181,6 @@ function onClose() {
     writeBlock(getCode("STOP_MAIN_SPINDLE"));
   } else if (machineState.subSpindleIsActive) {
     writeBlock(getCode("STOP_SUB_SPINDLE"));
-  } else {
-    error(localize("Unknown machineState."));
-    return;
   }
   if (machineState.tailstockIsActive) {
     writeBlock(getCode("TAILSTOCK_OFF"));
