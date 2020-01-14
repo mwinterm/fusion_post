@@ -66,9 +66,10 @@ properties = {
   maximumSpindleSpeed: 3500, // specifies the maximum spindle speed
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: true, // specifies that operation notes should be output.
-  useCycles: false, // specifies that drilling cycles should be used.
+  useCycles: true, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
+  refRotDistance: 200.0, // specifies the distance between the B-axis rotation center and the tool reference
   g53HomePositionX: 0.0, // home position for X-axis
   g53HomePositionY: 0.0, // home position for Y-axis
   g53HomePositionZ: 0.0, // home position for Z-axis
@@ -97,6 +98,7 @@ propertyDefinitions = {
   useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", type: "boolean" },
   useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", type: "boolean" },
   mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", type: "boolean" },
+  refRotDistance:{ title: "B-axis rotation distance", description: "Distance between the B-axis rotation center and the tool reference point", type: "number" },
   g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", type: "number" },
   g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", type: "number" },
   g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", type: "number" },
@@ -181,6 +183,7 @@ var g53HomePositionXParameter = 100;
 var g53HomePositionZParameter = 101;
 var g53HomePositionYParameter = 102;
 var g53HomePositionSubZParameter = 103;
+var refRotDistanceParameter = 104;
 var gotYAxis = true;
 var yAxisMinimum = toPreciseUnit(gotYAxis ? -105 : 0, MM); // specifies the minimum range for the Y-axis
 var yAxisMaximum = toPreciseUnit(gotYAxis ? 105 : 0, MM); // specifies the maximum range for the Y-axis
@@ -954,6 +957,9 @@ function onOpen() {
   if (gotYAxis) {
     writeBlock("#" + g53HomePositionYParameter + "=" + spatialFormat.format(properties.g53HomePositionY) + writeDebugInfo("PARAMETER FOR Y HOME POSITION")); // retract
   }
+  if (gotBAxis) {
+    writeBlock("#" + refRotDistanceParameter + "=" + spatialFormat.format(properties.refRotDistance) + writeDebugInfo("PARAMETER FOR DISTANCE BETWEEN TOOL REFERENCE AND B-AXIS ROTATION CENTER")); // retract
+  }
   writeln("");
 
   if (properties.mazatrolCS) {
@@ -1227,6 +1233,9 @@ function setWorkPlane(abc) {
       conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
       conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))); //turn machine
     if (abc.isNonZero()) {
+      writeBlock("#1=-SIN[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate X-Axis correction"));
+      writeBlock("#2=#"+ refRotDistanceParameter +"-COS[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate Z-Axis correction"));
+      writeBlock(gFormat.format(92), "X[#1+#5041] Z[#2+#5042]", writeDebugInfo("Move coordinate system to correct for B-axis roation."));
       writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
       writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(abc.y)); // set frame
     } else {
@@ -2749,20 +2758,20 @@ function onCyclePoint(x, y, z) {
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
           getCommonCycle(x, y, z, cycle.retract),
-          "Q" + spatialFormat.format(cycle.incrementalDepth),
+          //"Q" + spatialFormat.format(cycle.incrementalDepth),
           conditional(P > 0, "P" + milliFormat.format(P)),
           feedOutput.format(F)
         );
         break;
       case "deep-drilling":
-        writeBlock(
+        /*writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
           getCommonCycle(x, y, z, cycle.retract),
           "Q" + spatialFormat.format(cycle.incrementalDepth),
           conditional(P > 0, "P" + milliFormat.format(P)),
           feedOutput.format(F)
-        );
-        break;
+        );*/
+        //break;
       case "chip-breaking":
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
@@ -3157,6 +3166,9 @@ function onSectionEnd() {
   if (currentSection.isMultiAxis()) {
     //writeBlock(gFormat.format(49));
   }
+
+  //cancel any coordinate system shift
+  writeBlock(gFormat.format(92), "X" + spatialFormat.format(0), "Z" + spatialFormat.format(0), writeDebugInfo("cancel any coordinate shift"));
 
   forceAny();
   forceXZCMode = false;
