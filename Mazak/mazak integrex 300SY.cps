@@ -443,8 +443,8 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         }
         writeBlock(
           spindleMode,
-          sLatheOutput.format(_spindleSpeed),
-          tool.clockwise ? getCode("START_MAIN_SPINDLE_CW") : getCode("START_MAIN_SPINDLE_CCW")
+          tool.clockwise ? getCode("START_MAIN_SPINDLE_CW") : getCode("START_MAIN_SPINDLE_CCW"), 
+          sLatheOutput.format(_spindleSpeed)
         ); // R1 is the default
         sLatheOutput.reset();
       } else {
@@ -464,8 +464,8 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         }
         writeBlock(
           spindleMode,
-          sLatheOutput.format(_spindleSpeed),
-          tool.clockwise ? getCode("START_SUB_SPINDLE_CW") : getCode("START_SUB_SPINDLE_CCW")
+          tool.clockwise ? getCode("START_SUB_SPINDLE_CW") : getCode("START_SUB_SPINDLE_CCW"), 
+          sLatheOutput.format(_spindleSpeed)
         ); // R1 is the default
         sLatheOutput.reset();
       } else {
