@@ -98,7 +98,7 @@ propertyDefinitions = {
   useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", type: "boolean" },
   useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", type: "boolean" },
   mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", type: "boolean" },
-  refRotDistance:{ title: "B-axis rotation distance", description: "Distance between the B-axis rotation center and the tool reference point", type: "number" },
+  refRotDistance: { title: "B-axis rotation distance", description: "Distance between the B-axis rotation center and the tool reference point", type: "number" },
   g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", type: "number" },
   g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", type: "number" },
   g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", type: "number" },
@@ -443,7 +443,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         }
         writeBlock(
           spindleMode,
-          tool.clockwise ? getCode("START_MAIN_SPINDLE_CW") : getCode("START_MAIN_SPINDLE_CCW"), 
+          tool.clockwise ? getCode("START_MAIN_SPINDLE_CW") : getCode("START_MAIN_SPINDLE_CCW"),
           sLatheOutput.format(_spindleSpeed)
         ); // R1 is the default
         sLatheOutput.reset();
@@ -464,7 +464,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         }
         writeBlock(
           spindleMode,
-          tool.clockwise ? getCode("START_SUB_SPINDLE_CW") : getCode("START_SUB_SPINDLE_CCW"), 
+          tool.clockwise ? getCode("START_SUB_SPINDLE_CW") : getCode("START_SUB_SPINDLE_CCW"),
           sLatheOutput.format(_spindleSpeed)
         ); // R1 is the default
         sLatheOutput.reset();
@@ -1234,7 +1234,7 @@ function setWorkPlane(abc) {
       conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))); //turn machine
     if (abc.isNonZero()) {
       writeBlock("#1=-SIN[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate X-Axis correction"));
-      writeBlock("#2=#"+ refRotDistanceParameter +"-COS[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate Z-Axis correction"));
+      writeBlock("#2=#" + refRotDistanceParameter + "-COS[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate Z-Axis correction"));
       writeBlock(gFormat.format(92), "X[#1+#5041] Z[#2+#5042]", writeDebugInfo("Move coordinate system to correct for B-axis roation."));
       writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
       writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(abc.y)); // set frame
@@ -1441,6 +1441,7 @@ function onSection() {
     (tool.compensationOffset != getPreviousSection().getTool().compensationOffset) ||
     (tool.diameterOffset != getPreviousSection().getTool().diameterOffset) ||
     (tool.lengthOffset != getPreviousSection().getTool().lengthOffset);
+
 
   retracted = false; // specifies that the tool has been retracted to the safe plane
   var newSpindle = isFirstSection() ||
@@ -1706,12 +1707,15 @@ function onSection() {
       }
     }
   }
-  /*
-    if (gotYAxis) {
-      writeBlock(gMotionModal.format(0), "Y" + yFormat.format(0));
-      yOutput.reset();
-    }
-  */
+  /*if (gotYAxis) {
+    writeBlock(gMotionModal.format(0), "Y" + yFormat.format(0));
+    yOutput.reset();
+  }*/
+  //offset tool in Y-direction for non centerline tools
+  if (tool.productID) {
+    writeBlock(gMotionModal.format(0), "Y" + yFormat.format(tool.productID));
+    yOutput.reset();
+  }
 
   if (properties.useParametricFeed &&
     hasParameter("operation-strategy") &&
@@ -1868,7 +1872,11 @@ function onSection() {
       );
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
     } else {
-      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
+      var yInit = 0.0;
+      if (tool.productId) { //coorect y-offset if specified in ProductID
+        var yInit = parseFloat(tool.productId);
+      }
+      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y + yInit), zOutput.format(initialPosition.z));
     }
   }
   // enable SFM spindle speed
@@ -2764,14 +2772,14 @@ function onCyclePoint(x, y, z) {
         );
         break;
       case "deep-drilling":
-        /*writeBlock(
-          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-          getCommonCycle(x, y, z, cycle.retract),
-          "Q" + spatialFormat.format(cycle.incrementalDepth),
-          conditional(P > 0, "P" + milliFormat.format(P)),
-          feedOutput.format(F)
-        );*/
-        //break;
+      /*writeBlock(
+        gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
+        getCommonCycle(x, y, z, cycle.retract),
+        "Q" + spatialFormat.format(cycle.incrementalDepth),
+        conditional(P > 0, "P" + milliFormat.format(P)),
+        feedOutput.format(F)
+      );*/
+      //break;
       case "chip-breaking":
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
