@@ -1711,11 +1711,6 @@ function onSection() {
     writeBlock(gMotionModal.format(0), "Y" + yFormat.format(0));
     yOutput.reset();
   }*/
-  //offset tool in Y-direction for non centerline tools
-  if (tool.productID) {
-    writeBlock(gMotionModal.format(0), "Y" + yFormat.format(tool.productID));
-    yOutput.reset();
-  }
 
   if (properties.useParametricFeed &&
     hasParameter("operation-strategy") &&
@@ -1872,11 +1867,12 @@ function onSection() {
       );
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
     } else {
-      var yInit = 0.0;
       if (tool.productId) { //coorect y-offset if specified in ProductID
-        var yInit = parseFloat(tool.productId);
+        var MyFormat = createFormat({ decimals: (unit == MM ? 3 : 4), forceDecimal: true, offset: parseFloat(tool.productId) });
+        var MyOutput = createVariable({ prefix: "Y" }, MyFormat);
+        yOutput = MyOutput;
       }
-      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y + yInit), zOutput.format(initialPosition.z));
+      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
     }
   }
   // enable SFM spindle speed
@@ -3142,6 +3138,11 @@ function engagePartCatcher(engage) {
 }
 
 function onSectionEnd() {
+  //reset yOutput
+  if (tool.productId) {
+    yOutput = createVariable({ prefix: "Y" }, yFormat);
+  }
+
   if (properties.useSmoothing) {
     setSmoothing(false);
   }
