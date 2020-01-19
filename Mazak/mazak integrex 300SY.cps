@@ -1526,14 +1526,14 @@ function onSection() {
     if (machineState.manualToolNumber && (machineState.manualToolNumber != tool.number)) {
       writeToolBlock("T" + toolFormat.format(machineState.manualToolNumber) + toolFormat.format(0));
       writeRetract(Z);
-      writeBlock("#3006=2(MANUALLY#REMOVE#TOOL#" + "T" + toolFormat.format(machineState.manualToolNumber) + ")");
+      writeBlock(mFormat.format(0), writeComment("(--- MANUALLY REMOVE TOOL - T" + toolFormat.format(tool.number) + " ---)"));
       machineState.manualToolNumber = 0;
     }
 
     if (tool.manualToolChange && (machineState.manualToolNumber != tool.number)) {
       writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)));
       writeRetract(Z);
-      writeBlock("#3006=1(MANUALLY#INSERT#" + "T" + toolFormat.format(tool.number) + ")");
+      writeBlock(mFormat.format(0), writeComment("(--- MANUALLY INSERT TOOL - T" + toolFormat.format(tool.number) + " ---)"));
       machineState.manualToolNumber = tool.number;
     }
 
@@ -3219,7 +3219,7 @@ function onClose() {
     writeRetract(Z);
     writeRetract(Y);
     writeToolBlock("T" + toolFormat.format(machineState.manualToolNumber) + toolFormat.format(0));
-    writeBlock("#3006=2(MANUALLY#REMOVE#TOOL#" + "T" + toolFormat.format(machineState.manualToolNumber) + ")");
+    writeBlock(mFormat.format(0), writeComment("(--- MANUALLY REMOVE TOOL - T" + toolFormat.format(machineState.manualToolNumber) + " ---)"));
     machineState.manualToolNumber = 0;
     writeln("");
   }
