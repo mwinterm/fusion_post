@@ -66,7 +66,7 @@ properties = {
   maximumSpindleSpeed: 3500, // specifies the maximum spindle speed
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: true, // specifies that operation notes should be output.
-  useCycles: true, // specifies that drilling cycles should be used.
+  useCycles: false, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
   refRotDistance: 200.0, // specifies the distance between the B-axis rotation center and the tool reference
@@ -2476,7 +2476,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     setSmoothing(false);
   }
 
-  if(currentSection.spindle = SPINDLE_SECONDARY){
+  if (currentSection.spindle = SPINDLE_SECONDARY) {
     clockwise = !clockwise; //reverse circular interpolation G2 / G3 for secondary spindle
   }
 
@@ -2757,19 +2757,20 @@ function onCyclePoint(x, y, z) {
 
     var F = (machineState.feedPerRevolution ? cycle.feedrate / spindleSpeed : cycle.feedrate);
     var P = !cycle.dwell ? 0 : clamp(1, cycle.dwell * 1000, 99999999); // in milliseconds
+    var R = cycle.clearance > getParameter("operation:feedHeight_value") ? cycle.clearance - getParameter("operation:feedHeight_value") : 0.0;
 
     switch (cycleType) {
       case "drilling":
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-          getCommonCycle(x, y, z, cycle.retract),
+          getCommonCycle(x, y, z, R),
           feedOutput.format(F)
         );
         break;
       case "counter-boring":
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-          getCommonCycle(x, y, z, cycle.retract),
+          getCommonCycle(x, y, z, R),
           //"Q" + spatialFormat.format(cycle.incrementalDepth),
           conditional(P > 0, "P" + milliFormat.format(P)),
           feedOutput.format(F)
@@ -2778,7 +2779,7 @@ function onCyclePoint(x, y, z) {
       case "deep-drilling":
       /*writeBlock(
         gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-        getCommonCycle(x, y, z, cycle.retract),
+        getCommonCycle(x, y, z, R),
         "Q" + spatialFormat.format(cycle.incrementalDepth),
         conditional(P > 0, "P" + milliFormat.format(P)),
         feedOutput.format(F)
@@ -2787,7 +2788,7 @@ function onCyclePoint(x, y, z) {
       case "chip-breaking":
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-          getCommonCycle(x, y, z, cycle.retract),
+          getCommonCycle(x, y, z, R),
           "Q" + spatialFormat.format(cycle.incrementalDepth),
           "D" + spatialFormat.format(cycle.chipBreakDistance),
           conditional(P > 0, "P" + milliFormat.format(P)),
@@ -2802,7 +2803,7 @@ function onCyclePoint(x, y, z) {
         }
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(84.2),
-          getCommonCycle(x, y, z, cycle.retract),
+          getCommonCycle(x, y, z, R),
           pitchOutput.format(tool.threadPitch)
         );
         forceFeed();
@@ -2828,13 +2829,13 @@ function onCyclePoint(x, y, z) {
             first = false;
             writeBlock(
               gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(84.2),
-              getCommonCycle(x, y, u, cycle.retract),
+              getCommonCycle(x, y, u, R),
               pitchOutput.format(tool.threadPitch)
             );
           } else {
             writeBlock(
               gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(84.2),
-              getCommonCycle(x, y, u, cycle.retract),
+              getCommonCycle(x, y, u, R),
               pitchOutput.format(tool.threadPitch)
             );
           }
@@ -2844,7 +2845,7 @@ function onCyclePoint(x, y, z) {
       case "reaming":
         writeBlock(
           gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(85),
-          getCommonCycle(x, y, z, cycle.retract),
+          getCommonCycle(x, y, z, R),
           conditional(P > 0, "P" + milliFormat.format(P)),
           feedOutput.format(F)
         );
