@@ -1876,7 +1876,8 @@ function onSection() {
         var MyOutput = createVariable({ prefix: "Y" }, MyFormat);
         yOutput = MyOutput;
       }
-      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
+      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
+      writeBlock(gMotionModal.format(0), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y));
     }
   }
   // enable SFM spindle speed
