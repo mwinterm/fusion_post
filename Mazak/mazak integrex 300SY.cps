@@ -1602,6 +1602,8 @@ function onSection() {
   if (true) {
     switch (currentSection.spindle) {
       case SPINDLE_PRIMARY: // main spindle
+        machineState.mainSpindleIsActive = true;
+        machineState.subSpindleIsActive = false;
         writeBlock(mFormat.format(302), writeDebugInfo("Primary Spindle"));
         yFormat.setScale(1);
         yOutput = createVariable({ prefix: "Y" }, yFormat);
@@ -1612,6 +1614,8 @@ function onSection() {
         }
         break;
       case SPINDLE_SECONDARY: // sub spindle
+        machineState.mainSpindleIsActive = false;
+        machineState.subSpindleIsActive = true;
         writeBlock(mFormat.format(300), writeDebugInfo("Secondary Spindle"));
         if (currentSection.isMultiAxis() || machineState.isTurningOperation) {
           yFormat.setScale(-1);
@@ -2470,6 +2474,10 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
 function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
   if (isHelical() && properties.useSmoothing) {
     setSmoothing(false);
+  }
+
+  if(currentSection.spindle = SPINDLE_SECONDARY){
+    clockwise = !clockwise; //reverse circular interpolation G2 / G3 for secondary spindle
   }
 
   if (machineState.useXZCMode) {
