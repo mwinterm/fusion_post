@@ -3177,7 +3177,7 @@ function onSectionEnd() {
   }
 
   //cancel any coordinate system shift
-  writeBlock(gFormat.format(92), "X" + spatialFormat.format(0), "Z" + spatialFormat.format(0), writeDebugInfo("cancel any coordinate shift"));
+  //writeBlock(gFormat.format(92), "X" + spatialFormat.format(0), "Z" + spatialFormat.format(0), writeDebugInfo("cancel any coordinate shift"));
 
   forceAny();
   forceXZCMode = false;
