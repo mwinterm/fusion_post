@@ -61,6 +61,7 @@ properties = {
   sequenceNumberOnlyOnToolChange: false, // only output sequence numbers on tool change
   numberOfToolDigits: 2, // Number of tool digites, can be 2 or 3 (T01 or T001)
   //optionalStop: true, // optional stop
+  emptyTool: 80, //empty tool pocket to change in when no tool should be present
   separateWordsWithSpace: true, // specifies that the words should be separated with a white space
   useRadius: true, // specifies that arcs should be output using the radius (R word) instead of the I, J, and K words.
   maximumSpindleSpeed: 3500, // specifies the maximum spindle speed
@@ -89,6 +90,7 @@ propertyDefinitions = {
   sequenceNumberIncrement: { title: "Sequence number increment", description: "The amount by which the sequence number is incremented by in each block.", group: 1, type: "integer" },
   sequenceNumberOnlyOnToolChange: { title: "Sequence number only on tool change", description: "If enabled, sequence numbers are only outputted when a toolchange is called", type: "boolean" },
   numberOfToolDigits: { title: "Tool digits", description: "Number of digits used for a tool call. Can be 2 or 3 i.e. T01 or T001", group: 1, type: "integer" },
+  emptyTool: { title: "Empty tool number", description: "Number of empty tool pocket to be changed in when no tool shall be in the spindle", group: 1, type: "integer" },
   //optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
   separateWordsWithSpace: { title: "Separate words with space", description: "Adds spaces between words if 'yes' is selected.", type: "boolean" },
   useRadius: { title: "Radius arcs", description: "If yes is selected, arcs are outputted using radius values rather than IJK.", type: "boolean" },
@@ -2665,6 +2667,7 @@ function onCycle() {
 
     switch (cycleType) {
       case "secondary-spindle-grab":
+        writeToolBlock("T" + toolFormat.format(properties.emptyTool) + toolFormat.format(0) + "." + toolFormat.format(0), writeDebugInfo("Empty tool changed in to avoid potential collision"));
         writeBlock(mFormat.format(300), writeDebugInfo("Second spindle selection"));
         writeBlock(gFormat.format(112), mFormat.format(202), writeDebugInfo("second spindle lathe mode"));
         writeBlock(mFormat.format(200), writeDebugInfo("Main spindle milling mode"));
@@ -2686,6 +2689,7 @@ function onCycle() {
         writeBlock(gFormat.format(112), mFormat.format(7), writeDebugInfo("Close second chuck"));
         break;
       case "secondary-spindle-return":
+        writeToolBlock("T" + toolFormat.format(properties.emptyTool) + toolFormat.format(0) + "." + toolFormat.format(0), writeDebugInfo("Empty tool changed in to avoid potential collision"));
         if (cycle.unclampMode == "unclamp-primary") {
           writeBlock(mFormat.format(6), writeDebugInfo("Open main chuck"));
         } else if (cycle.unclampMode == "unclamp-secondary") {
