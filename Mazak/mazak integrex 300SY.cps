@@ -2479,7 +2479,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     setSmoothing(false);
   }
 
-  if (currentSection.spindle = SPINDLE_SECONDARY) {
+  if (currentSection.spindle == SPINDLE_SECONDARY) {
     clockwise = !clockwise; //reverse circular interpolation G2 / G3 for secondary spindle
   }
 
