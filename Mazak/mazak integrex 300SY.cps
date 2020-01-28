@@ -211,6 +211,14 @@ var B = 11;
 var C = 12;
 var C2 = 13;
 
+// tool orientation dict for sub-spindle tool assignment
+var subToolOrient = {
+  "00": "15",
+  "01": "14",
+  "13": "11",
+  "14": "01"
+}
+
 // collected state
 var sequenceNumber;
 var currentWorkOffset;
@@ -466,12 +474,12 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         }
         writeBlock(
           spindleMode,
-          tool.clockwise ? getCode("START_SUB_SPINDLE_CW") : getCode("START_SUB_SPINDLE_CCW"),
+          !tool.clockwise ? getCode("START_SUB_SPINDLE_CW") : getCode("START_SUB_SPINDLE_CCW"), //invert CW and CCW for sub-spindle
           sLatheOutput.format(_spindleSpeed)
         ); // R1 is the default
         sLatheOutput.reset();
       } else {
-        writeBlock(spindleMode, sMillOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
+        writeBlock(spindleMode, sMillOutput.format(_spindleSpeed), !tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
       }
       break;
   }
@@ -847,7 +855,24 @@ function onOpen() {
       var section = getSection(i);
       var tool = section.getTool();
       var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
-      var toolID = "T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + tool.comment);
+      var  toolOrientation = "";
+      var  toolType = "";
+      if (tool.comment.length == 2) {
+        toolOrientation = tool.comment;
+        toolType = "";
+      } else if (tool.comment.length == 4) {
+        toolOrientation = tool.comment.slice(0, 2);
+        toolType = tool.comment.slice(2, 4);
+      } else if(tool.comment.length != 0){
+        error(localize("Tool comment not correct. Needs to be 0, 2 or 4 digits according Mazotrol. "));
+      }
+  
+      //switch tool type when working on sub-spindle
+      if(section.spindle == SPINDLE_SECONDARY){
+        toolOrientation = subToolOrient[toolOrientation];
+      }
+
+      var toolID = "T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + toolOrientation + toolType);
       if (is3D()) {
         var zRange = section.getGlobalZRange();
         if (zRanges[toolID]) {
@@ -1512,6 +1537,7 @@ function onSection() {
     var toolOrientation = "--";
     var toolType = "--";
 
+    //annalyse tool-comment for tool-orientation and tool-type
     if (tool.comment.length == 0) {
       toolOrientation = "";
       toolType = "";
@@ -1523,6 +1549,11 @@ function onSection() {
       toolType = tool.comment.slice(2, 4);
     } else {
       error(localize("Tool comment not correct. Needs to be 0, 2 or 4 digits according Mazotrol. "));
+    }
+
+    //switch tool type when working on sub-spindle
+    if(currentSection.spindle == SPINDLE_SECONDARY){
+      toolOrientation = subToolOrient[toolOrientation];
     }
 
     if (machineState.manualToolNumber && (machineState.manualToolNumber != tool.number)) {
@@ -3096,7 +3127,7 @@ function onCommand(command) {
         }
       } else {
         if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
-          writeBlock(getCode("START_SUB_SPINDLE_CW"));
+          writeBlock(getCode("START_SUB_SPINDLE_CCW")); //run sub-spindle CCW for center drilling
         } else {
           writeBlock(getCode("START_LIVE_TOOL_CW"));
         }
@@ -3111,7 +3142,7 @@ function onCommand(command) {
         }
       } else { // secondary
         if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
-          writeBlock(getCode("START_SUB_SPINDLE_CCW"));
+          writeBlock(getCode("START_SUB_SPINDLE_CW")); //run sub-spindle CW for centerdrilling with a left-handed drill
         } else {
           writeBlock(getCode("START_LIVE_TOOL_CCW"));
         }
