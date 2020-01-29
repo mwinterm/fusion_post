@@ -855,20 +855,20 @@ function onOpen() {
       var section = getSection(i);
       var tool = section.getTool();
       var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
-      var  toolOrientation = "";
-      var  toolType = "";
+      var toolOrientation = "";
+      var toolType = "";
       if (tool.comment.length == 2) {
         toolOrientation = tool.comment;
         toolType = "";
       } else if (tool.comment.length == 4) {
         toolOrientation = tool.comment.slice(0, 2);
         toolType = tool.comment.slice(2, 4);
-      } else if(tool.comment.length != 0){
+      } else if (tool.comment.length != 0) {
         error(localize("Tool comment not correct. Needs to be 0, 2 or 4 digits according Mazotrol. "));
       }
-  
+
       //switch tool type when working on sub-spindle
-      if(section.spindle == SPINDLE_SECONDARY){
+      if (section.spindle == SPINDLE_SECONDARY) {
         toolOrientation = subToolOrient[toolOrientation];
       }
 
@@ -1260,14 +1260,27 @@ function setWorkPlane(abc) {
       conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
       conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))); //turn machine
     if (abc.isNonZero()) {
-      writeBlock("#1=-SIN[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate X-Axis correction"));
-      writeBlock("#2=#" + refRotDistanceParameter + "-COS[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate Z-Axis correction"));
-      writeBlock(gFormat.format(92), "X[#1+#5041] Z[#2+#5042]", writeDebugInfo("Move coordinate system to correct for B-axis roation."));
-      writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
-      writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(abc.y)); // set frame
+      // writeBlock("#1=-SIN[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate X-Axis correction"));
+      // writeBlock("#2=#" + refRotDistanceParameter + "-COS[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate Z-Axis correction"));
+      // writeBlock(gFormat.format(92), "X[#1+#5041] Z[#2+#5042]", writeDebugInfo("Move coordinate system to correct for B-axis roation."));
+      // writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+      // writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(abc.y)); // set frame
+      writeBlock( //set frame
+        gFormat.format(125),
+        //"X" + spatialFormat.format(0), 
+        //"Y" + spatialFormat.format(0), 
+        //"Z" + spatialFormat.format(0), 
+        "B" + abcFormat.format(abc.y),
+        "I1"); //If G68.5 shall be issued or as part of the G125 or not 
     } else {
       writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
-      writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(0)); // cancel frame
+      writeBlock( //cancel any tool compensation
+        gFormat.format(125),
+        //"X" + spatialFormat.format(0), 
+        //"Y" + spatialFormat.format(0), 
+        //"Z" + spatialFormat.format(0), 
+        "B" + abcFormat.format(0),
+        "I0"); // cancel frame
     }
     writeBlock(gFormat.format(17));
   } else {
@@ -1552,7 +1565,7 @@ function onSection() {
     }
 
     //switch tool type when working on sub-spindle
-    if(currentSection.spindle == SPINDLE_SECONDARY){
+    if (currentSection.spindle == SPINDLE_SECONDARY) {
       toolOrientation = subToolOrient[toolOrientation];
     }
 
