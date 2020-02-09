@@ -70,7 +70,6 @@ properties = {
   useCycles: false, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
-  refRotDistance: 200.0, // specifies the distance between the B-axis rotation center and the tool reference
   g53HomePositionX: 0.0, // home position for X-axis
   g53HomePositionY: 0.0, // home position for Y-axis
   g53HomePositionZ: 0.0, // home position for Z-axis
@@ -100,7 +99,6 @@ propertyDefinitions = {
   useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", type: "boolean" },
   useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", type: "boolean" },
   mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", type: "boolean" },
-  refRotDistance: { title: "B-axis rotation distance", description: "Distance between the B-axis rotation center and the tool reference point", type: "number" },
   g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", type: "number" },
   g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", type: "number" },
   g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", type: "number" },
@@ -188,7 +186,6 @@ var g53HomePositionXParameter = 100;
 var g53HomePositionZParameter = 101;
 var g53HomePositionYParameter = 102;
 var g53HomePositionSubZParameter = 103;
-var refRotDistanceParameter = 104;
 var gotYAxis = true;
 var yAxisMinimum = toPreciseUnit(gotYAxis ? -105 : 0, MM); // specifies the minimum range for the Y-axis
 var yAxisMaximum = toPreciseUnit(gotYAxis ? 105 : 0, MM); // specifies the maximum range for the Y-axis
@@ -987,9 +984,7 @@ function onOpen() {
   if (gotYAxis) {
     writeBlock("#" + g53HomePositionYParameter + "=" + spatialFormat.format(properties.g53HomePositionY) + writeDebugInfo("PARAMETER FOR Y HOME POSITION")); // retract
   }
-  if (gotBAxis) {
-    writeBlock("#" + refRotDistanceParameter + "=" + spatialFormat.format(properties.refRotDistance) + writeDebugInfo("PARAMETER FOR DISTANCE BETWEEN TOOL REFERENCE AND B-AXIS ROTATION CENTER")); // retract
-  }
+  
   writeln("");
 
   if (properties.mazatrolCS) {
