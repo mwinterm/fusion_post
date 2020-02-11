@@ -984,7 +984,7 @@ function onOpen() {
   if (gotYAxis) {
     writeBlock("#" + g53HomePositionYParameter + "=" + spatialFormat.format(properties.g53HomePositionY) + writeDebugInfo("PARAMETER FOR Y HOME POSITION")); // retract
   }
-  
+
   writeln("");
 
   if (properties.mazatrolCS) {
@@ -1920,8 +1920,7 @@ function onSection() {
         var MyOutput = createVariable({ prefix: "Y" }, MyFormat);
         yOutput = MyOutput;
       }
-      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
-      writeBlock(gMotionModal.format(0), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y));
+      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
     }
   }
   // enable SFM spindle speed
@@ -2731,7 +2730,7 @@ function onCycle() {
           writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
           writeBlock(mFormat.format(541), writeDebugInfo("Cancel Transfer-Chuck-Mode"));
           writeBlock(gFormat.format(112), mFormat.format(7), writeDebugInfo("Close second chuck"));
-        }else{ //Secondary spindle is active therefore main spindle is grabbing
+        } else { //Secondary spindle is active therefore main spindle is grabbing
           writeBlock(mFormat.format(302), writeDebugInfo("Main spindle selection"));
           writeBlock(mFormat.format(202), writeDebugInfo("Main spindle lathe mode"));
           writeBlock(gFormat.format(112), mFormat.format(200), writeDebugInfo("Second spindle milling mode"));
