@@ -237,6 +237,8 @@ var retracted = false; // specifies that the tool has been retracted to the safe
 var machineState = {
   liveToolIsActive: undefined,
   cAxisIsEngaged: undefined,
+  cMainAxisIsEngaged: undefined,
+  cSubAxisIsEngaged: undefined,
   machiningDirection: undefined,
   mainSpindleIsActive: undefined,
   subSpindleIsActive: undefined,
@@ -284,17 +286,41 @@ function getCode(code) {
     case "ENGAGE_C_AXIS":
       machineState.cAxisIsEngaged = true;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
+        machineState.cMainAxisIsEngaged = true;
+        machineState.mainSpindleIsActive = false;
         return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
       } else {
+        machineState.cSubAxisIsEngaged = true;
+        machineState.subSpindleIsActive = false;
         return combineCommands(gFormat.format(112), cAxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
       }
+    case "ENGAGE_C_MAIN_AXIS":
+      machineState.cMainAxisIsEngaged = true;
+      machineState.mainSpindleIsActive = false;
+      return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
+    case "ENGAGE_C_SUB_AXIS":
+      machineState.cSubAxisIsEngaged = true;
+      machineState.subSpindleIsActive = false;
+      return combineCommands(gFormat.format(112), cAxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
     case "DISENGAGE_C_AXIS":
       machineState.cAxisIsEngaged = false;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
+        machineState.cMainAxisIsEngaged = false;
+        machineState.mainSpindleIsActive = true;
         return combineCommands(cAxisEngageModal.format(202), writeDebugInfo("Main spindle lathe mode"));
       } else {
+        machineState.cSubAxisIsEngaged = false;
+        machineState.subSpindleIsActive = true;
         return combineCommands(gFormat.format(112), cAxisEngageModal.format(202), writeDebugInfo("Sub-spindle lathe mode"));
       }
+    case "DISENGAGE_C_MAIN_AXIS":
+      machineState.cMainAxisIsEngaged = false;
+      machineState.mainSpindleIsActive = true;
+      return combineCommands(cAxisEngageModal.format(202), writeDebugInfo("Main spindle lathe mode"));
+    case "DISENGAGE_C_SUB_AXIS":
+      machineState.cSubAxisIsEngaged = false;
+      machineState.subSpindleIsActive = true;
+      return combineCommands(gFormat.format(112), cAxisEngageModal.format(202), writeDebugInfo("Sub-spindle lathe mode"));
     case "POLAR_INTERPOLATION_ON":
       return gPolarModal.format(12.1);
     case "POLAR_INTERPOLATION_OFF":
@@ -1006,9 +1032,9 @@ function onOpen() {
       break;
   }
 
-  if(properties.moveLimits){
+  if (properties.moveLimits) {
     writeBlock(gFormat.format(22), writeDebugInfo("Respects specied limits from control"));
-  }else{
+  } else {
     writeBlock(gFormat.format(23), writeDebugInfo("Does not respect specied limits from control"));
   }
 
@@ -1465,6 +1491,13 @@ function onSection() {
 
   setMachineConfiguration(machineConfiguration);
   currentSection.optimizeMachineAnglesByMachine(machineConfiguration, 0); // map tip mode
+
+  //check if active axis might be engaged from transfer
+  if (currentSection.spindle == SPINDLE_PRIMARY && (machineState.cMainAxisIsEngaged != undefined)) {
+    machineState.cAxisIsEngaged = machineState.cMainAxisIsEngaged;
+  } else if (currentSection.spindle == SPINDLE_SECONDARY && (machineState.cSubAxisIsEngaged != undefined)) {
+    machineState.cAxisIsEngaged = machineState.cSubAxisIsEngaged;
+  }
 
   machineState.tapping = hasParameter("operation:cycleType") &&
     ((getParameter("operation:cycleType") == "tapping") ||
@@ -2723,9 +2756,11 @@ function onCycle() {
         if (currentSection.spindle == 0) { //Main spindle is active therefore sub-spindle is grabbing
           writeBlock(mFormat.format(300), writeDebugInfo("Second spindle selection"));
           writeBlock(gFormat.format(112), mFormat.format(202), writeDebugInfo("second spindle lathe mode"));
-          writeBlock(mFormat.format(200), writeDebugInfo("Main spindle milling mode"));
+          //writeBlock(mFormat.format(200), writeDebugInfo("Main spindle milling mode"));
+          writeBlock(getCode("ENGAGE_C_MAIN_AXIS"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(0), cOutput.format(0.0), writeDebugInfo("position main spindle to C0.0"));
-          writeBlock(gFormat.format(112), mFormat.format(200), writeDebugInfo("Secondary spindle milling mode"));
+          //writeBlock(gFormat.format(112), mFormat.format(200), writeDebugInfo("Secondary spindle milling mode"));
+          writeBlock(getCode("ENGAGE_C_SUB_AXIS"));
           writeBlock(gFormat.format(110), "C2", writeDebugInfo("C-axis position active for second spindle"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(0), c2Output.format(cycle.spindleOrientation), writeDebugInfo("position secondary spindle relative to main spindle"));
           writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
@@ -2735,7 +2770,8 @@ function onCycle() {
           writeBlock(gAbsIncModal.format(90), gFormat.format(1), z2Output.format(cycle.feedPosition), feed2Output.format(cycle.feedrate), writeDebugInfo("Move second spindle close to the transfer position"));
           writeBlock(gFormat.format(112), mFormat.format(508), writeDebugInfo("Start pressing mode of second spindle"));
           writeBlock(gFormat.format(31), z2Output.format(cycle.chuckPosition), feed2Output.format(50), writeDebugInfo("Start pressing of second spindle"));
-          writeBlock(mFormat.format(202), writeDebugInfo("Main spindle lathe mode"));
+          //writeBlock(mFormat.format(202), writeDebugInfo("Main spindle lathe mode"));
+          writeBlock(getCode("DISENGAGE_C_MAIN_AXIS"));
           writeBlock(gFormat.format(112), mFormat.format(509), writeDebugInfo("Cancel pressing mode of second spindle"));
           writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
           writeBlock(mFormat.format(541), writeDebugInfo("Cancel Transfer-Chuck-Mode"));
@@ -2743,11 +2779,13 @@ function onCycle() {
         } else { //Secondary spindle is active therefore main spindle is grabbing
           writeBlock(mFormat.format(302), writeDebugInfo("Main spindle selection"));
           writeBlock(mFormat.format(202), writeDebugInfo("Main spindle lathe mode"));
-          writeBlock(gFormat.format(112), mFormat.format(200), writeDebugInfo("Second spindle milling mode"));
+          //writeBlock(gFormat.format(112), mFormat.format(200), writeDebugInfo("Second spindle milling mode"));
+          writeBlock(getCode("ENGAGE_C_SUB_AXIS"));
           writeBlock(gFormat.format(110), "C2", writeDebugInfo("C-axis position active for second spindle"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(0), c2Output.format(0.0), writeDebugInfo("position second spindle to C0.0"));
           writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
-          writeBlock(mFormat.format(200), writeDebugInfo("Primary spindle milling mode"));
+          //writeBlock(mFormat.format(200), writeDebugInfo("Primary spindle milling mode"));
+          writeBlock(getCode("ENGAGE_C_MAIN_AXIS"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(0), cOutput.format(cycle.spindleOrientation), writeDebugInfo("position main spindle relative to main spindle"));
           writeBlock(mFormat.format(6), writeDebugInfo("Open main chuck"));
           writeBlock(mFormat.format(540), writeDebugInfo("Transfer-Chuck-Mode"));
@@ -2755,7 +2793,8 @@ function onCycle() {
           writeBlock(gAbsIncModal.format(90), gFormat.format(1), z2Output.format(cycle.feedPosition), feed2Output.format(cycle.feedrate), writeDebugInfo("Move second spindle close to the transfer position"));
           writeBlock(gFormat.format(112), mFormat.format(508), writeDebugInfo("Start pressing mode of second spindle"));
           writeBlock(gFormat.format(31), z2Output.format(cycle.chuckPosition), feed2Output.format(50), writeDebugInfo("Start pressing of second spindle"));
-          writeBlock(gFormat.format(112), mFormat.format(202), writeDebugInfo("Second spindle lathe mode"));
+          //writeBlock(gFormat.format(112), mFormat.format(202), writeDebugInfo("Second spindle lathe mode"));
+          writeBlock(getCode("DISENGAGE_C_SUB_AXIS"));
           writeBlock(gFormat.format(112), mFormat.format(509), writeDebugInfo("Cancel pressing mode of second spindle"));
           writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
           writeBlock(mFormat.format(541), writeDebugInfo("Cancel Transfer-Chuck-Mode"));
