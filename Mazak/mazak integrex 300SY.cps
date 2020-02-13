@@ -70,6 +70,7 @@ properties = {
   useCycles: false, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
+  moveLimits: false, // spedifies if soft machine limits specified in Mazatrol control shall be respected
   g53HomePositionX: 0.0, // home position for X-axis
   g53HomePositionY: 0.0, // home position for Y-axis
   g53HomePositionZ: 0.0, // home position for Z-axis
@@ -99,6 +100,7 @@ propertyDefinitions = {
   useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", type: "boolean" },
   useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", type: "boolean" },
   mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", type: "boolean" },
+  moveLimits: { title: "Mazatrol soft limits", description: "spedifies if soft machine limits specified in Mazatrol control shall be respected", type: "boolean" },
   g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", type: "number" },
   g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", type: "number" },
   g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", type: "number" },
@@ -1004,6 +1006,12 @@ function onOpen() {
       break;
   }
 
+  if(properties.moveLimits){
+    writeBlock(gFormat.format(22), writeDebugInfo("Respects specied limits from control"));
+  }else{
+    writeBlock(gFormat.format(23), writeDebugInfo("Does not respect specied limits from control"));
+  }
+
   if (true /*usesPrimarySpindle*/) {
     sLatheOutput.reset();
     writeBlock(gFormat.format(92), sLatheOutput.format(properties.maximumSpindleSpeed), "R1", writeDebugInfo("Spindle 1 speed limit")); // spindle 1 is the default
@@ -1684,9 +1692,11 @@ function onSection() {
   if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) { //turning
     writeBlock(conditional(machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("DISENGAGE_C_AXIS"));
     writeBlock(conditional(machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("LOCK_MILLING_SPINDLE"));
+    machineState.isTurningOperation = true;
   } else { // milling
     writeBlock(conditional(!machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("ENGAGE_C_AXIS"));
     writeBlock(conditional(!machineState.cAxisIsEngaged || machineState.cAxisIsEngaged == undefined), getCode("UNLOCK_MILLING_SPINDLE"));
+    machineState.isTurningOperation = false;
   }
   if ((currentSection.feedMode == FEED_PER_REVOLUTION) || machineState.tapping || machineState.axialCenterDrilling) {
     writeBlock(getCode("FEED_MODE_UNIT_REV")); // mm/rev
