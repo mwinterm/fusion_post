@@ -1535,16 +1535,16 @@ function onSection() {
       abcFormat.areDifferent(bAxisOrientationTurning.z, machineState.currentBAxisOrientationTurning.z)) ||
     (!getPreviousSection().isMultiAxis() && currentSection.isMultiAxis());
 
+  if (newWorkPlane || insertToolCall) {
+    writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+    forceWorkPlane();
+  }
+
   if (insertToolCall || newSpindle || newWorkOffset || newWorkPlane) {
     // retract to safe plane
     writeRetract(X);
     writeRetract(Z);
     writeRetract(Y);
-  }
-
-  if (newWorkPlane || insertToolCall) {
-    writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
-    forceWorkPlane();
   }
 
   updateMachiningMode(currentSection); // sets the needed machining mode to machineState (usePolarMode, useXZCMode, axialCenterDrilling)
@@ -3306,6 +3306,9 @@ function onSectionEnd() {
 
   //cancel any coordinate system shift
   writeBlock(gFormat.format(69.5), writeDebugInfo("cancel any coordinate shift"));
+
+  //move back to y=0
+  writeRetract(Y);
 
   forceAny();
   forceXZCMode = false;
