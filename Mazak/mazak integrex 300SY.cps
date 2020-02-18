@@ -1022,7 +1022,7 @@ function onOpen() {
   }
 
   writeBlock(gMotionModal.format(0), gAbsIncModal.format(90), getCode("FEED_MODE_UNIT_MIN"), getCode("CONSTANT_SURFACE_SPEED_OFF"));
-  writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), writeDebugInfo("Cancel makro"), gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation"), gPlaneModal.format(18));
+  writeBlock(gFormat.format(40), /*gFormat.format(49),*/ gFormat.format(80), gFormat.format(67), writeDebugInfo("Cancel makro"), gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation"), gPlaneModal.format(18));
   switch (unit) {
     case IN:
       writeBlock(gUnitModal.format(20), writeDebugInfo("Unit: Inch"));
@@ -1281,7 +1281,7 @@ function setWorkPlane(abc) {
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(abc.x), "J" + abcFormat.format(abc.y), "K" + abcFormat.format(abc.z)); // set frame
       writeBlock(gFormat.format(53.1) + "(" + "B" + abcFormat.format(initialToolAxisBC.y) + " C" + abcFormat.format(initialToolAxisBC.z) + ")"); // turn machine
     } else {
-      writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+      writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(0), "J" + abcFormat.format(0), "K" + abcFormat.format(0)); // cancel frame
       writeBlock(gFormat.format(53.1)); // turn machine
     }
@@ -1292,25 +1292,14 @@ function setWorkPlane(abc) {
       conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
       conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))); //turn machine
     if (abc.isNonZero()) {
-      // writeBlock("#1=-SIN[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate X-Axis correction"));
-      // writeBlock("#2=#" + refRotDistanceParameter + "-COS[" + abcFormat.format(abc.y) + "]*#" + refRotDistanceParameter, writeDebugInfo("Calculate Z-Axis correction"));
-      // writeBlock(gFormat.format(92), "X[#1+#5041] Z[#2+#5042]", writeDebugInfo("Move coordinate system to correct for B-axis roation."));
-      // writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
-      // writeBlock(gFormat.format(68.5), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I0", "J1", "K0", "R" + abcFormat.format(abc.y)); // set frame
       writeBlock( //set frame
         gFormat.format(125),
-        //"X" + spatialFormat.format(0), 
-        //"Y" + spatialFormat.format(0), 
-        //"Z" + spatialFormat.format(0), 
         "B" + abcFormat.format(abc.y),
         "I1"); //If G68.5 shall be issued or as part of the G125 or not 
     } else {
-      writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+      writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
       writeBlock( //cancel any tool compensation
         gFormat.format(125),
-        //"X" + spatialFormat.format(0), 
-        //"Y" + spatialFormat.format(0), 
-        //"Z" + spatialFormat.format(0), 
         "B" + abcFormat.format(0),
         "I0"); // cancel frame
     }
@@ -1536,7 +1525,7 @@ function onSection() {
     (!getPreviousSection().isMultiAxis() && currentSection.isMultiAxis());
 
   if (newWorkPlane || insertToolCall) {
-    writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+    writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
     forceWorkPlane();
   }
 
@@ -3305,7 +3294,7 @@ function onSectionEnd() {
   }
 
   //cancel any coordinate system shift
-  writeBlock(gFormat.format(69.5), writeDebugInfo("cancel any coordinate shift"));
+  writeBlock(gFormat.format(126), writeDebugInfo("cancel any coordinate shift"));
 
   //move back to y=0
   writeRetract(Y);
@@ -3338,7 +3327,7 @@ function onClose() {
     writeBlock(getCode("TAILSTOCK_OFF"));
   }
 
-  writeBlock(gFormat.format(69.5), writeDebugInfo("Cancel any coordinate system rotation"));
+  writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation"));
   if (gotSecondarySpindle) {
     writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining control"));
   }
