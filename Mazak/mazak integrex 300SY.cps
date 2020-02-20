@@ -1691,7 +1691,7 @@ function onSection() {
         machineState.mainSpindleIsActive = false;
         machineState.subSpindleIsActive = true;
         writeBlock(mFormat.format(300), writeDebugInfo("Secondary Spindle"));
-        if (currentSection.isMultiAxis() || machineState.isTurningOperation) {
+        if (currentSection.isMultiAxis() || machineState.isTurningOperation ||(machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
           yFormat.setScale(-1);
           yOutput = createVariable({ prefix: "Y" }, yFormat);
           zFormat.setScale(-1);
