@@ -1679,6 +1679,9 @@ function onSection() {
         machineState.mainSpindleIsActive = true;
         machineState.subSpindleIsActive = false;
         writeBlock(mFormat.format(302), writeDebugInfo("Primary Spindle"));
+        if (tool.productId) { //coorect y-offset if specified in ProductID
+          yFormat.setOffset(parseFloat(tool.productId)) // set y-Offset defined via productID for turning tools with large center offset
+        }
         yFormat.setScale(1);
         yOutput = createVariable({ prefix: "Y" }, yFormat);
         zFormat.setScale(1);
@@ -1692,6 +1695,9 @@ function onSection() {
         machineState.subSpindleIsActive = true;
         writeBlock(mFormat.format(300), writeDebugInfo("Secondary Spindle"));
         if (currentSection.isMultiAxis() || machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
+          if (tool.productId) { //coorect y-offset if specified in ProductID
+            yFormat.setOffset(-parseFloat(tool.productId)) // set y-Offset defined via productID for turning tools with large center offset
+          }
           yFormat.setScale(-1);
           yOutput = createVariable({ prefix: "Y" }, yFormat);
           zFormat.setScale(-1);
@@ -1947,11 +1953,6 @@ function onSection() {
       );
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
     } else {
-      if (tool.productId) { //coorect y-offset if specified in ProductID
-        var MyFormat = createFormat({ decimals: (unit == MM ? 3 : 4), forceDecimal: true, offset: parseFloat(tool.productId) });
-        var MyOutput = createVariable({ prefix: "Y" }, MyFormat);
-        yOutput = MyOutput;
-      }
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
     }
   }
