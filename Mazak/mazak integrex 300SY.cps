@@ -3298,7 +3298,7 @@ function onSectionEnd() {
   writeBlock(gFormat.format(126), writeDebugInfo("cancel any coordinate shift"));
 
   //move back to y=0
-  writeBlock(yOutput.format(0), writeDebugInfo("TEMP HACK")); //temporary hack as G53 has bug for y-axis
+  writeBlock(gFormat.format(0), yOutput.format(0), writeDebugInfo("TEMP HACK")); //temporary hack as G53 has bug for y-axis
   writeRetract(Y);
 
   forceAny();
@@ -3317,7 +3317,9 @@ function onClose() {
   writeRetract(X);
   writeRetract(Z);
   writeRetract(Y);
+  writeBlock(getCode("UNCLAMP_B_AXIS"));
   writeBlock(gFormat.format(0), bOutput.format(0));
+  writeBlock(getCode("CLAMP_B_AXIS"));
 
   if (machineState.liveToolIsActive) {
     writeBlock(getCode("STOP_LIVE_TOOL"));
