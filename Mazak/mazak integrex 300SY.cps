@@ -46,6 +46,7 @@ allowHelicalMoves = false;
 allowedCircularPlanes = undefined; // allow any circular motion
 allowSpiralMoves = false;
 highFeedrate = (unit == IN) ? 400 : 5000;
+mapWorkOrigin = false;
 
 // user-defined properties
 properties = {
@@ -1281,7 +1282,7 @@ function setWorkPlane(abc) {
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(abc.x), "J" + abcFormat.format(abc.y), "K" + abcFormat.format(abc.z)); // set frame
       writeBlock(gFormat.format(53.1) + "(" + "B" + abcFormat.format(initialToolAxisBC.y) + " C" + abcFormat.format(initialToolAxisBC.z) + ")"); // turn machine
     } else {
-      writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+      writeBlock(gFormat.format(69.2), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
       writeBlock(gFormat.format(68.2), "X" + spatialFormat.format(0), "Y" + spatialFormat.format(0), "Z" + spatialFormat.format(0), "I" + abcFormat.format(0), "J" + abcFormat.format(0), "K" + abcFormat.format(0)); // cancel frame
       writeBlock(gFormat.format(53.1)); // turn machine
     }
@@ -1294,6 +1295,9 @@ function setWorkPlane(abc) {
     if (abc.isNonZero()) {
       writeBlock( //set frame
         gFormat.format(125),
+        conditional(currentSection.workOrigin.x != 0, "X" + spatialFormat.format(currentSection.workOrigin.x)),
+        conditional(currentSection.workOrigin.y != 0, "Y" + spatialFormat.format(currentSection.workOrigin.y)),
+        conditional(currentSection.workOrigin.z != 0, "Z" + spatialFormat.format(currentSection.workOrigin.z)),
         "B" + abcFormat.format(abc.y),
         "I1"); //If G68.5 shall be issued or as part of the G125 or not 
     } else {

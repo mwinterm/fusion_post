@@ -30,6 +30,7 @@ allowedCircularPlanes = undefined; // allow any circular motion
 maximumCircularSweep = toRad(1000000);
 minimumCircularRadius = spatial(0.001, MM);
 maximumCircularRadius = spatial(1000000, MM);
+mapWorkOrigin = false;
 
 // user-defined properties
 properties = {
