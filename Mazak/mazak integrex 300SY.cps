@@ -68,7 +68,7 @@ properties = {
   maximumSpindleSpeed: 3500, // specifies the maximum spindle speed
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: true, // specifies that operation notes should be output.
-  useCycles: false, // specifies that drilling cycles should be used.
+  useCycles: true, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
   moveLimits: false, // spedifies if soft machine limits specified in Mazatrol control shall be respected
@@ -2425,7 +2425,7 @@ function onLinear(_x, _y, _z, feed) {
     resetFeed = true;
     var threadPitch = getParameter("operation:threadPitch");
     var threadsPerInch = 1.0 / threadPitch; // per mm for metric
-    writeBlock(gMotionModal.format(32), xOutput.format(_x), yOutput.format(_y), zOutput.format(_z), pitchOutput.format(1 / threadsPerInch));
+    writeBlock(gMotionModal.format(33), xOutput.format(_x), yOutput.format(_y), zOutput.format(_z), pitchOutput.format(1 / threadsPerInch));
     return;
   }
   if (resetFeed) {
@@ -2451,22 +2451,22 @@ function onLinear(_x, _y, _z, feed) {
       }
       switch (radiusCompensation) {
         case RADIUS_COMPENSATION_LEFT:
-          writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 32 : 1), gFormat.format(41), x, y, z, f);
+          writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 33 : 1), gFormat.format(41), x, y, z, f);
           break;
         case RADIUS_COMPENSATION_RIGHT:
-          writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 32 : 1), gFormat.format(42), x, y, z, f);
+          writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 33 : 1), gFormat.format(42), x, y, z, f);
           break;
         default:
-          writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 32 : 1), gFormat.format(40), x, y, z, f);
+          writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 33 : 1), gFormat.format(40), x, y, z, f);
       }
     } else {
-      writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 32 : 1), x, y, z, f);
+      writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 33 : 1), x, y, z, f);
     }
   } else if (f) {
     if (getNextRecord().isMotion()) { // try not to output feed without motion
       forceFeed(); // force feed on next line
     } else {
-      writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 32 : 1), f);
+      writeBlock(gMotionModal.format(isSpeedFeedSynchronizationActive() ? 33 : 1), f);
     }
   }
 }
@@ -2870,47 +2870,45 @@ function onCyclePoint(x, y, z) {
 
     var F = (machineState.feedPerRevolution ? cycle.feedrate / spindleSpeed : cycle.feedrate);
     var P = !cycle.dwell ? 0 : clamp(1, cycle.dwell * 1000, 99999999); // in milliseconds
-    var R = cycle.clearance > getParameter("operation:feedHeight_value") ? cycle.clearance - getParameter("operation:feedHeight_value") : 0.0;
+    var R = cycle.clearance - cycle.stock - getParameter("operation:feedHeight_value") > 0 ? cycle.clearance - cycle.stock - getParameter("operation:feedHeight_value") : 0.0;
 
     switch (cycleType) {
-      case "drilling":
-        writeBlock(
-          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-          getCommonCycle(x, y, z, R),
-          feedOutput.format(F)
-        );
-        break;
-      case "counter-boring":
-        writeBlock(
-          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-          getCommonCycle(x, y, z, R),
-          //"Q" + spatialFormat.format(cycle.incrementalDepth),
-          conditional(P > 0, "P" + milliFormat.format(P)),
-          feedOutput.format(F)
-        );
-        break;
-      case "deep-drilling":
-      /*writeBlock(
-        gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-        getCommonCycle(x, y, z, R),
-        "Q" + spatialFormat.format(cycle.incrementalDepth),
-        conditional(P > 0, "P" + milliFormat.format(P)),
-        feedOutput.format(F)
-      );*/
-      //break;
-      case "chip-breaking":
-        writeBlock(
-          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
-          getCommonCycle(x, y, z, R),
-          "Q" + spatialFormat.format(cycle.incrementalDepth),
-          "D" + spatialFormat.format(cycle.chipBreakDistance),
-          conditional(P > 0, "P" + milliFormat.format(P)),
-          feedOutput.format(F)
-        );
-        break;
+      // case "drilling":
+      //   writeBlock(
+      //     gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
+      //     getCommonCycle(x, y, z, R),
+      //     feedOutput.format(F)
+      //   );
+      //   break;
+      // case "counter-boring":
+      //   writeBlock(
+      //     gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
+      //     getCommonCycle(x, y, z, R),
+      //     //"Q" + spatialFormat.format(cycle.incrementalDepth),
+      //     conditional(P > 0, "P" + milliFormat.format(P)),
+      //     feedOutput.format(F)
+      //   );
+      //   break;
+      // case "deep-drilling":
+      //   writeBlock(
+      //     gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
+      //     getCommonCycle(x, y, z, R),
+      //     "Q" + spatialFormat.format(cycle.incrementalDepth),
+      //     conditional(P > 0, "P" + milliFormat.format(P)),
+      //     feedOutput.format(F)
+      //   );
+      //   break;
+      // case "chip-breaking":
+      //   writeBlock(
+      //     gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(83),
+      //     getCommonCycle(x, y, z, R),
+      //     "Q" + spatialFormat.format(cycle.incrementalDepth),
+      //     "D" + spatialFormat.format(cycle.chipBreakDistance),
+      //     conditional(P > 0, "P" + milliFormat.format(P)),
+      //     feedOutput.format(F)
+      //   );
+      //   break;
       case "tapping":
-      case "right-tapping":
-      case "left-tapping":
         if (!F) {
           F = tool.getTappingFeedrate();
         }
@@ -2920,6 +2918,12 @@ function onCyclePoint(x, y, z) {
           pitchOutput.format(tool.threadPitch)
         );
         forceFeed();
+        break;
+      case "right-tapping":
+        error("right tapping not supported with this PP - just use tapping cycle");
+        break;
+      case "left-tapping":
+        error("left tapping not supported with this PP - just use tapping cycle");
         break;
       case "tapping-with-chip-breaking":
         if (!F) {
@@ -2955,13 +2959,13 @@ function onCyclePoint(x, y, z) {
         }
         forceFeed();
         break;
-      case "reaming":
-        writeBlock(
-          gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(85),
-          getCommonCycle(x, y, z, R),
-          conditional(P > 0, "P" + milliFormat.format(P)),
-          feedOutput.format(F)
-        );
+      // case "reaming":
+      //   writeBlock(
+      //     gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(85),
+      //     getCommonCycle(x, y, z, R),
+      //     conditional(P > 0, "P" + milliFormat.format(P)),
+      //     feedOutput.format(F)
+      //   );
         break;
       default:
         expandCyclePoint(x, y, z);
