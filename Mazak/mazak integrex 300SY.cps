@@ -194,7 +194,7 @@ var yAxisMinimum = toPreciseUnit(gotYAxis ? -105 : 0, MM); // specifies the mini
 var yAxisMaximum = toPreciseUnit(gotYAxis ? 105 : 0, MM); // specifies the maximum range for the Y-axis
 var xAxisMinimum = toPreciseUnit(-20, MM); // specifies the maximum range for the X-axis (RADIUS MODE VALUE)
 
-var gotPolarInterpolation = true; // specifies if the machine has XY polar interpolation (G12.1) capabilities
+var gotPolarInterpolation = false; // specifies if the machine has XY polar interpolation (G12.1) capabilities
 var gotBAxis = true;
 var useMultiAxisFeatures = false;
 var usePartialMultiAxisFeature = true; // multi-axis mode for Mazak Integrex 300Y/SY only allowing to move 4 axis simultanously and using special G69.5 to move/rotate coordinate systems
@@ -230,7 +230,7 @@ var forceSpindleSpeed = false;
 var activeMovements; // do not use by default
 var currentFeedId;
 var forcePolarMode = false; // force Polar output, activated by Action:usePolarMode
-var forceXZCMode = true; // forces XZC output, activated by Action:useXZCMode
+var forceXZCMode = false; // forces XZC output, activated by Action:useXZCMode
 var maximumCircularRadiiDifference = toPreciseUnit(0.005, MM);
 var bestABCIndex = undefined;
 var retracted = false; // specifies that the tool has been retracted to the safe plane
@@ -1874,7 +1874,6 @@ function onSection() {
               abc = new Vector(-abc.x, abc.y, -abc.z); // needed for secondary spindle
             }
           } else {
-            writeln("!!!!!!!!!!!!!!!! NOT use multi axis feature");
             abc = getWorkPlaneMachineABC(currentSection, currentSection.workPlane);
             setWorkPlane(abc);
           }
