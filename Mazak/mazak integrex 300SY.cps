@@ -230,7 +230,7 @@ var forceSpindleSpeed = false;
 var activeMovements; // do not use by default
 var currentFeedId;
 var forcePolarMode = false; // force Polar output, activated by Action:usePolarMode
-var forceXZCMode = false; // forces XZC output, activated by Action:useXZCMode
+var forceXZCMode = true; // forces XZC output, activated by Action:useXZCMode
 var maximumCircularRadiiDifference = toPreciseUnit(0.005, MM);
 var bestABCIndex = undefined;
 var retracted = false; // specifies that the tool has been retracted to the safe plane
@@ -1850,12 +1850,6 @@ function onSection() {
 
         writeDebugInfo("toolOrientation: " + toolOrientation + "   B-Axis: " + abcFormat.format(abc.y));
 
-        if (throw_error) {
-          //          error(localize("No correct tool orientation specified for turning or axial center drilling. " + "toolOrientation: " + toolOrientation + "   B-Axis: " + abcFormat.format(abc.y)));
-        }
-        // writeBlock(getCode("UNCLAMP_B_AXIS"));
-        // writeBlock(gMotionModal.format(0), gFormat.format(53), "B" + abcFormat.format(bAxisOrientationTurning.y));
-        // writeBlock(getCode("CLAMP_B_AXIS")); 
         machineState.currentBAxisOrientationTurning = abc;
       } else {
         setRotation(currentSection.workPlane);
@@ -1880,10 +1874,12 @@ function onSection() {
               abc = new Vector(-abc.x, abc.y, -abc.z); // needed for secondary spindle
             }
           } else {
+            writeln("!!!!!!!!!!!!!!!! NOT use multi axis feature");
             abc = getWorkPlaneMachineABC(currentSection, currentSection.workPlane);
+            setWorkPlane(abc);
           }
         }
-        setWorkPlane(abc);
+        
       }
     }
   } else { // pure 3D
