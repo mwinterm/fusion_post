@@ -1943,6 +1943,7 @@ function onSection() {
     gMotionModal.reset();
     if (machineState.useXZCMode) {
       writeBlock(gPlaneModal.format(17));
+      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
       cOutput.reset();
       writeBlock(
         gMotionModal.format(0),
@@ -1950,7 +1951,7 @@ function onSection() {
         conditional(gotYAxis, yOutput.format(0)),
         cOutput.format(getCWithinRange(initialPosition.x, initialPosition.y, cOutput.getCurrent()))
       );
-      writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
+      //writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
     } else {
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y), zOutput.format(initialPosition.z));
     }
