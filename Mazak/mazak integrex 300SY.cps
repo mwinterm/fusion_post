@@ -1878,7 +1878,7 @@ function onSection() {
             setWorkPlane(abc);
           }
         }
-        
+
       }
     }
   } else { // pure 3D
@@ -2277,7 +2277,13 @@ function pointLineDistance(startPt, endPt, testPt) {
 
 /** Refine segment for XC mapping. */
 function refineSegmentXC(startX, startC, endX, endC, maximumDistance) {
-  var rotary = machineConfiguration.getAxisU(); // C-axis
+
+  if (Vector.dot(machineConfiguration.getAxisU().getAxis(), new Vector(0, 0, 1)) != 0) {
+    var rotary = machineConfiguration.getAxisU();; // C-axis is the U-axis
+  } else {
+    var rotary = machineConfiguration.getAxisV(); // C-axis is the V-axis
+  }
+
   var startPt = rotary.getAxisRotation(startC).multiply(new Vector(startX, 0, 0));
   var endPt = rotary.getAxisRotation(endC).multiply(new Vector(endX, 0, 0));
 
@@ -2353,7 +2359,12 @@ function onLinear(_x, _y, _z, feed) {
     var endC = getCWithinRange(endXYZ.x, endXYZ.y, startC);
 
     var currentXYZ = endXYZ; var currentX = endX; var currentZ = endZ; var currentC = endC;
-    var centerXYZ = machineConfiguration.getAxisU().getOffset();
+
+    if (Vector.dot(machineConfiguration.getAxisU().getAxis(), new Vector(0, 0, 1)) != 0) {
+      var centerXYZ = machineConfiguration.getAxisU().getOffset(); // C-axis is the U-axis
+    } else {
+      var centerXYZ = machineConfiguration.getAxisV().getOffset(); // C-axis is the V-axis
+    }
 
     var refined = true;
     var crossingRotary = false;
@@ -2955,13 +2966,13 @@ function onCyclePoint(x, y, z) {
         }
         forceFeed();
         break;
-      // case "reaming":
-      //   writeBlock(
-      //     gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(85),
-      //     getCommonCycle(x, y, z, R),
-      //     conditional(P > 0, "P" + milliFormat.format(P)),
-      //     feedOutput.format(F)
-      //   );
+        // case "reaming":
+        //   writeBlock(
+        //     gRetractModal.format(98), gAbsIncModal.format(90), gCycleModal.format(85),
+        //     getCommonCycle(x, y, z, R),
+        //     conditional(P > 0, "P" + milliFormat.format(P)),
+        //     feedOutput.format(F)
+        //   );
         break;
       default:
         expandCyclePoint(x, y, z);
