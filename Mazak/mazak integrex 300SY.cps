@@ -593,6 +593,34 @@ function getModulus(x, y) {
   return Math.sqrt(x * x + y * y);
 }
 
+/** 
+ Calculates the XZC speed for a given segment based on the intended feed 
+ under the assumption that the segment is reasonably short
+ */
+function calculate_XZC_feed(startX, endX, startZ, endZ, startC, endC, feed) {
+  //calculating differences
+  deltaX = endX - startX;
+  deltaZ = endZ - startZ;
+  deltaC = endC - startC;
+
+  //always take the shorter arc segment
+  if (deltaC < - 180) {
+    deltaC += 360;
+  } else if (deltaC > 180) {
+    deltaC -= 360;
+  }
+
+  //calculate averages
+  avgX = (startX + endX) / 2;
+  avgC = (startC + deltaC / 2) % 360;
+
+  //calculate XZC feed
+  f = feed * Math.sqrt(deltaX * deltaX + deltaZ * deltaZ + deltaC * deltaC) /
+    Math.sqrt(deltaX * deltaX - deltaX * deltaC * avgX * Math.sin(avgC * Math.PI / 180) * Math.PI / 90 + Math.pow(avgX * deltaC * Math.PI / 180, 2));
+
+  return f;
+}
+
 /**
   Returns the C rotation for the given X and Y coordinates.
 */
@@ -2412,12 +2440,13 @@ function onLinear(_x, _y, _z, feed) {
       var x = xOutput.format(currentX);
       var c = cOutput.format(currentC);
       var z = zOutput.format(currentZ);
+      var XZC_feed = calculate_XZC_feed(startX, currentX, startZ, currentZ, startC, currentC, feed);
       if (x || c || z) {
-        writeBlock(gMotionModal.format(1), x, c, z, getFeed(feed));
+        writeBlock(gMotionModal.format(1), x, c, z, getFeed(XZC_feed));
       }
       setCurrentPosition(currentXYZ);
       if (crossingRotary) {
-        writeBlock(gMotionModal.format(1), cOutput.format(endC), getFeed(feed)); // rotate at X0 with endC
+        writeBlock(gMotionModal.format(1), cOutput.format(endC), getFeed(XZC_feed)); // rotate at X0 with endC
         forceFeed();
       }
       startX = currentX; startZ = currentZ; startC = crossingRotary ? endC : currentC; startXYZ = currentXYZ; // loop start point
@@ -3366,4 +3395,5 @@ function onClose() {
   }
 
   writeBlock(mFormat.format(30)); // stop program, spindle stop, coolant off
+  writeln("%"); //needed for HD-mode
 }
