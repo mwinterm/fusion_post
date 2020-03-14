@@ -8,6 +8,8 @@
   $Date: 2019-07-12 11:58:47 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
+
+  https://cam.autodesk.com/posts/reference/
 */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -627,7 +629,7 @@ function calculate_XZC_feed(startX, endX, startZ, endZ, startC, endC, feed) {
 }
 
 /**
-  Returns the C rotation for the given X and Y coordinates.
+  Checks how many axis there are invovled in the next moves and reduces one if needed.
 */
 function reduceNrAxis(_myMove, _old_b, _old_c) {
 
@@ -652,13 +654,13 @@ function reduceNrAxis(_myMove, _old_b, _old_c) {
     mov_axis_count += 1;
   }
 
-  if (mov_axis_count > 4) {
+  if (mov_axis_count > 3) {
     if (Math.abs(bOutput.getCurrent() - _old_b) > Math.abs(cOutput.getCurrent() - _old_c)) {
       _myMove.c = "";
-      return 1;
+      return Math.abs(cOutput.getCurrent() - _old_c);
     } else {
       _myMove.b = "";
-      return 1;
+      return Math.abs(bOutput.getCurrent() - _old_b);
     }
   }
   return 0;
@@ -1997,9 +1999,13 @@ function onSection() {
     forceABC();
     if (currentSection.isOptimizedForMachine()) {
       abc = currentSection.getInitialToolAxisABC();
+      var b_out = bOutput.format(abc.y);
+      if (b_out) {
+        writeBlock(gFormat.format(127), b_out);
+      }
       writeBlock(
         gMotionModal.format(0), gAbsIncModal.format(90),
-        aOutput.format(abc.x), bOutput.format(abc.y), cOutput.format(abc.z)
+        aOutput.format(abc.x), b_out, cOutput.format(abc.z)
       );
     } else {
       var d = currentSection.getGlobalInitialToolAxis();
@@ -2565,18 +2571,29 @@ function onRapid5D(_x, _y, _z, _a, _b, _c) {
     forceXYZ();
   }
 
-  mov_axis_count = 0;
-  var x = xOutput.format(_x * Math.cos(_c) + _y * Math.sin(_c));
-  var y = yOutput.format(-_x * Math.sin(_c) + _y * Math.cos(_c));
-  var z = zOutput.format(_z);
+  var myMove = { x: "", y: "", z: "", a: "", b: "", c: "" };
+  myMove.x = xOutput.format(_x * Math.cos(_c) + _y * Math.sin(_c));
+  myMove.y = yOutput.format(-_x * Math.sin(_c) + _y * Math.cos(_c));
+  myMove.z = zOutput.format(_z);
 
   if (currentSection.isOptimizedForMachine()) {
-    var a = aOutput.format(_a);
-    var b = bOutput.format(_b);
-    var c = cOutput.format(_c);
 
+    var old_b = bOutput.getCurrent();
+    var old_c = cOutput.getCurrent();
 
-    writeBlock(gMotionModal.format(0), x, y, z, a, b, c);
+    myMove.a = aOutput.format(_a);
+    myMove.b = bOutput.format(_b);
+    myMove.c = cOutput.format(_c);
+
+    var redAngle = reduceNrAxis(myMove, old_b, old_c)
+    if (redAngle) {
+      writeComment("WARNING - AXIS REDUCTION - " + redAngle / Math.PI * 180.0);
+    }
+    if (myMove.b) { //adapt tool compoensation for changed B-angle
+      writeBlock(gFormat.format(127), myMove.b);
+    }
+
+    writeBlock(gMotionModal.format(0), myMove.x, myMove.y, myMove.z, myMove.a, myMove.b, myMove.c);
   } else {
     var i = spatialFormat.format(_a);
     var j = spatialFormat.format(_b);
@@ -2599,12 +2616,10 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
   if (!currentSection.isOptimizedForMachine()) {
     forceXYZ();
   }
-  var myMove = { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 };
+  var myMove = { x: "", y: "", z: "", a: "", b: "", c: "" };
   myMove.x = xOutput.format(_x * Math.cos(_c) + _y * Math.sin(_c));
   myMove.y = yOutput.format(-_x * Math.sin(_c) + _y * Math.cos(_c));
   myMove.z = zOutput.format(_z);
-
-
 
   if (currentSection.isOptimizedForMachine()) {
     var old_b = bOutput.getCurrent();
@@ -2614,9 +2629,14 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
     myMove.b = bOutput.format(_b);
     myMove.c = cOutput.format(_c);
 
-    if(reduceNrAxis(myMove, old_b, old_c)){
-      writeComment("AXIS REDUCTION");
+    var redAngle = reduceNrAxis(myMove, old_b, old_c)
+    if (redAngle) {
+      writeComment("WARNING - AXIS REDUCTION - " + redAngle / Math.PI * 180.0);
     }
+    if (myMove.b) { //adapt tool compoensation for changed B-angle
+      writeBlock(gFormat.format(127), myMove.b);
+    }
+
     var f = getFeed(feed);
     if (myMove.x || myMove.y || myMove.z || myMove.a || myMove.b || myMove.c) {
       writeBlock(gMotionModal.format(1), myMove.x, myMove.y, myMove.z, myMove.a, myMove.b, myMove.c, f);
