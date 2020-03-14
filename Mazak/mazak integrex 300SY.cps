@@ -71,7 +71,8 @@ properties = {
   useCycles: true, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
-  moveLimits: false, // spedifies if soft machine limits specified in Mazatrol control shall be respected
+  moveLimits: false, // specifies if soft machine limits specified in Mazatrol control shall be respected
+  maxXZCFeed: 50000.0, // specifies the maximum XZC feed allowed (typically corresponding to the maximum engaged C-axis feed)
   g53HomePositionX: 0.0, // home position for X-axis
   g53HomePositionY: 0.0, // home position for Y-axis
   g53HomePositionZ: 0.0, // home position for Z-axis
@@ -102,6 +103,7 @@ propertyDefinitions = {
   useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", type: "boolean" },
   mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", type: "boolean" },
   moveLimits: { title: "Mazatrol soft limits", description: "spedifies if soft machine limits specified in Mazatrol control shall be respected", type: "boolean" },
+  maxXZCFeed: { title: "Max XZC feed", description: "specifies the maximum XZC feed allowed (typically corresponding to the maximum engaged C-axis feed)", type: "number" },
   g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", type: "number" },
   g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", type: "number" },
   g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", type: "number" },
@@ -616,8 +618,11 @@ function calculate_XZC_feed(startX, endX, startZ, endZ, startC, endC, feed) {
 
   //calculate XZC feed
   f = feed * Math.sqrt(deltaX * deltaX + deltaZ * deltaZ + deltaC * deltaC) /
-    Math.sqrt(deltaX * deltaX - deltaX * deltaC * avgX * Math.sin(avgC * Math.PI / 180) * Math.PI / 90 + Math.pow(avgX * deltaC * Math.PI / 180, 2));
+    Math.sqrt(deltaX * deltaX + deltaZ * deltaZ - deltaX * deltaC * avgX * Math.sin(avgC * Math.PI / 180) * Math.PI / 90 + Math.pow(avgX * deltaC * Math.PI / 180, 2));
 
+  if (f > properties.maxXZCFeed) {
+    f = properties.maxXZCFeed;
+  }
   return f;
 }
 
@@ -2446,7 +2451,7 @@ function onLinear(_x, _y, _z, feed) {
       }
       setCurrentPosition(currentXYZ);
       if (crossingRotary) {
-        writeBlock(gMotionModal.format(1), cOutput.format(endC), getFeed(XZC_feed)); // rotate at X0 with endC
+        writeBlock(gMotionModal.format(1), cOutput.format(endC), getFeed(properties.maxXZCFeed)); // rotate at X0 with endC
         forceFeed();
       }
       startX = currentX; startZ = currentZ; startC = crossingRotary ? endC : currentC; startXYZ = currentXYZ; // loop start point
