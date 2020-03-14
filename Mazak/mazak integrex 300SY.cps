@@ -629,6 +629,45 @@ function calculate_XZC_feed(startX, endX, startZ, endZ, startC, endC, feed) {
 /**
   Returns the C rotation for the given X and Y coordinates.
 */
+function reduceNrAxis(_myMove, _old_b, _old_c) {
+
+  var mov_axis_count = 0;
+
+  if (_myMove.x) {
+    mov_axis_count += 1;
+  }
+  if (_myMove.y) {
+    mov_axis_count += 1;
+  }
+  if (_myMove.z) {
+    mov_axis_count += 1;
+  }
+  if (_myMove.a) {
+    mov_axis_count += 1;
+  }
+  if (_myMove.b) {
+    mov_axis_count += 1;
+  }
+  if (_myMove.c) {
+    mov_axis_count += 1;
+  }
+
+  if (mov_axis_count > 4) {
+    if (Math.abs(bOutput.getCurrent() - _old_b) > Math.abs(cOutput.getCurrent() - _old_c)) {
+      _myMove.c = "";
+      return 1;
+    } else {
+      _myMove.b = "";
+      return 1;
+    }
+  }
+  return 0;
+}
+
+
+/**
+  Returns the C rotation for the given X and Y coordinates.
+*/
 function getC(x, y) {
   var direction;
   if (Vector.dot(machineConfiguration.getAxisU().getAxis(), new Vector(0, 0, 1)) != 0) {
@@ -2526,14 +2565,17 @@ function onRapid5D(_x, _y, _z, _a, _b, _c) {
     forceXYZ();
   }
 
-  var x = xOutput.format(_x);
-  var y = yOutput.format(_y);
+  mov_axis_count = 0;
+  var x = xOutput.format(_x * Math.cos(_c) + _y * Math.sin(_c));
+  var y = yOutput.format(-_x * Math.sin(_c) + _y * Math.cos(_c));
   var z = zOutput.format(_z);
 
   if (currentSection.isOptimizedForMachine()) {
     var a = aOutput.format(_a);
     var b = bOutput.format(_b);
     var c = cOutput.format(_c);
+
+
     writeBlock(gMotionModal.format(0), x, y, z, a, b, c);
   } else {
     var i = spatialFormat.format(_a);
@@ -2557,18 +2599,27 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
   if (!currentSection.isOptimizedForMachine()) {
     forceXYZ();
   }
+  var myMove = { x: 0, y: 0, z: 0, a: 0, b: 0, c: 0 };
+  myMove.x = xOutput.format(_x * Math.cos(_c) + _y * Math.sin(_c));
+  myMove.y = yOutput.format(-_x * Math.sin(_c) + _y * Math.cos(_c));
+  myMove.z = zOutput.format(_z);
 
-  var x = xOutput.format(_x);
-  var y = yOutput.format(_y);
-  var z = zOutput.format(_z);
+
 
   if (currentSection.isOptimizedForMachine()) {
-    var a = aOutput.format(_a);
-    var b = bOutput.format(_b);
-    var c = cOutput.format(_c);
+    var old_b = bOutput.getCurrent();
+    var old_c = cOutput.getCurrent();
+
+    myMove.a = aOutput.format(_a);
+    myMove.b = bOutput.format(_b);
+    myMove.c = cOutput.format(_c);
+
+    if(reduceNrAxis(myMove, old_b, old_c)){
+      writeComment("AXIS REDUCTION");
+    }
     var f = getFeed(feed);
-    if (x || y || z || a || b || c) {
-      writeBlock(gMotionModal.format(1), x, y, z, a, b, c, f);
+    if (myMove.x || myMove.y || myMove.z || myMove.a || myMove.b || myMove.c) {
+      writeBlock(gMotionModal.format(1), myMove.x, myMove.y, myMove.z, myMove.a, myMove.b, myMove.c, f);
     } else if (f) {
       if (getNextRecord().isMotion()) { // try not to output feed without motion
         forceFeed(); // force feed on next line
@@ -2582,7 +2633,7 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
     var k = spatialFormat.format(_c);
     var f = getFeed(feed);
     if (x || y || z || i || j || k) {
-      writeBlock(gMotionModal.format(1), x, y, z, "I" + i, "J" + j, "K" + k, f);
+      writeBlock(gMotionModal.format(1), myMove.x, myMove.y, myMove.z, "I" + i, "J" + j, "K" + k, f);
     } else if (f) {
       if (getNextRecord().isMotion()) { // try not to output feed without motion
         forceFeed(); // force feed on next line
