@@ -654,7 +654,7 @@ function reduceNrAxis(_myMove, _old_b, _old_c) {
     mov_axis_count += 1;
   }
 
-  if (mov_axis_count > 3) {
+  if (mov_axis_count > 4) {
     if (Math.abs(bOutput.getCurrent() - _old_b) > Math.abs(cOutput.getCurrent() - _old_c)) {
       _myMove.c = "";
       return Math.abs(cOutput.getCurrent() - _old_c);
@@ -1710,6 +1710,7 @@ function onSection() {
       writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(toolOrientation, "." + toolOrientation) + conditional(toolType, toolType));
     }
 
+    writeBlock(gFormat.format(127), writeDebugInfo("CALCULATE TOOL LENGTH FROM ROTATION CENTER")); //calculate tool-length from rotation center
     writeRetract(X);
     writeRetract(Z);
     writeRetract(Y);
@@ -1994,14 +1995,14 @@ function onSection() {
       }
     } */
   if (currentSection.isMultiAxis()) {
-    // turn
+    writeToolBlock("T0000" + writeDebugInfo("CANCEL TOOL WEAR COMPENSATION"));
     var abc;
     forceABC();
     if (currentSection.isOptimizedForMachine()) {
       abc = currentSection.getInitialToolAxisABC();
       var b_out = bOutput.format(abc.y);
       if (b_out) {
-        writeBlock(gFormat.format(127), b_out);
+        writeBlock(gFormat.format(128), b_out);
       }
       writeBlock(
         gMotionModal.format(0), gAbsIncModal.format(90),
@@ -2590,7 +2591,7 @@ function onRapid5D(_x, _y, _z, _a, _b, _c) {
       writeComment("WARNING - AXIS REDUCTION - " + redAngle / Math.PI * 180.0);
     }
     if (myMove.b) { //adapt tool compoensation for changed B-angle
-      writeBlock(gFormat.format(127), myMove.b);
+      writeBlock(gFormat.format(128), myMove.b);
     }
 
     writeBlock(gMotionModal.format(0), myMove.x, myMove.y, myMove.z, myMove.a, myMove.b, myMove.c);
@@ -2634,7 +2635,7 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
       writeComment("WARNING - AXIS REDUCTION - " + redAngle / Math.PI * 180.0);
     }
     if (myMove.b) { //adapt tool compoensation for changed B-angle
-      writeBlock(gFormat.format(127), myMove.b);
+      writeBlock(gFormat.format(128), myMove.b);
     }
 
     var f = getFeed(feed);
