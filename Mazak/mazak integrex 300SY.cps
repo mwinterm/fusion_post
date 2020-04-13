@@ -1341,17 +1341,20 @@ function setWorkPlane(abc) {
   }
   //forceWorkPlane();
 
-  if (!((currentWorkPlaneABC == undefined) ||
-    abcFormat.areDifferent(abc.x, currentWorkPlaneABC.x) ||
-    abcFormat.areDifferent(abc.y, currentWorkPlaneABC.y) ||
-    abcFormat.areDifferent(abc.z, currentWorkPlaneABC.z))) {
-    return; // no change
-  }
+  // if (!((currentWorkPlaneABC == undefined) ||
+  //   abcFormat.areDifferent(abc.x, currentWorkPlaneABC.x) ||
+  //   abcFormat.areDifferent(abc.y, currentWorkPlaneABC.y) ||
+  //   abcFormat.areDifferent(abc.z, currentWorkPlaneABC.z))) {
+  //   return; // no change
+  // }
 
   var b_axis_unclamped = false;
   if (currentWorkPlaneABC == undefined ||
     abcFormat.areDifferent(abc.y, currentWorkPlaneABC.y)) {
     if (gotBAxis) {
+      writeRetract(X);
+      writeRetract(Z);
+      writeRetract(Y);
       writeBlock(getCode("UNCLAMP_B_AXIS")); // B-axis
       b_axis_unclamped = true;
     }
