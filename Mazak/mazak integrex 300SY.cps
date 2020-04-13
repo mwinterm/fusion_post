@@ -1339,7 +1339,7 @@ function setWorkPlane(abc) {
   if (!machineConfiguration.isMultiAxisConfiguration()) {
     return; // ignore
   }
-  forceWorkPlane();
+  //forceWorkPlane();
 
   if (!((currentWorkPlaneABC == undefined) ||
     abcFormat.areDifferent(abc.x, currentWorkPlaneABC.x) ||
@@ -1348,7 +1348,23 @@ function setWorkPlane(abc) {
     return; // no change
   }
 
-  onCommand(COMMAND_UNLOCK_MULTI_AXIS);
+  var b_axis_unclamped = false;
+  if (currentWorkPlaneABC == undefined ||
+    abcFormat.areDifferent(abc.y, currentWorkPlaneABC.y)) {
+    if (gotBAxis) {
+      writeBlock(getCode("UNCLAMP_B_AXIS")); // B-axis
+      b_axis_unclamped = true;
+    }
+  }
+
+  var c_axis_unclamped = false;
+  if (currentWorkPlaneABC == undefined ||
+    abcFormat.areDifferent(abc.z, currentWorkPlaneABC.z)) {
+    writeBlock(currentSection.spindle == SPINDLE_PRIMARY ? getCode("UNCLAMP_PRIMARY_SPINDLE") : getCode("UNCLAMP_SECONDARY_SPINDLE")); // C-axis
+    c_axis_unclamped = true;
+  }
+
+  //onCommand(COMMAND_UNLOCK_MULTI_AXIS);
 
   if (useMultiAxisFeatures && !usePartialMultiAxisFeature) {
     var initialToolAxisBC = machineConfiguration.getABC(currentSection.workPlane);
@@ -1364,8 +1380,8 @@ function setWorkPlane(abc) {
     var initialToolAxisBC = machineConfiguration.getABC(currentSection.workPlane);
     writeBlock(
       gMotionModal.format(0),
-      conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
-      conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))); //turn machine
+      conditional(machineConfiguration.isMachineCoordinate(1) && b_axis_unclamped, "B" + abcFormat.format(abc.y)),
+      conditional(machineConfiguration.isMachineCoordinate(2) && c_axis_unclamped, "C" + abcFormat.format(abc.z))); //turn machine
     if (abc.isNonZero()) {
       writeBlock( //set frame
         gFormat.format(125),
@@ -1604,10 +1620,10 @@ function onSection() {
 
   if (newWorkPlane || insertToolCall) {
     writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
-    forceWorkPlane();
+    //forceWorkPlane();
   }
 
-  if (insertToolCall || newSpindle || newWorkOffset || newWorkPlane) {
+  if (insertToolCall || newSpindle || newWorkOffset) {
     // retract to safe plane
     writeRetract(X);
     writeRetract(Z);
@@ -2021,6 +2037,7 @@ function onSection() {
     gPlaneModal.reset();
     gMotionModal.reset();
     if (machineState.useXZCMode) {
+      writeBlock(currentSection.spindle == SPINDLE_PRIMARY ? getCode("UNCLAMP_PRIMARY_SPINDLE") : getCode("UNCLAMP_SECONDARY_SPINDLE"));
       writeBlock(gPlaneModal.format(17));
       writeBlock(gMotionModal.format(0), gFormat.format(offsetCode), zOutput.format(initialPosition.z));
       cOutput.reset();
