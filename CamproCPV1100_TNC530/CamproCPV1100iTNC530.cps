@@ -1,11 +1,11 @@
 /**
-  Copyright (C) 2012-2019 by Autodesk, Inc.
+  Copyright (C) 2012-2020 by Autodesk, Inc.
   All rights reserved.
 
   Heidenhain post processor configuration.
 
-  $Revision: 42300 cf946acecb938ad1561a779dcf68e435aa406323 $
-  $Date: 2019-04-29 09:09:11 $
+  $Revision: 42738 357ff47924af4c7291a286bb921b7cc8e397a340 $
+  $Date: 2020-04-15 04:00:09 $
   
   FORKID {36E63822-3A79-42b9-96EA-6B661FE8D0C8}
 */
@@ -13,7 +13,7 @@
 description = "CamproCPV1100_iTNC530 mit A-Achse";
 vendor = "Campro";
 vendorUrl = "http://www.heidenhain.com";
-legal = "Copyright (C) 2012-2019 by Autodesk, Inc.";
+legal = "Copyright (C) 2012-2020 by Autodesk, Inc.";
 certificationLevel = 2;
 minimumRevision = 40783;
 
@@ -52,41 +52,43 @@ properties = {
   optionalStop: true, // optional stop
   structureComments: true, // show structure comments
   useM92: false, // use M92 instead of M91
-  useM140: true, // Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions
+  useM140: false, // Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions
   useSubroutines: false, // specifies that subroutines per each operation should be generated
   useSubroutinePatterns: false, // generates subroutines for patterned operation
   useSubroutineCycles: false, // generates subroutines for cycle operations on same holes
   machineDefinition: "", // specifies the path of the machine definition
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: false, // specifies that operation notes should be output.
-  preferTilt: -1, // -1: negative, 0:dont care, 1: positive
-  toolAsName: false,  // specifies if the tool should be called with a number or with the tool description
-  fourthAxis: false //specify if 4th axis is installed
+  preferTilt: 0, // -1: negative, 0:dont care, 1: positive
+  toolAsName: false, // specifies if the tool should be called with a number or with the tool description
+  fourthAxis: true, //specify if 4th axis is installed
+  outputSpindleSpeedForProbing:  true // allows speed to come out
 };
 
 // user-defined property definitions
 propertyDefinitions = {
-  writeMachine: {title:"Write machine", description:"Output the machine settings in the header of the code.", group:0, type:"boolean"},
-  writeTools: {title:"Write tool list", description:"Output a tool list in the header of the code.", group:0, type:"boolean"},
-  writeVersion: {title:"Write version", description:"Write the version number in the header of the code.", group:0, type:"boolean"},
-  usePlane: {title:"Tilted workplane", description:"Specifies the tilted workplane command to use.", type:"enum", values:[{id:"none", title:"Use rotary angles"}, {id:"true", title:"Use Plane Spatial"}, {id:"false", title:"Use Cycle19"}]},
-  useFunctionTCPM: {title:"Use function TCPM", description:"Specifies whether to use Function TCPM instead of M128/M129.", type:"boolean"},
-  preloadTool: {title:"Preload tool", description:"Preloads the next tool at a tool change (if any).", type:"boolean"},
-  expandCycles: {title:"Expand cycles", description:"If enabled, unhandled cycles are expanded.", type:"boolean"},
-  smoothingTolerance: {title:"Smoothing tolerance", description:"Smoothing tolerance (-1 for disabled).", type:"number"},
-  optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
-  structureComments: {title:"Structure comments", description:"Shows structure comments.", type:"boolean"},
-  useM92: {title:"Use M92", description:"If enabled, M91 is used instead of M91.", type:"boolean"},
-  useM140: {title:"Use M140", description:"Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions.", type:"boolean"},
-  useSubroutines: {title:"Use subroutines", description:"Specifies that subroutines per each operation should be generated.", type:"boolean"},
-  useSubroutinePatterns: {title:"Use subroutine patterns", description:"Generates subroutines for patterned operation.", type:"boolean"},
-  useSubroutineCycles: {title:"Use subroutine cycles", description:"Generates subroutines for cycle operations on same holes.", type:"boolean"},
-  machineDefinition: {title:"Machine definition", description:"Specifies the file path of the machine definition to use.", type:"file", filters:"*.machine|Machine Configuration"},
-  useParametricFeed:  {title:"Parametric feed", description:"Specifies the feed value that should be output using a Q value.", type:"boolean"},
-  showNotes: {title:"Show notes", description:"Writes operation notes as comments in the outputted code.", type:"boolean"},
-  preferTilt: {title:"Prefer tilt", description:"Specifies which tilt direction is preferred.", type:"integer", values:[{id:-1, title:"Negative"}, {id:0, title:"Either"}, {id:1, title:"Positive"}]},
-  toolAsName: {title:"Tool as name", description:"If enabled, the tool will be called with the tool description rather than the tool number.", type:"boolean"}, 
-  fourthAxis: {title: "4th axis", description:"Specifies if the 4th Axis is connected to the machine.", type:"boolean"}
+  writeMachine: { title: "Write machine", description: "Output the machine settings in the header of the code.", group: 0, type: "boolean" },
+  writeTools: { title: "Write tool list", description: "Output a tool list in the header of the code.", group: 0, type: "boolean" },
+  writeVersion: { title: "Write version", description: "Write the version number in the header of the code.", group: 0, type: "boolean" },
+  usePlane: { title: "Tilted workplane", description: "Specifies the tilted workplane command to use.", type: "enum", values: [{ id: "none", title: "Use rotary angles" }, { id: "true", title: "Use Plane Spatial" }, { id: "false", title: "Use Cycle19" }] },
+  useFunctionTCPM: { title: "Use function TCPM", description: "Specifies whether to use Function TCPM instead of M128/M129.", type: "boolean" },
+  preloadTool: { title: "Preload tool", description: "Preloads the next tool at a tool change (if any).", type: "boolean" },
+  expandCycles: { title: "Expand cycles", description: "If enabled, unhandled cycles are expanded.", type: "boolean" },
+  smoothingTolerance: { title: "Smoothing tolerance", description: "Smoothing tolerance (-1 for disabled).", type: "number" },
+  optionalStop: { title: "Optional stop", description: "Outputs optional stop code during when necessary in the code.", type: "boolean" },
+  structureComments: { title: "Structure comments", description: "Shows structure comments.", type: "boolean" },
+  useM92: { title: "Use M92", description: "If enabled, M91 is used instead of M91.", type: "boolean" },
+  useM140: { title: "Use M140", description: "Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions.", type: "boolean" },
+  useSubroutines: { title: "Use subroutines", description: "Specifies that subroutines per each operation should be generated.", type: "boolean" },
+  useSubroutinePatterns: { title: "Use subroutine patterns", description: "Generates subroutines for patterned operation.", type: "boolean" },
+  useSubroutineCycles: { title: "Use subroutine cycles", description: "Generates subroutines for cycle operations on same holes.", type: "boolean" },
+  machineDefinition: { title: "Machine definition", description: "Specifies the file path of the machine definition to use.", type: "file", filters: "*.machine|Machine Configuration" },
+  useParametricFeed: { title: "Parametric feed", description: "Specifies the feed value that should be output using a Q value.", type: "boolean" },
+  showNotes: { title: "Show notes", description: "Writes operation notes as comments in the outputted code.", type: "boolean" },
+  preferTilt: { title: "Prefer tilt", description: "Specifies which tilt direction is preferred.", type: "integer", values: [{ id: -1, title: "Negative" }, { id: 0, title: "Either" }, { id: 1, title: "Positive" }] },
+  toolAsName: { title: "Tool as name", description: "If enabled, the tool will be called with the tool description rather than the tool number.", type: "boolean" },
+  fourthAxis: { title: "4th axis", description: "Specifies if the 4th Axis is connected to the machine.", type: "boolean" },
+  outputSpindleSpeedForProbing: {title:"Output spindle speed for probing", description:"Specifies whether the spindle speed value is needed at the machine tool for probing operations", type: "boolean"}
 };
 
 var singleLineCoolant = false; // specifies to output multiple coolant codes in one line rather than in separate lines
@@ -94,15 +96,15 @@ var singleLineCoolant = false; // specifies to output multiple coolant codes in 
 // {id: COOLANT_THROUGH_TOOL, on: 88, off: 89}
 // {id: COOLANT_THROUGH_TOOL, on: [8, 88], off: [9, 89]}
 var coolants = [
-  {id: COOLANT_FLOOD, on: 8, off: 9},
-  {id: COOLANT_MIST, on: 35, off: 36},
-  {id: COOLANT_THROUGH_TOOL, on: 48, off: 49},
-  {id: COOLANT_AIR},
-  {id: COOLANT_AIR_THROUGH_TOOL},
-  {id: COOLANT_SUCTION},
-  {id: COOLANT_FLOOD_MIST, on: [8, 35], off: [9, 36]},
-  {id: COOLANT_FLOOD_THROUGH_TOOL, on: [8, 48], off: [9, 49]},
-  {id: COOLANT_OFF, off: 9}
+  { id: COOLANT_FLOOD, on: 8, off: 9 },
+  { id: COOLANT_MIST, on: 35, off: 36 },
+  { id: COOLANT_THROUGH_TOOL, on: 48, off: 49 },
+  { id: COOLANT_AIR },
+  { id: COOLANT_AIR_THROUGH_TOOL },
+  { id: COOLANT_SUCTION },
+  { id: COOLANT_FLOOD_MIST, on: [8, 35], off: [9, 36] },
+  { id: COOLANT_FLOOD_THROUGH_TOOL, on: [8, 48], off: [9, 49] },
+  { id: COOLANT_OFF, off: 9 }
 ];
 
 // fixed settings
@@ -138,6 +140,9 @@ var patternIsActive = false;
 var lastOperationComment = "";
 var incrementalSubprogram;
 var retracted = false; // specifies that the tool has been retracted to the safe plane
+probeMultipleFeatures = true;
+var logfilePath = "TNC:\\public\\";
+var logFileName;
 
 var radiusCompensationTable = new Table(
   [" R0", " RL", " RR"],
@@ -172,7 +177,6 @@ var aOutput = createVariable({prefix:" A"}, abcFormat);
 var bOutput = createVariable({prefix:" B"}, abcFormat);
 var cOutput = createVariable({prefix:" C"}, abcFormat);
 var feedOutput = createVariable({prefix:" F"}, feedFormat);
-
 
 /** Force output of X, Y, and Z. */
 function forceXYZ() {
@@ -253,22 +257,22 @@ function onOpen() {
     optimizeMachineAngles2(0); // using M128 mode
   } else if (true) {
     // NOTE: setup your machine here
-    var aAxis = createAxis({coordinate:0, table:true, axis:[1, 0, 0], range:[0, 360], cyclic:true, preference: properties.preferTilt});
+    var aAxis = createAxis({ coordinate: 0, table: true, axis: [1, 0, 0], range: [0, 360], cyclic: true, preference: properties.preferTilt });
     //var bAxis = createAxis({coordinate:1, table:true, axis:[0, 1, 0], range:[-120.0001, 120.0001], preference:1});
     //var cAxis = createAxis({coordinate:2, table:true, axis:[0, 0, 1], range:[0, 360], cyclic:true});
     //machineConfiguration = new MachineConfiguration(aAxis, cAxis);
-	if(properties.fourthAxis){
-		machineConfiguration = new MachineConfiguration(aAxis);
-	}else{
-		machineConfiguration = new MachineConfiguration();
-	}
-	machineConfiguration.setVendor("Campro");
-	machineConfiguration.setModel("CPV1100");
-	machineConfiguration.setDescription("4-achs Maschine (A-Achse) mit Heidenhain iTNC530");
+    if (properties.fourthAxis) {
+      machineConfiguration = new MachineConfiguration(aAxis);
+    } else {
+      machineConfiguration = new MachineConfiguration();
+    }
+    machineConfiguration.setVendor("Campro");
+    machineConfiguration.setModel("CPV1100");
+    machineConfiguration.setDescription("4-achs Maschine (A-Achse) mit Heidenhain iTNC530");
 
 
     setMachineConfiguration(machineConfiguration);
-    optimizeMachineAngles2(0); // 0:using M128 mode
+    optimizeMachineAngles2(1); // 0:using M128 mode
   }
 
   // NOTE: setup your home positions here
@@ -289,7 +293,6 @@ function onOpen() {
   writeBlock(
     "BEGIN PGM" + (programName ? (SP + programName) : "") + ((unit == MM) ? " MM" : " INCH")
   );
-  
   if (programComment) {
     writeComment(programComment);
   }
@@ -313,10 +316,23 @@ function onOpen() {
   }
 
   //write program generation date and time
+  //write program generation date and time
   let current_datetime = new Date();
   let formatted_date = current_datetime.getDate() + "." + current_datetime.getMonth() + "." + current_datetime.getFullYear() + " - " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+  var date = current_datetime.getDate();
+  var month = current_datetime.getMonth() + 1;
+  var year = current_datetime.getFullYear();
+  var hours = current_datetime.getHours();
+  var minutes = current_datetime.getMinutes();
+  var seconds = current_datetime.getSeconds();
+  yearFormatted = year;
+  monthFormatted = month < 10 ? "0" + month : month;
+  dateFormatted = date < 10 ? "0" + date : date;
+  hoursFormatted = hours < 10 ? "0" + hours : hours;
+  minutesFormatted = minutes < 10 ? "0" + minutes : minutes;
+  secondsFormatted = seconds < 10 ? "0" + seconds : seconds;
   writeSeparator();
-  writeComment( localize("Programm erstellt am: ") + formatted_date);
+  writeComment("Program created: " + dateFormatted + "." + monthFormatted + "." + yearFormatted + "  " + hoursFormatted + ":" + minutesFormatted + ":" + secondsFormatted);
 
 
   // dump machine configuration
@@ -334,7 +350,7 @@ function onOpen() {
       writeComment("  " + localize("Modell") + ": " + model);
     }
     if (description) {
-      writeComment("  " + localize("Beschreibung") + ": "  + description);
+      writeComment("  " + localize("Beschreibung") + ": " + description);
     }
     //writeSeparator();
     //writeComment("");
@@ -1003,7 +1019,7 @@ function subprogramIsValid(_section, _patternId, _patternType) {
   }
   setRotation(rotation);
   setTranslation(translation);
-  return(validSubprogram);
+  return (validSubprogram);
 }
 
 function setAxisMode(_format, _output, _prefix, _value, _incr) {
@@ -1111,10 +1127,10 @@ function onSection() {
     var comment = getParameter("operation-comment");
     if (comment && ((comment !== lastOperationComment) || !patternIsActive || insertToolCall)) {
       writeSeparator();
-	  //writeStructureComment(comment + "  - T" + tool.number + "-D" + spatialFormat.format(tool.diameter));
-	  writeStructureComment(getParameter("autodeskcam:path") + " - T" + tool.number + ", D" + spatialFormat.format(tool.diameter)); //Writes out section Name
-	  //writeComment("T" + tool.number + " - D" + spatialFormat.format(tool.diameter) + " - " + getToolTypeName(tool.type)); //Writes out tool
-	  writeSeparator();
+      //writeStructureComment(comment + "  - T" + tool.number + "-D" + spatialFormat.format(tool.diameter));
+      writeStructureComment(getParameter("autodeskcam:path") + " - T" + tool.number + ", D" + spatialFormat.format(tool.diameter)); //Writes out section Name
+      //writeComment("T" + tool.number + " - D" + spatialFormat.format(tool.diameter) + " - " + getToolTypeName(tool.type)); //Writes out tool
+      writeSeparator();
       lastOperationComment = comment;
     }
   }
@@ -1163,10 +1179,12 @@ function onSection() {
       writeStructureComment("T" + tool.number + "-D" + spatialFormat.format(tool.diameter) + "-CR:" + spatialFormat.format(tool.cornerRadius) + "-ZMIN:" + spatialFormat.format(zRange.getMinimum()) + "-ZMAX:" + spatialFormat.format(zRange.getMaximum()));
     }
 
-    var spindleSpeedValue = (isInspectionOperation(currentSection) || isProbeOperation()) ? 50 : spindleSpeed;
     writeBlock(
       "TOOL CALL " + (properties.toolAsName ? "\"" + (tool.description.toUpperCase()) + "\"" : tool.number) +
-      SP + getSpindleAxisLetter(machineConfiguration.getSpindleAxis()) + " S" + rpmFormat.format(spindleSpeedValue)
+      SP + getSpindleAxisLetter(machineConfiguration.getSpindleAxis()) +
+      (isInspectionOperation(currentSection) || isProbeOperation() ? properties.outputSpindleSpeedForProbing ?
+        " S" + rpmFormat.format(50) : "" : " S" + rpmFormat.format(spindleSpeed)
+      )
     );
     if (tool.comment) {
       writeComment(tool.comment);
@@ -1253,17 +1271,17 @@ function onSection() {
 
     if (properties.usePlane != "none") {
       // global position
-      forceXYZ();
       writeBlock("CYCL DEF 7.0 " + localize("DATUM SHIFT"));
-      writeBlock("CYCL DEF 7.1" + xOutput.format(initialPosition.x));
-      writeBlock("CYCL DEF 7.2" + yOutput.format(initialPosition.y));
-      writeBlock("CYCL DEF 7.3" + zOutput.format(initialPosition.z));
+      writeBlock("CYCL DEF 7.1 X" + xyzFormat.format(initialPosition.x));
+      writeBlock("CYCL DEF 7.2 Y" + xyzFormat.format(initialPosition.y));
+      writeBlock("CYCL DEF 7.3 Z" + xyzFormat.format(initialPosition.z));
+      forceXYZ();
     }
 
     if (properties.usePlane == "true") {
       if (machineConfiguration.isMultiAxisConfiguration()) {
         writeBlock(
-          "PLANE SPATIAL SPA" + abcFormat.format(abc.x % (Math.PI *2)) + " SPB" + abcFormat.format(abc.y % (Math.PI *2)) + " SPC" + abcFormat.format(abc.z % (Math.PI *2)) + " STAY"
+          "PLANE SPATIAL SPA" + abcFormat.format(abc.x % (Math.PI * 2)) + " SPB" + abcFormat.format(abc.y % (Math.PI * 2)) + " SPC" + abcFormat.format(abc.z % (Math.PI * 2)) + " STAY"
         );
       } else {
         // x/y axes do not matter as long as we only move to X0 Y0 below
@@ -1290,9 +1308,9 @@ function onSection() {
       if (machineConfiguration.isMultiAxisConfiguration()) {
         writeBlock(
           "CYCL DEF 19.1" +
-          conditional(machineConfiguration.isMachineCoordinate(0), " A" + abcFormat.format(abc.x % (Math.PI *2))) +
-          conditional(machineConfiguration.isMachineCoordinate(1), " B" + abcFormat.format(abc.y % (Math.PI *2))) +
-          conditional(machineConfiguration.isMachineCoordinate(2), " C" + abcFormat.format(abc.z % (Math.PI *2)))
+          conditional(machineConfiguration.isMachineCoordinate(0), " A" + abcFormat.format(abc.x % (Math.PI * 2))) +
+          conditional(machineConfiguration.isMachineCoordinate(1), " B" + abcFormat.format(abc.y % (Math.PI * 2))) +
+          conditional(machineConfiguration.isMachineCoordinate(2), " C" + abcFormat.format(abc.z % (Math.PI * 2)))
         );
       } else {
         error(localize("CYCL DEF 19 is not allowed without a machine configuration (enable the 'usePlane' setting)."));
@@ -1318,6 +1336,7 @@ function onSection() {
       writeBlock("CYCL DEF 7.1 X" + xyzFormat.format(0));
       writeBlock("CYCL DEF 7.2 Y" + xyzFormat.format(0));
       writeBlock("CYCL DEF 7.3 Z" + xyzFormat.format(0));
+      forceXYZ();
     }
     if (properties.usePlane == "true") {
       if (!useTCPPositioning && !machineConfiguration.isHeadConfiguration()) {
@@ -1498,7 +1517,7 @@ function onDwell(seconds) {
 
 function isProbeOperation() {
   // isProbingCycle && isProbingCycle(cycleType)
-  return hasParameter("operation-strategy") && (getParameter("operation-strategy") == "probe");
+  return hasParameter("operation-strategy") && ((getParameter("operation-strategy") == "probe" || getParameter("operation-strategy") == "probe_geometry"));
 }
 
 function isInspectionOperation(section) {
@@ -1580,7 +1599,7 @@ function onDeepDrilling(cycle) {
       + " Q258=" + xyzFormat.format(0.5) + " ;" + localize("UPPER ADV. STOP DIST.") + " ~" + EOL
       + " Q259=" + xyzFormat.format(1) + " ;" + localize("LOWER ADV. STOP DIST.") + " ~" + EOL
       + " Q257=" + xyzFormat.format(5) + " ;" + localize("DEPTH FOR CHIP BRKNG") + " ~" + EOL
-      + " Q256=" + xyzFormat.format((cycle.chipBreakDistance != undefined) ? cycle.chipBreakDistance : machineParameters.chipBreakingDistance) + " ;" + localize("DIST. FOR CHIP BRKNG")+ " ~" + EOL
+      + " Q256=" + xyzFormat.format((cycle.chipBreakDistance != undefined) ? cycle.chipBreakDistance : machineParameters.chipBreakingDistance) + " ;" + localize("DIST. FOR CHIP BRKNG") + " ~" + EOL
       + " Q211=" + secFormat.format(cycle.dwell) + " ;" + localize("DWELL TIME AT DEPTH") + " ~" + EOL
       + " Q379=" + "0" + " ;" + localize("STARTING POINT") + " ~" + EOL
       + " Q253=" + feedFormat.format(cycle.retractFeedrate) + " ;" + localize("F PRE-POSITIONING")
@@ -1672,7 +1691,7 @@ function onStopBoring(cycle) {
 
 /** Returns the best discrete disengagement direction for the specified direction. */
 function getDisengagementDirection(direction) {
-  switch (getQuadrant(direction + 45 * Math.PI/180)) {
+  switch (getQuadrant(direction + 45 * Math.PI / 180)) {
   case 0:
     return 3;
   case 1:
@@ -1709,7 +1728,7 @@ function onBackBoring(cycle) {
     + "  Q250=" + xyzFormat.format(cycle.depth) + " ;" + localize("MATERIAL THICKNESS") + " ~" + EOL
     + "  Q251=" + xyzFormat.format(cycle.shift) + " ;" + localize("OFF-CENTER DISTANCE") + " ~" + EOL
     + "  Q252=" + xyzFormat.format(0) + " ;" + localize("TOOL EDGE HEIGHT") + " ~" + EOL
-    + "  Q253=" + "MAX" + " ;"+ localize("F PRE-POSITIONING") + " ~" + EOL
+    + "  Q253=" + "MAX" + " ;" + localize("F PRE-POSITIONING") + " ~" + EOL
     + "  Q254=" + feedFormat.format(cycle.feedrate) + " ;" + localize("F COUNTERBORING") + " ~" + EOL
     + "  Q255=" + secFormat.format(cycle.dwell) + " ;" + localize("DWELL AT BOTTOM") + " ~" + EOL
     + "  Q203=" + xyzFormat.format(cycle.stock) + " ;" + localize("SURFACE COORDINATE") + " ~" + EOL
@@ -1785,7 +1804,7 @@ function onCircularPocketMilling(cycle) {
     + "  Q200=" + xyzFormat.format(cycle.retract - cycle.stock) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
     + "  Q203=" + xyzFormat.format(cycle.stock) + " ;" + localize("SURFACE COORDINATE") + " ~" + EOL
     + "  Q204=" + xyzFormat.format(cycle.clearance - cycle.stock) + " ;" + localize("2ND SET-UP CLEARANCE") + " ~" + EOL
-    + "  Q370=" + ratioFormat.format(cycle.stepover/(tool.diameter/2)) + " ;" + localize("TOOL PATH OVERLAP") + " ~" + EOL
+    + "  Q370=" + ratioFormat.format(cycle.stepover / (tool.diameter / 2)) + " ;" + localize("TOOL PATH OVERLAP") + " ~" + EOL
     + "  Q366=" + "0" + " ;" + localize("PLUNGING") + " ~" + EOL
     + "  Q385=" + feedFormat.format(cycle.feedrate) + " ;" + localize("FEED RATE FOR FINISHING")
   );
@@ -1914,132 +1933,265 @@ function onCyclePoint(x, y, z) {
   }
 
   if (isProbeOperation()) {
+    var probeGeometry = hasParameter("operation-strategy") && (getParameter("operation-strategy") == "probe_geometry");
     if (!isSameDirection(currentSection.workPlane.forward, new Vector(0, 0, 1)) && (!cycle.probeMode || (cycle.probeMode == 0))) {
-      error(localize("Updating WCS / work offset using probing is only supported by the CNC in the WCS frame."));
-      return;
+      if (!probeGeometry) {
+        error(localize("Updating WCS / work offset using probing is only supported by the CNC in the WCS frame."));
+        return;
+      }
     }
     switch (cycleType) {
     case "probing-x":
-      writeBlock("TCH PROBE 419 " + localize("DATUM IN ONE AXIS") + " ~" + EOL
-        + "  Q263=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
-        + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-        + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER")
-      );
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 427 " + localize("MEASURE COORDINATE") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q267=" + xyzFormat.format(approach(cycle.approach1))  + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2) + cycle.tolerancePosition) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q289=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2) - cycle.tolerancePosition) +  " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format((cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0)) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR427.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 419 " + localize("DATUM IN ONE AXIS") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER")
+        );
+      }
       break;
     case "probing-y":
-      writeBlock("TCH PROBE 419 " + localize("DATUM IN ONE AXIS") + " ~" + EOL
-        + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
-        + "  Q264=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-        + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER")
-      );
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 427 " + localize("MEASURE COORDINATE") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q267=" + xyzFormat.format(approach(cycle.approach1))  + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2) + cycle.tolerancePosition) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q289=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2) - cycle.tolerancePosition) +  " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR427.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 419 " + localize("DATUM IN ONE AXIS") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER")
+        );
+      }
       break;
     case "probing-z":
-      writeBlock("TCH PROBE 417 " + localize("DATUM IN TS AXIS") + " ~" + EOL
-        + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
-        + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
-        + "  Q294=" + xyzFormat.format(z - cycle.depth) + " ;" + localize("1ST POINT 3RD AXIS") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(z - cycle.depth) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER")
-      );
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 427 " + localize("MEASURE COORDINATE") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(3) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q267=" + xyzFormat.format(approach(cycle.approach1))  + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(z - cycle.depth + cycle.toleranceSize) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q289=" + xyzFormat.format(z - cycle.depth - cycle.toleranceSize) +  " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER")
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR427.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 417 " + localize("DATUM IN TS AXIS") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q294=" + xyzFormat.format(z - cycle.depth) + " ;" + localize("1ST POINT 3RD AXIS") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(z - cycle.depth) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER")
+        );
+      }
       break;
     case "probing-x-channel":
     case "probing-x-channel-with-island":
-      writeBlock("TCH PROBE 408 " + localize("SLOT CENTER REF PT") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("SLOT WIDTH") + " ~" + EOL
-        + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q301=" + xyzFormat.format(cycleType == "probing-x-channel" ? 0 : 1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q405=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
-      );
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 425 " + localize("MEASURE INSIDE WIDTH") + " ~" + EOL
+          + "  Q328=" + xyzFormat.format(x) + " ;" + localize("STARTNG PNT 1ST AXIS") + " ~" + EOL
+          + "  Q329=" + xyzFormat.format(y) + " ;" + localize("STARTNG PNT 2ND AXIS") + " ~" + EOL
+          + "  Q310=" + xyzFormat.format(0) + " ;" + localize("OFFS. 2ND MEASUREMNT") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL LENGTH") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR425.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 408 " + localize("SLOT CENTER REF PT") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("SLOT WIDTH") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q301=" + xyzFormat.format(cycleType == "probing-x-channel" ? 0 : 1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q405=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
+        );
+      }
       break;
     case "probing-y-channel":
     case "probing-y-channel-with-island":
-      writeBlock("TCH PROBE 408 " + localize("SLOT CENTER REF PT") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("SLOT WIDTH") + " ~" + EOL
-        + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q301=" + xyzFormat.format(cycleType == "probing-y-channel" ? 0 : 1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q405=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
-      );
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 425 " + localize("MEASURE INSIDE WIDTH") + " ~" + EOL
+          + "  Q328=" + xyzFormat.format(x) + " ;" + localize("STARTNG PNT 1ST AXIS") + " ~" + EOL
+          + "  Q329=" + xyzFormat.format(y) + " ;" + localize("STARTNG PNT 2ND AXIS") + " ~" + EOL
+          + "  Q310=" + xyzFormat.format(0) + " ;" + localize("OFFS. 2ND MEASUREMNT") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL LENGTH") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR425.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 408 " + localize("SLOT CENTER REF PT") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("SLOT WIDTH") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q301=" + xyzFormat.format(cycleType == "probing-y-channel" ? 0 : 1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q405=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
+        );
+      }
       break;
     case "probing-x-wall":
-      writeBlock("TCH PROBE 409 " + localize("RIDGE CENTER REF PT") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("RIDGE WIDTH") + " ~" + EOL
-        + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q405=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
-      );
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 426 " + localize("MEASURE RIDGE WIDTH") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x - (cycle.width1 / 2) - cycle.probeClearance - (tool.diameter / 2))  + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q265=" + xyzFormat.format(x + (cycle.width1 / 2) + cycle.probeClearance + (tool.diameter / 2))  + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+          + "  Q266=" + xyzFormat.format(y) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL LENGTH") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q289=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR426.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 409 " + localize("RIDGE CENTER REF PT") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("RIDGE WIDTH") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q405=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
+        );
+      }
       break;
     case "probing-y-wall":
-      writeBlock("TCH PROBE 409 " + localize("RIDGE CENTER REF PT") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("RIDGE WIDTH") + " ~" + EOL
-        + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q405=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
-      );
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 426 " + localize("MEASURE RIDGE WIDTH") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x)  + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y - (cycle.width1 / 2) - cycle.probeClearance - (tool.diameter / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q265=" + xyzFormat.format(x)  + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+          + "  Q266=" + xyzFormat.format(y + (cycle.width1 / 2) + cycle.probeClearance + (tool.diameter / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL LENGTH") + " ~" + EOL
+          + "  Q288=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q289=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR426.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 409 " + localize("RIDGE CENTER REF PT") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q311=" + xyzFormat.format(cycle.width1) + " ;" + localize("RIDGE WIDTH") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q405=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
+        );
+      }
       break;
-/*
+      /*
     case "probing-xy-inner-corner":
       // Heidenhain needs 2 points per surface for inner and outer corner probing
       var spacing = cycle.probeSpacing ? cycle.probeSpacing : tool.diameter * 0.2;
@@ -2053,166 +2205,290 @@ function onCyclePoint(x, y, z) {
 */
     case "probing-xy-circular-hole":
     case "probing-xy-circular-hole-with-island":
-      writeBlock("TCH PROBE 412 " + localize("DATUM INSIDE CIRCLE") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q262=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL DIAMETER") + " ~" + EOL
-        + "  Q325=" + xyzFormat.format(0) + " ;" + localize("STARTING ANGLE") + " ~" + EOL
-        + "  Q247=" + xyzFormat.format(90) + " ;" + localize("STEPPING ANGLE") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q423=" + xyzFormat.format(4) + " ;" + localize("NO. OF MEAS. POINTS") + " ~" + EOL
-        + "  Q365=" + xyzFormat.format(1) + " ;" + localize("TYPE OF TRAVERSE")
-      );
-      break;
-    case "probing-xy-rectangular-hole":
-    case "probing-xy-rectangular-hole-with-island":
-      writeBlock("TCH PROBE 410 " + localize("DATUM INSIDE RECTAN.") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q323=" + xyzFormat.format(cycle.width1) + " ;" + localize("FIRST SIDE LENGTH") + " ~" + EOL
-        + "  Q324=" + xyzFormat.format(cycle.width2) + " ;" + localize("2ND SIDE LENGTH") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q301=" + xyzFormat.format(cycleType == "probing-xy-rectangular-hole" ? 0 : 1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
-      );
-      break;
-    case "probing-xy-circular-boss":
-      writeBlock("TCH PROBE 413 " + localize("DATUM OUTSIDE CIRCLE") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q262=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL DIAMETER") + " ~" + EOL
-        + "  Q325=" + xyzFormat.format(0)+ " ;" + localize("STARTING ANGLE") + " ~" + EOL
-        + "  Q247=" + xyzFormat.format(90) + " ;" + localize("STEPPING ANGLE") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q423=" + xyzFormat.format(4) + " ;" + localize("NO. OF MEAS. POINTS") + " ~" + EOL
-        + "  Q365=" + xyzFormat.format(1) + " ;" + localize("TYPE OF TRAVERSE")
-      );
-      break;
-    case "probing-xy-rectangular-boss":
-      writeBlock("TCH PROBE 411 " + localize("DATUM OUTS. RECTAN.") + " ~" + EOL
-        + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
-        + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
-        + "  Q323=" + xyzFormat.format(cycle.width1) + " ;" + localize("FIRST SIDE LENGTH") + " ~" + EOL
-        + "  Q324=" + xyzFormat.format(cycle.width2) + " ;" + localize("2ND SIDE LENGTH") + " ~" + EOL
-        + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-        + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
-        + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
-        + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-        + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-        + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
-        + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-        + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
-        + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
-        + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
-      );
-      break;
-    case "probing-x-plane-angle":
-      if (!machineConfiguration.isMultiAxisConfiguration()) {
-        writeBlock("TCH PROBE 400 " + localize("BASIC ROTATION") + " ~" + EOL
-          + "  Q263=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
-          + "  Q264=" + xyzFormat.format(y + (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
-          + "  Q265=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
-          + "  Q266=" + xyzFormat.format(y - (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
-          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-          + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 421 " + localize("MEASURE HOLE") + " ~" + EOL
+          + "  Q273=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q274=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q262=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL DIAMETER") + " ~" + EOL
+          + "  Q325=" + xyzFormat.format(0) + " ;" + localize("STARTING ANGLE") + " ~" + EOL
+          + "  Q247=" + xyzFormat.format(90) + " ;" + localize("STEPPING ANGLE") + " ~" + EOL
           + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
           + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
           + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
           + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-          + "  Q307=" + xyzFormat.format(0) + " ;" + localize("PRESET ROTATION ANG.") + " ~" + EOL
-          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE")
+          + "  Q275=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q276=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q279=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 1ST CENTER") + " ~" + EOL
+          + "  Q280=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 2ND CENTER") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults == 1 ? 1 : 0) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
         );
+        logFileName = (cycle.printResults > 0) ? "TCHPR421.TXT" : undefined;
       } else {
-        writeBlock("TCH PROBE 403 " + localize("ROT IN ROTARY AXIS") + " ~" + EOL
-          + "  Q263=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
-          + "  Q264=" + xyzFormat.format(y + (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
-          + "  Q265=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
-          + "  Q266=" + xyzFormat.format(y - (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
-          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-          + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+        writeBlock("TCH PROBE 412 " + localize("DATUM INSIDE CIRCLE") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q262=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL DIAMETER") + " ~" + EOL
+          + "  Q325=" + xyzFormat.format(0) + " ;" + localize("STARTING ANGLE") + " ~" + EOL
+          + "  Q247=" + xyzFormat.format(90) + " ;" + localize("STEPPING ANGLE") + " ~" + EOL
           + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
-          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
           + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
           + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-          + "  Q312=" + xyzFormat.format(0) + " ;" + localize("COMPENSATION AXIS") + " ~" + EOL
-          + "  Q337=" + xyzFormat.format(1) + " ;" + localize("SET TO ZERO") + " ~" + EOL
           + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
           + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-          + "  Q380=" + xyzFormat.format(0) + " ;" + localize("REFERENCE ANGLE")
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q423=" + xyzFormat.format(4) + " ;" + localize("NO. OF MEAS. POINTS") + " ~" + EOL
+          + "  Q365=" + xyzFormat.format(1) + " ;" + localize("TYPE OF TRAVERSE")
         );
       }
       break;
-    case "probing-y-plane-angle":
-      if (!machineConfiguration.isMultiAxisConfiguration()) {
-        writeBlock("TCH PROBE 400 " + localize("BASIC ROTATION") + " ~" + EOL
-          + "  Q263=" + xyzFormat.format(x - (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
-          + "  Q264=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
-          + "  Q265=" + xyzFormat.format(x + (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
-          + "  Q266=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
-          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
-          + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+    case "probing-xy-rectangular-hole":
+    case "probing-xy-rectangular-hole-with-island":
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 423 " + localize("MEAS. RECTAN. INSIDE") + " ~" + EOL
+          + "  Q273=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q274=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q282=" + xyzFormat.format(cycle.width1) + " ;" + localize("1ST SIDE LENGTH") + " ~" + EOL
+          + "  Q283=" + xyzFormat.format(cycle.width2) + " ;" + localize("2ND SIDE LENGTH") + " ~" + EOL
           + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
           + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
           + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
           + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-          + "  Q307=" + xyzFormat.format(0) + " ;" + localize("PRESET ROTATION ANG.") + " ~" + EOL
-          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE")
+          + "  Q284=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAX. LIMIT 1ST SIDE") + " ~" + EOL
+          + "  Q285=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MIN. LIMIT 1ST SIDE") + " ~" + EOL
+          + "  Q286=" + xyzFormat.format(cycle.width2 + cycle.toleranceSize) + " ;" + localize("MAX. LIMIT 2ND SIDE") + " ~" + EOL
+          + "  Q287=" + xyzFormat.format(cycle.width2 - cycle.toleranceSize) + " ;" + localize("MIN. LIMIT 2ND SIDE") + " ~" + EOL
+          + "  Q279=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 1ST CENTER") + " ~" + EOL
+          + "  Q280=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 2ND CENTER") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults == 1 ? 1 : 0) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
         );
+        logFileName = (cycle.printResults > 0) ? "TCHPR423.TXT" : undefined;
       } else {
-        writeBlock("TCH PROBE 403 " + localize("ROT IN ROTARY AXIS") + " ~" + EOL
-          + "  Q263=" + xyzFormat.format(x - (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
-          + "  Q264=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
-          + "  Q265=" + xyzFormat.format(x + (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
-          + "  Q266=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
-          + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+        writeBlock("TCH PROBE 410 " + localize("DATUM INSIDE RECTAN.") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q323=" + xyzFormat.format(cycle.width1) + " ;" + localize("FIRST SIDE LENGTH") + " ~" + EOL
+          + "  Q324=" + xyzFormat.format(cycle.width2) + " ;" + localize("2ND SIDE LENGTH") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance ? cycle.probeClearance : 0) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q301=" + xyzFormat.format(cycleType == "probing-xy-rectangular-hole" ? 0 : 1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
+        );
+      }
+      break;
+    case "probing-xy-circular-boss":
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 422 " + localize("MEAS. CIRCLE OUTSIDE") + " ~" + EOL
+          + "  Q273=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q274=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q262=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL DIAMETER") + " ~" + EOL
+          + "  Q325=" + xyzFormat.format(0) + " ;" + localize("STARTING ANGLE") + " ~" + EOL
+          + "  Q247=" + xyzFormat.format(90) + " ;" + localize("STEPPING ANGLE") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+          + "  Q277=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAXIMUM DIMENSION") + " ~" + EOL
+          + "  Q278=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MINIMUM DIMENSION") + " ~" + EOL
+          + "  Q279=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 1ST CENTER") + " ~" + EOL
+          + "  Q280=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 2ND CENTER") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults == 1 ? 1 : 0) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR422.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 413 " + localize("DATUM OUTSIDE CIRCLE") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q262=" + xyzFormat.format(cycle.width1) + " ;" + localize("NOMINAL DIAMETER") + " ~" + EOL
+          + "  Q325=" + xyzFormat.format(0) + " ;" + localize("STARTING ANGLE") + " ~" + EOL
+          + "  Q247=" + xyzFormat.format(90) + " ;" + localize("STEPPING ANGLE") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q423=" + xyzFormat.format(4) + " ;" + localize("NO. OF MEAS. POINTS") + " ~" + EOL
+          + "  Q365=" + xyzFormat.format(1) + " ;" + localize("TYPE OF TRAVERSE")
+        );
+      }
+      break;
+    case "probing-xy-rectangular-boss":
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 424 " + localize("MEAS. RECTAN. OUTS.") + " ~" + EOL
+          + "  Q273=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q274=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q282=" + xyzFormat.format(cycle.width1) + " ;" + localize("1ST SIDE LENGTH") + " ~" + EOL
+          + "  Q283=" + xyzFormat.format(cycle.width2) + " ;" + localize("2ND SIDE LENGTH") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+          + "  Q284=" + xyzFormat.format(cycle.width1 + cycle.toleranceSize) + " ;" + localize("MAX. LIMIT 1ST SIDE") + " ~" + EOL
+          + "  Q285=" + xyzFormat.format(cycle.width1 - cycle.toleranceSize) + " ;" + localize("MIN. LIMIT 1ST SIDE") + " ~" + EOL
+          + "  Q286=" + xyzFormat.format(cycle.width2 + cycle.toleranceSize) + " ;" + localize("MAX. LIMIT 2ND SIDE") + " ~" + EOL
+          + "  Q287=" + xyzFormat.format(cycle.width2 - cycle.toleranceSize) + " ;" + localize("MIN. LIMIT 2ND SIDE") + " ~" + EOL
+          + "  Q279=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 1ST CENTER") + " ~" + EOL
+          + "  Q280=" + xyzFormat.format(cycle.tolerancePosition) + " ;" + localize("TOLERANCE 2ND CENTER") + " ~" + EOL
+          + "  Q281=" + xyzFormat.format(cycle.printResults == 1 ? 1 : 0) + " ;" + localize("MEASURING LOG") + " ~" + EOL
+          + "  Q309=" + xyzFormat.format(cycle.wrongSizeAction == "stop-message" || cycle.outOfPositionAction == "stop-message" ? 1 : 0) + " ;" + localize("PGM-STOP IF ERROR") + " ~" + EOL
+          + "  Q330=" + xyzFormat.format(cycle.updateToolWear == 1 && cycle.toolWearUpdateThreshold != 0 ? cycle.toolWearNumber : 0) + " ;" + localize("TOOL NUMBER") + EOL
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR424.TXT" : undefined;
+      } else {
+        writeBlock("TCH PROBE 411 " + localize("DATUM OUTS. RECTAN.") + " ~" + EOL
+          + "  Q321=" + xyzFormat.format(x) + " ;" + localize("CENTER IN 1ST AXIS") + " ~" + EOL
+          + "  Q322=" + xyzFormat.format(y) + " ;" + localize("CENTER IN 2ND AXIS") + " ~" + EOL
+          + "  Q323=" + xyzFormat.format(cycle.width1) + " ;" + localize("FIRST SIDE LENGTH") + " ~" + EOL
+          + "  Q324=" + xyzFormat.format(cycle.width2) + " ;" + localize("2ND SIDE LENGTH") + " ~" + EOL
+          + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+          + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+          + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+          + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+          + "  Q331=" + xyzFormat.format(x) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q332=" + xyzFormat.format(y) + " ;" + localize("DATUM") + " ~" + EOL
+          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+          + "  Q381=" + xyzFormat.format(0) + " ;" + localize("PROBE IN TS AXIS") + " ~" + EOL
+          + "  Q382=" + xyzFormat.format(0) + " ;" + localize("1ST CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q383=" + xyzFormat.format(0) + " ;" + localize("2ND CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q384=" + xyzFormat.format(0) + " ;" + localize("3RD CO. FOR TS AXIS") + " ~" + EOL
+          + "  Q333=" + xyzFormat.format(0) + " ;" + localize("DATUM")
+        );
+      }
+      break;
+    case "probing-x-plane-angle":
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 420 " + localize("MEASURE ANGLE") + " ~" + EOL
+          + "  Q263=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+          + "  Q264=" + xyzFormat.format(y + (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+          + "  Q265=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+          + "  Q266=" + xyzFormat.format(y - (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+          + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
           + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
           + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
           + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
           + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
           + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
-          + "  Q312=" + xyzFormat.format(0) + " ;" + localize("COMPENSATION AXIS") + " ~" + EOL
-          + "  Q337=" + xyzFormat.format(1) + " ;" + localize("SET TO ZERO") + " ~" + EOL
-          + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
-          + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
-          + "  Q380=" + xyzFormat.format(0) + " ;" + localize("REFERENCE ANGLE")
+          + "  Q281=" + xyzFormat.format(cycle.printResults == 1 ? 1 : 0) + " ;" + localize("MEASURING LOG")
         );
+        logFileName = (cycle.printResults > 0) ? "TCHPR420.TXT" : undefined;
+      } else {
+        if (!machineConfiguration.isMultiAxisConfiguration()) {
+          writeBlock("TCH PROBE 400 " + localize("BASIC ROTATION") + " ~" + EOL
+            + "  Q263=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+            + "  Q264=" + xyzFormat.format(y + (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+            + "  Q265=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+            + "  Q266=" + xyzFormat.format(y - (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+            + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+            + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+            + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+            + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+            + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+            + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+            + "  Q307=" + xyzFormat.format(0) + " ;" + localize("PRESET ROTATION ANG.") + " ~" + EOL
+            + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE")
+          );
+        } else {
+          writeBlock("TCH PROBE 403 " + localize("ROT IN ROTARY AXIS") + " ~" + EOL
+            + "  Q263=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+            + "  Q264=" + xyzFormat.format(y + (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+            + "  Q265=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+            + "  Q266=" + xyzFormat.format(y - (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+            + "  Q272=" + xyzFormat.format(1) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+            + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+            + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+            + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+            + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+            + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+            + "  Q312=" + xyzFormat.format(0) + " ;" + localize("COMPENSATION AXIS") + " ~" + EOL
+            + "  Q337=" + xyzFormat.format(1) + " ;" + localize("SET TO ZERO") + " ~" + EOL
+            + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+            + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+            + "  Q380=" + xyzFormat.format(0) + " ;" + localize("REFERENCE ANGLE")
+          );
+        }
+      }
+      break;
+    case "probing-y-plane-angle":
+      if (probeGeometry) {
+        writeBlock("TCH PROBE 420 " + localize("MEASURE ANGLE") + " ~" + EOL
+            + "  Q263=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+            + "  Q264=" + xyzFormat.format(y + (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+            + "  Q265=" + xyzFormat.format(x + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+            + "  Q266=" + xyzFormat.format(y - (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+            + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+            + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+            + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+            + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+            + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+            + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+            + "  Q281=" + xyzFormat.format(cycle.printResults == 1 ? 1 : 0) + " ;" + localize("MEASURING LOG")
+        );
+        logFileName = (cycle.printResults > 0) ? "TCHPR420.TXT" : undefined;
+      } else {
+        if (!machineConfiguration.isMultiAxisConfiguration()) {
+          writeBlock("TCH PROBE 400 " + localize("BASIC ROTATION") + " ~" + EOL
+              + "  Q263=" + xyzFormat.format(x - (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+              + "  Q264=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+              + "  Q265=" + xyzFormat.format(x + (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+              + "  Q266=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+              + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+              + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+              + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+              + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+              + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+              + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+              + "  Q307=" + xyzFormat.format(0) + " ;" + localize("PRESET ROTATION ANG.") + " ~" + EOL
+              + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE")
+          );
+        } else {
+          writeBlock("TCH PROBE 403 " + localize("ROT IN ROTARY AXIS") + " ~" + EOL
+              + "  Q263=" + xyzFormat.format(x - (cycle.probeSpacing / 2)) + " ;" + localize("1ST POINT 1ST AXIS") + " ~" + EOL
+              + "  Q264=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("1ST POINT 2ND AXIS") + " ~" + EOL
+              + "  Q265=" + xyzFormat.format(x + (cycle.probeSpacing / 2)) + " ;" + localize("2ND POINT 1ST AXIS") + " ~" + EOL
+              + "  Q266=" + xyzFormat.format(y + approach(cycle.approach1) * (cycle.probeClearance + tool.diameter / 2)) + " ;" + localize("2ND POINT 2ND AXIS") + " ~" + EOL
+              + "  Q272=" + xyzFormat.format(2) + " ;" + localize("MEASURING AXIS") + " ~" + EOL
+              + "  Q267=" + xyzFormat.format(approach(cycle.approach1)) + " ;" + localize("TRAVERSE DIRECTION") + " ~" + EOL
+              + "  Q261=" + xyzFormat.format((z + tool.diameter / 2) - cycle.depth) + " ;" + localize("MEASURING HEIGHT") + " ~" + EOL
+              + "  Q320=" + xyzFormat.format(cycle.probeClearance) + " ;" + localize("SET-UP CLEARANCE") + " ~" + EOL
+              + "  Q260=" + xyzFormat.format(cycle.stock) + " ;" + localize("CLEARANCE HEIGHT") + " ~" + EOL
+              + "  Q301=" + xyzFormat.format(1) + " ;" + localize("MOVE TO CLEARANCE") + " ~" + EOL
+              + "  Q312=" + xyzFormat.format(0) + " ;" + localize("COMPENSATION AXIS") + " ~" + EOL
+              + "  Q337=" + xyzFormat.format(1) + " ;" + localize("SET TO ZERO") + " ~" + EOL
+              + "  Q305=" + xyzFormat.format(probeOutputWorkOffset) + " ;" + localize("NUMBER IN TABLE") + " ~" + EOL
+              + "  Q303=" + xyzFormat.format(1) + " ;" + localize("MEAS. VALUE TRANSFER") + " ~" + EOL
+              + "  Q380=" + xyzFormat.format(0) + " ;" + localize("REFERENCE ANGLE")
+          );
+        }
       }
       break;
     default:
@@ -2223,7 +2499,7 @@ function onCyclePoint(x, y, z) {
   
   if (!expandCurrentCycle) {
     // execute current cycle after this positioning block
-/*
+    /*
     if (cycleType == "circular-pocket-milling") {
       if (isFirstCyclePoint()) {
         onCircularPocketFinishMilling(x, y, cycle);
@@ -2260,9 +2536,7 @@ function onCyclePoint(x, y, z) {
 }
 
 function onCycleEnd() {
-  if (isProbeOperation()) {
-    setWCS();
-  } else if (cycleSubprogramIsActive) {
+  if (cycleSubprogramIsActive) {
     subprogramEnd();
     cycleSubprogramIsActive = false;
   }
@@ -2414,7 +2688,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     return;
   }
 
-  if (false && !isHelical() && (Math.abs(getCircularSweep()) <= 2*Math.PI*0.9)) { // use IPA to avoid radius compensation errors
+  if (false && !isHelical() && (Math.abs(getCircularSweep()) <= 2 * Math.PI * 0.9)) { // use IPA to avoid radius compensation errors
     switch (getCircularPlane()) {
     case PLANE_XY:
       writeBlock(
@@ -2622,20 +2896,12 @@ function onCommand(command) {
     onCommand(tool.clockwise ? COMMAND_SPINDLE_CLOCKWISE : COMMAND_SPINDLE_COUNTERCLOCKWISE);
     return;
   case COMMAND_LOCK_MULTI_AXIS:
-    if(properties.fourthAxis){
-	  writeBlock(mFormat.format(64));
-	}
     return;
   case COMMAND_UNLOCK_MULTI_AXIS:
-     if(properties.fourthAxis){
-	  writeBlock(mFormat.format(44));
-	 }
     return;
   case COMMAND_START_CHIP_TRANSPORT:
-    writeBlock(mFormat.format(50));
     return;
   case COMMAND_STOP_CHIP_TRANSPORT:
-    writeBlock(mFormat.format(51));
     return;
   case COMMAND_BREAK_CONTROL:
     return;
@@ -2683,10 +2949,29 @@ function onSectionEnd() {
   }
   if (currentSection.isMultiAxis()) {
     setTCP(false);
+    // the code below gets the machine angles from previous operation.  closestABC must also be set to true
+    if (currentSection.isOptimizedForMachine()) {
+      currentMachineABC = currentSection.getFinalToolAxisABC();
+    }
+  }
+  if (isProbeOperation()) {
+    setWCS();
+
+    if (logFileName != undefined) {
+      var comment;
+      if (hasParameter("operation-comment")) {
+        comment = getParameter("operation-comment").replace(" ", "_") + ".TXT";
+        writeBlock("");
+        writeBlock("FUNCTION FILECOPY " + "\"" + logfilePath + logFileName + "\" TO");
+        writeBlock(" " + "\"" + logfilePath + comment + "\"");
+        writeBlock("FUNCTION FILEDELETE " + "\"" + logfilePath + logFileName + "\"");
+        writeBlock("");
+        logFileName = undefined;
+      }
+    }
   }
   invalidate();
 }
-
 
 properties.homeXYAtEnd = false;
 if (propertyDefinitions === undefined) {
@@ -2744,7 +3029,7 @@ function onClose() {
 
   onCommand(COMMAND_STOP_SPINDLE);
 
-/*
+  /*
   if (useCycl247) {
     writeBlock(
       "CYCL DEF 247 " + localize("DATUM SETTING") + " ~" + EOL +
@@ -2784,7 +3069,7 @@ function onClose() {
   writeBlock(mFormat.format(30)); // stop program, spindle stop, coolant off
 
   if (typeof inspectionProgramEnd == "function") {
-      inspectionProgramEnd();
+    inspectionProgramEnd();
   }
 
   if (subprograms.length > 0) {
