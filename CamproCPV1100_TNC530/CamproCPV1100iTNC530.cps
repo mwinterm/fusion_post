@@ -257,7 +257,7 @@ function onOpen() {
     optimizeMachineAngles2(0); // using M128 mode
   } else if (true) {
     // NOTE: setup your machine here
-    var aAxis = createAxis({ coordinate: 0, table: true, axis: [1, 0, 0], range: [0, 360], cyclic: true, preference: properties.preferTilt });
+    var aAxis = createAxis({ coordinate: 0, table: true, axis: [-1, 0, 0], range: [0, 360], cyclic: true, preference: properties.preferTilt });
     //var bAxis = createAxis({coordinate:1, table:true, axis:[0, 1, 0], range:[-120.0001, 120.0001], preference:1});
     //var cAxis = createAxis({coordinate:2, table:true, axis:[0, 0, 1], range:[0, 360], cyclic:true});
     //machineConfiguration = new MachineConfiguration(aAxis, cAxis);
