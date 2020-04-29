@@ -302,11 +302,11 @@ function getCode(code) {
     case "ENGAGE_C_MAIN_AXIS":
       machineState.cMainAxisIsEngaged = true;
       machineState.mainSpindleIsActive = false;
-      return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
+      return combineCommands(mFormat.format(200), writeDebugInfo("Milling mode main spindle"));
     case "ENGAGE_C_SUB_AXIS":
       machineState.cSubAxisIsEngaged = true;
       machineState.subSpindleIsActive = false;
-      return combineCommands(gFormat.format(112), cAxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
+      return combineCommands(gFormat.format(112), mFormat.format(200), writeDebugInfo("Milling mode sub-spindle"));
     case "DISENGAGE_C_AXIS":
       machineState.cAxisIsEngaged = false;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
@@ -2943,7 +2943,7 @@ function onCycle() {
         writeBlock(gFormat.format(112), mFormat.format(202), writeDebugInfo("Secondary spindle lathe mode"));
         if (getParameter("operation:feedPlaneHeight_mode") == "machine coordinates") {
           writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
-          writeBlock(gAbsIncModal.format(90), gFormat.format(1), gFormat.format(53), z2Output.format(cycle.feedPosition), feed2Output.format(cycle.feedrate));
+          writeBlock(gAbsIncModal.format(90), gFormat.format(1), z2Output.format(cycle.feedPosition), feed2Output.format(cycle.feedrate));
           writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
         } else {
           writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
