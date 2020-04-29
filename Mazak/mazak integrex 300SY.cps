@@ -182,6 +182,7 @@ var gAbsIncModal = createModal({}, gFormat); // modal group 3 // G90-91
 var gRetractModal = createModal({}, gFormat); // modal group 10 // G98-99
 var gSpindleModal = createModal({}, gFormat);
 var cAxisEngageModal = createModal({}, mFormat);
+var c2AxisEngageModal = createModal({}, mFormat);
 var tailStockModal = createModal({}, mFormat);
 var gCSModal = createModal({}, gFormat); // modal group 52.5, 53.5
 var gG50Modal = createModal({}, gFormat); // modal group G54, G55, G56..., G59
@@ -297,16 +298,16 @@ function getCode(code) {
       } else {
         machineState.cSubAxisIsEngaged = true;
         machineState.subSpindleIsActive = false;
-        return combineCommands(gFormat.format(112), cAxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
+        return combineCommands(gFormat.format(112), c2AxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
       }
     case "ENGAGE_C_MAIN_AXIS":
       machineState.cMainAxisIsEngaged = true;
       machineState.mainSpindleIsActive = false;
-      return combineCommands(mFormat.format(200), writeDebugInfo("Milling mode main spindle"));
+      return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
     case "ENGAGE_C_SUB_AXIS":
       machineState.cSubAxisIsEngaged = true;
       machineState.subSpindleIsActive = false;
-      return combineCommands(gFormat.format(112), mFormat.format(200), writeDebugInfo("Milling mode sub-spindle"));
+      return combineCommands(gFormat.format(112), c2AxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
     case "DISENGAGE_C_AXIS":
       machineState.cAxisIsEngaged = false;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
@@ -316,7 +317,7 @@ function getCode(code) {
       } else {
         machineState.cSubAxisIsEngaged = false;
         machineState.subSpindleIsActive = true;
-        return combineCommands(gFormat.format(112), cAxisEngageModal.format(202), writeDebugInfo("Sub-spindle lathe mode"));
+        return combineCommands(gFormat.format(112), c2AxisEngageModal.format(202), writeDebugInfo("Sub-spindle lathe mode"));
       }
     case "DISENGAGE_C_MAIN_AXIS":
       machineState.cMainAxisIsEngaged = false;
