@@ -63,6 +63,7 @@ properties = {
   sequenceNumberIncrement: 10, // increment for sequence numbers
   sequenceNumberOnlyOnToolChange: false, // only output sequence numbers on tool change
   numberOfToolDigits: 2, // Number of tool digites, can be 2 or 3 (T01 or T001)
+  isSubProgram: false, //when true M99 instead of M30 is issued at the end of the code
   //optionalStop: true, // optional stop
   emptyTool: 80, //empty tool pocket to change in when no tool should be present
   separateWordsWithSpace: true, // specifies that the words should be separated with a white space
@@ -95,6 +96,7 @@ propertyDefinitions = {
   sequenceNumberOnlyOnToolChange: { title: "Sequence number only on tool change", description: "If enabled, sequence numbers are only outputted when a toolchange is called", type: "boolean" },
   numberOfToolDigits: { title: "Tool digits", description: "Number of digits used for a tool call. Can be 2 or 3 i.e. T01 or T001", group: 1, type: "integer" },
   emptyTool: { title: "Empty tool number", description: "Number of empty tool pocket to be changed in when no tool shall be in the spindle", group: 1, type: "integer" },
+  isSubProgram: { title: "This is a sub-program", description: "When true M99 instead of M30 is issued at the end of the program", type: "boolean" },
   //optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
   separateWordsWithSpace: { title: "Separate words with space", description: "Adds spaces between words if 'yes' is selected.", type: "boolean" },
   useRadius: { title: "Radius arcs", description: "If yes is selected, arcs are outputted using radius values rather than IJK.", type: "boolean" },
@@ -854,6 +856,10 @@ function onOpen() {
   writeDebug = properties.writeDebugInformation;
   writeStructComments = properties.writeStructureComments;
 
+  //define special cycles
+  setSectionSpecialCycle("secondary-spindle-grab", true);
+  setSectionSpecialCycle("secondary-spindle-return", true);
+
   if (properties.useRadius) {
     maximumCircularSweep = toRad(90); // avoid potential center calculation errors for CNC
   }
@@ -1552,6 +1558,7 @@ var bAxisOrientationTurning = new Vector(0, 0, 0);
 
 function onSection() {
   writeln("");
+
   if (hasParameter("operation-comment")) {
     var comment = "-- Section - " + getParameter("operation-comment");
 
@@ -2081,6 +2088,10 @@ function onSection() {
     }
   }
   retracted = false;
+}
+
+function onSectionSpecialCycle() {
+  writeStructureComment("- SPECIAL CYCLE BEGIN");
 }
 
 /** Returns true if the toolpath fits within the machine XY limits for the given C orientation. */
@@ -2956,8 +2967,7 @@ function onCycle() {
         error(localize("Unsupported transfer method."));
     }
 
-    writeStructureComment("(-- Spindle transfer cycle complete)");
-    writeln("");
+    writeStructureComment("(-- Transfer action complete)");
     return;
   }
 }
@@ -3449,8 +3459,13 @@ function onSectionEnd() {
 
 }
 
-function onClose() {
+function onSectionEndSpecialCycle() {
+  writeStructureComment("- SPECIAL CYCLE SECTION END");
   writeln("");
+}
+
+function onClose() {
+  writeStructureComment("ONCLOSE SEQUENCE");
 
   optionalSection = false;
 
@@ -3492,6 +3507,10 @@ function onClose() {
     writeln("");
   }
 
-  writeBlock(mFormat.format(30)); // stop program, spindle stop, coolant off
+  if (properties.isSubProgram) {
+    writeBlock(mFormat.format(99));
+  } else {
+    writeBlock(mFormat.format(30)); // stop program, spindle stop, coolant off
+  }
   writeln("%"); //needed for HD-mode
 }
