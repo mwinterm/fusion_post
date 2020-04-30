@@ -73,7 +73,7 @@ properties = {
   showNotes: true, // specifies that operation notes should be output.
   useCycles: true, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
-  mazatrolCS: false, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
+  mazatrolCS: true, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
   moveLimits: false, // specifies if soft machine limits specified in Mazatrol control shall be respected
   maxXZCFeed: 50000.0, // specifies the maximum XZC feed allowed (typically corresponding to the maximum engaged C-axis feed)
   g53HomePositionX: 0.0, // home position for X-axis
@@ -84,34 +84,34 @@ properties = {
 
 // user-defined property definitions
 propertyDefinitions = {
-  writeMachine: { title: "Write machine", description: "Output the machine settings in the header of the code.", group: 0, type: "boolean" },
-  writeTools: { title: "Write tool list", description: "Output a tool list in the header of the code.", group: 0, type: "boolean" },
-  writeStructureComments: { title: "Structure comments", description: "Writes program structure comments", group: 0, type: "boolean" },
-  writeDebugInformation: { title: "Write some debug information", description: "Adds comments reagrding most G- and M-codes", group: 0, type: "boolean" },
-  preloadTool: { title: "Preload tool", description: "Preloads the next tool at a tool change (if any).", type: "boolean" },
-  useToolCompensation: { title: "Use tool compensation", description: "Specifies if tool compensation table should be employed.", type: "boolean" },
-  showSequenceNumbers: { title: "Use sequence numbers", description: "Use sequence numbers for each block of outputted code.", group: 1, type: "boolean" },
-  sequenceNumberStart: { title: "Start sequence number", description: "The number at which to start the sequence numbers.", group: 1, type: "integer" },
-  sequenceNumberIncrement: { title: "Sequence number increment", description: "The amount by which the sequence number is incremented by in each block.", group: 1, type: "integer" },
-  sequenceNumberOnlyOnToolChange: { title: "Sequence number only on tool change", description: "If enabled, sequence numbers are only outputted when a toolchange is called", type: "boolean" },
-  numberOfToolDigits: { title: "Tool digits", description: "Number of digits used for a tool call. Can be 2 or 3 i.e. T01 or T001", group: 1, type: "integer" },
-  emptyTool: { title: "Empty tool number", description: "Number of empty tool pocket to be changed in when no tool shall be in the spindle", group: 1, type: "integer" },
-  isSubProgram: { title: "This is a sub-program", description: "When true M99 instead of M30 is issued at the end of the program", type: "boolean" },
+  writeMachine: { title: "Write machine", description: "Output the machine settings in the header of the code.", group: 30, type: "boolean" },
+  writeTools: { title: "Write tool list", description: "Output a tool list in the header of the code.", group: 30, type: "boolean" },
+  writeStructureComments: { title: "Structure comments", description: "Writes program structure comments", group: 10, type: "boolean" },
+  writeDebugInformation: { title: "Write some debug information", description: "Adds comments reagrding most G- and M-codes", group: 11, type: "boolean" },
+  preloadTool: { title: "Preload tool", description: "Preloads the next tool at a tool change (if any).", group: 14, type: "boolean" },
+  useToolCompensation: { title: "Use tool compensation", description: "Specifies if tool compensation table should be employed.", group: 50, type: "boolean" },
+  showSequenceNumbers: { title: "Use sequence numbers", description: "Use sequence numbers for each block of outputted code.", group: 16, type: "boolean" },
+  sequenceNumberStart: { title: "Start sequence number", description: "The number at which to start the sequence numbers.", group: 18, type: "integer" },
+  sequenceNumberIncrement: { title: "Sequence number increment", description: "The amount by which the sequence number is incremented by in each block.", group: 19, type: "integer" },
+  sequenceNumberOnlyOnToolChange: { title: "Sequence number only on tool change", description: "If enabled, sequence numbers are only outputted when a toolchange is called", group: 17,  type: "boolean" },
+  numberOfToolDigits: { title: "Tool digits", description: "Number of digits used for a tool call. Can be 2 or 3 i.e. T01 or T001", group: 50, type: "integer" },
+  emptyTool: { title: "Empty tool number", description: "Number of empty tool pocket to be changed in when no tool shall be in the spindle", group: 30, type: "integer" },
+  isSubProgram: { title: "This is a sub-program", description: "When true M99 instead of M30 is issued at the end of the program", group: 12, type: "boolean" },
   //optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
-  separateWordsWithSpace: { title: "Separate words with space", description: "Adds spaces between words if 'yes' is selected.", type: "boolean" },
-  useRadius: { title: "Radius arcs", description: "If yes is selected, arcs are outputted using radius values rather than IJK.", type: "boolean" },
-  maximumSpindleSpeed: { title: "Max spindle speed", description: "Defines the maximum spindle speed allowed by your machines.", type: "integer", range: [0, 999999999] },
-  useParametricFeed: { title: "Parametric feed", description: "Specifies the feed value that should be output using a Q value.", type: "boolean" },
-  showNotes: { title: "Show notes", description: "Writes operation notes as comments in the outputted code.", type: "boolean" },
-  useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", type: "boolean" },
-  useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", type: "boolean" },
-  mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", type: "boolean" },
-  moveLimits: { title: "Mazatrol soft limits", description: "spedifies if soft machine limits specified in Mazatrol control shall be respected", type: "boolean" },
-  maxXZCFeed: { title: "Max XZC feed", description: "specifies the maximum XZC feed allowed (typically corresponding to the maximum engaged C-axis feed)", type: "number" },
-  g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", type: "number" },
-  g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", type: "number" },
-  g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", type: "number" },
-  g53HomePositionSubZ: { title: "G53 home position Z (secondary spindle)", description: "G53 Z-axis home position for the secondary spindle.", type: "number" }
+  separateWordsWithSpace: { title: "Separate words with space", description: "Adds spaces between words if 'yes' is selected.", group: 50, type: "boolean" },
+  useRadius: { title: "Radius arcs", description: "If yes is selected, arcs are outputted using radius values rather than IJK.", group: 50, type: "boolean" },
+  maximumSpindleSpeed: { title: "Max spindle speed", description: "Defines the maximum spindle speed allowed by your machines.", group: 13, type: "integer", range: [0, 999999999] },
+  useParametricFeed: { title: "Parametric feed", description: "Specifies the feed value that should be output using a Q value.", group: 50, type: "boolean" },
+  showNotes: { title: "Show notes", description: "Writes operation notes as comments in the outputted code.", group: 50, type: "boolean" },
+  useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", group: 40, type: "boolean" },
+  useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", group: 40, type: "boolean" },
+  mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", group: 30, type: "boolean" },
+  moveLimits: { title: "Mazatrol soft limits", description: "spedifies if soft machine limits specified in Mazatrol control shall be respected", group: 50, type: "boolean" },
+  maxXZCFeed: { title: "Max XZC feed", description: "specifies the maximum XZC feed allowed (typically corresponding to the maximum engaged C-axis feed)", group: 15, type: "number" },
+  g53HomePositionX: { title: "G53 home position X", description: "G53 X-axis home position.", group: 20, type: "number" },
+  g53HomePositionY: { title: "G53 home position Y", description: "G53 Y-axis home position.", group: 20, type: "number" },
+  g53HomePositionZ: { title: "G53 home position Z", description: "G53 Z-axis home position.", group: 20, type: "number" },
+  g53HomePositionSubZ: { title: "G53 home position Z (secondary spindle)", description: "G53 Z-axis home position for the secondary spindle.", group: 30, type: "number" }
 };
 
 // samples:
