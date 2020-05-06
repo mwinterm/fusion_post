@@ -93,7 +93,7 @@ propertyDefinitions = {
   showSequenceNumbers: { title: "Use sequence numbers", description: "Use sequence numbers for each block of outputted code.", group: 16, type: "boolean" },
   sequenceNumberStart: { title: "Start sequence number", description: "The number at which to start the sequence numbers.", group: 18, type: "integer" },
   sequenceNumberIncrement: { title: "Sequence number increment", description: "The amount by which the sequence number is incremented by in each block.", group: 19, type: "integer" },
-  sequenceNumberOnlyOnToolChange: { title: "Sequence number only on tool change", description: "If enabled, sequence numbers are only outputted when a toolchange is called", group: 17,  type: "boolean" },
+  sequenceNumberOnlyOnToolChange: { title: "Sequence number only on tool change", description: "If enabled, sequence numbers are only outputted when a toolchange is called", group: 17, type: "boolean" },
   numberOfToolDigits: { title: "Tool digits", description: "Number of digits used for a tool call. Can be 2 or 3 i.e. T01 or T001", group: 50, type: "integer" },
   emptyTool: { title: "Empty tool number", description: "Number of empty tool pocket to be changed in when no tool shall be in the spindle", group: 30, type: "integer" },
   isSubProgram: { title: "This is a sub-program", description: "When true M99 instead of M30 is issued at the end of the program", group: 12, type: "boolean" },
@@ -1700,13 +1700,6 @@ function onSection() {
     //switch tool type when working on sub-spindle
     if (currentSection.spindle == SPINDLE_SECONDARY) {
       toolOrientation = subToolOrient[toolOrientation];
-    }
-
-    if (machineState.manualToolNumber && (machineState.manualToolNumber != tool.number)) {
-      writeToolBlock("T" + toolFormat.format(machineState.manualToolNumber) + toolFormat.format(0));
-      writeRetract(Z);
-      writeBlock(mFormat.format(0), writeComment("(--- MANUALLY REMOVE TOOL - T" + toolFormat.format(tool.number) + " ---)"));
-      machineState.manualToolNumber = 0;
     }
 
     if (tool.manualToolChange && (machineState.manualToolNumber != tool.number)) {
@@ -3436,12 +3429,6 @@ function onSectionEnd() {
     onCommand(COMMAND_BREAK_CONTROL);
   }
 
-  if (hasNextSection()) {
-    if (getNextSection().getTool().coolant != currentSection.getTool().coolant) {
-      setCoolant(COOLANT_OFF, machineState.currentTurret);
-    }
-  }
-
   if (currentSection.isMultiAxis()) {
     //writeBlock(gFormat.format(49));
   }
@@ -3456,6 +3443,23 @@ function onSectionEnd() {
   forceAny();
   forceXZCMode = false;
   forcePolarMode = false;
+
+  if (hasNextSection()) {
+    if (getNextSection().getTool().coolant != currentSection.getTool().coolant) {
+      setCoolant(COOLANT_OFF, machineState.currentTurret);
+    }
+  }
+
+  if ((hasNextSection() && tool.number != getNextSection().getTool().number && machineState.manualToolNumber)
+    || (!hasNextSection() && machineState.manualToolNumber)) {
+    writeRetract(X);
+    writeRetract(Z);
+    writeRetract(Y);
+    writeToolBlock("T" + toolFormat.format(machineState.manualToolNumber) + toolFormat.format(0));
+    writeBlock(mFormat.format(0), writeComment("(--- MANUALLY REMOVE TOOL - T" + toolFormat.format(tool.number) + " ---)"));
+    machineState.manualToolNumber = 0;
+  }
+
 
 }
 
