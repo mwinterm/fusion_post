@@ -153,7 +153,7 @@ var milliFormat = createFormat({ decimals: 0 }); // milliseconds // range 1-9999
 var taperFormat = createFormat({ decimals: 1, scale: DEG });
 
 var xOutput = createVariable({ onchange: function () { retracted = false; }, prefix: "X" }, xFormat);
-var yOutput = createVariable({ prefix: "Y" }, yFormat);
+var yOutput = createVariable({ onchange: function () { retracted = false; }, prefix: "Y" }, yFormat);
 var zOutput = createVariable({ onchange: function () { retracted = false; }, prefix: "Z" }, zFormat);
 var z2Output = createVariable({ onchange: function () { retracted = false; }, prefix: "Z" }, zFormat);
 var aOutput = createVariable({ prefix: "A" }, abcFormat);
@@ -1559,6 +1559,7 @@ var bAxisOrientationTurning = new Vector(0, 0, 0);
 function onSection() {
   writeln("");
 
+
   if (hasParameter("operation-comment")) {
     var comment = "-- Section - " + getParameter("operation-comment");
 
@@ -1698,8 +1699,10 @@ function onSection() {
     }
 
     //switch tool type when working on sub-spindle
-    if (currentSection.spindle == SPINDLE_SECONDARY) {
-      toolOrientation = subToolOrient[toolOrientation];
+    if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
+      if (currentSection.spindle == SPINDLE_SECONDARY) {
+        toolOrientation = subToolOrient[toolOrientation];
+      }
     }
 
     if (tool.manualToolChange && (machineState.manualToolNumber != tool.number)) {
@@ -1736,6 +1739,7 @@ function onSection() {
     writeRetract(Y);
     writeln("");
   }
+
   /** Handle multiple turrets. */
   if (gotMultiTurret) {
     var turret = tool.turret;
