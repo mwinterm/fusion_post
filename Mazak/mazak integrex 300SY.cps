@@ -299,39 +299,31 @@ function getCode(code) {
       machineState.cAxisIsEngaged = true;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
         machineState.cMainAxisIsEngaged = true;
-        machineState.mainSpindleIsActive = false;
         return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
       } else {
         machineState.cSubAxisIsEngaged = true;
-        machineState.subSpindleIsActive = false;
         return combineCommands(c2AxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
       }
     case "ENGAGE_C_MAIN_AXIS":
       machineState.cMainAxisIsEngaged = true;
-      machineState.mainSpindleIsActive = false;
       return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
     case "ENGAGE_C_SUB_AXIS":
       machineState.cSubAxisIsEngaged = true;
-      machineState.subSpindleIsActive = false;
       return combineCommands(c2AxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
     case "DISENGAGE_C_AXIS":
       machineState.cAxisIsEngaged = false;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
         machineState.cMainAxisIsEngaged = false;
-        machineState.mainSpindleIsActive = true;
         return combineCommands(cAxisEngageModal.format(202), writeDebugInfo("Main spindle lathe mode"));
       } else {
         machineState.cSubAxisIsEngaged = false;
-        machineState.subSpindleIsActive = true;
         return combineCommands(c2AxisEngageModal.format(202), writeDebugInfo("Sub-spindle lathe mode"));
       }
     case "DISENGAGE_C_MAIN_AXIS":
       machineState.cMainAxisIsEngaged = false;
-      machineState.mainSpindleIsActive = true;
       return combineCommands(cAxisEngageModal.format(202), writeDebugInfo("Main spindle lathe mode"));
     case "DISENGAGE_C_SUB_AXIS":
       machineState.cSubAxisIsEngaged = false;
-      machineState.subSpindleIsActive = true;
       return combineCommands(cAxisEngageModal.format(202), writeDebugInfo("Sub-spindle lathe mode"));
     case "POLAR_INTERPOLATION_ON":
       return gPolarModal.format(12.1);
@@ -341,10 +333,8 @@ function getCode(code) {
       machineState.liveToolIsActive = false;
       return combineCommands(mFormat.format(205), writeDebugInfo("Stop live tool"));
     case "STOP_MAIN_SPINDLE":
-      machineState.mainSpindleIsActive = false;
       return combineCommands(mFormat.format(5), writeDebugInfo("Stop main spindle"));
     case "STOP_SUB_SPINDLE":
-      machineState.subSpindleIsActive = false;
       return combineCommands(mSubFormat.format(5), writeDebugInfo("Stop sub-spindle"));
     case "UNLOCK_MILLING_SPINDLE":
       machineState.millingSpindleLocked = false;
@@ -354,21 +344,33 @@ function getCode(code) {
       return combineCommands(mFormat.format(253), writeDebugInfo("Lock milling spindle"));
     case "START_LIVE_TOOL_CW":
       machineState.liveToolIsActive = true;
-      return combineCommands(mFormat.format(203), writeDebugInfo("Start live tool CW"));
+      if (machineState.mainSpindleIsActive) {
+        return combineCommands(mFormat.format(203), writeDebugInfo("Start live tool CW"));
+      } else if (machineState.subSpindleIsActive) {
+        return combineCommands(mSubFormat.format(203), writeDebugInfo("Start live tool CW"));
+      } else {
+        //error(localize("No Spindle is active"));
+        writeln(machineState.mainSpindleIsActive);
+        writeln(machineState.subSpindleIsActive);
+      }
     case "START_LIVE_TOOL_CCW":
       machineState.liveToolIsActive = true;
-      return combineCommands(mFormat.format(204), writeDebugInfo("Start live tool CCW"));
+      if (machineState.mainSpindleIsActive) {
+        return combineCommands(mFormat.format(204), writeDebugInfo("Start live tool CCW"));
+      } else if (machineState.subSpindleIsActive) {
+        return combineCommands(mSubFormat.format(204), writeDebugInfo("Start live tool CCW"));
+      } else {
+        //error(localize("No Spindle is active"));
+        writeln(machineState.mainSpindleIsActive);
+        writeln(machineState.subSpindleIsActive);
+      }
     case "START_MAIN_SPINDLE_CW":
-      machineState.mainSpindleIsActive = true;
       return combineCommands(mFormat.format(3), writeDebugInfo("Start main spindle CW"));
     case "START_MAIN_SPINDLE_CCW":
-      machineState.mainSpindleIsActive = true;
       return combineCommands(mFormat.format(4), writeDebugInfo("Start main spindle CCW"));
     case "START_SUB_SPINDLE_CW":
-      machineState.subSpindleIsActive = true;
       return combineCommands(mSubFormat.format(3), writeDebugInfo("Start sub spindle CW"));
     case "START_SUB_SPINDLE_CCW":
-      machineState.subSpindleIsActive = true;
       return combineCommands(mSubFormat.format(4), writeDebugInfo("Start sub spindle CCW"));
     case "MAIN_SPINDLE_BRAKE_ON":
       machineState.mainSpindleBrakeIsActive = true;
@@ -523,7 +525,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         ); // R1 is the default
         sLatheOutput.reset();
       } else {
-        writeBlock(spindleMode, sMillOutput.format(_spindleSpeed), !tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
+        writeBlock(spindleMode, sMillOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
       }
       break;
   }
@@ -597,7 +599,7 @@ function writeRetract() {
     }
     writeBlock(gAbsIncModal.format(90), gMotionModal.format(0), gFormat.format(53), words); // retract
     if (Z2retracts) {
-      writeBlock(gSpindleModal.format(111));
+      writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining"));
     }
   }
   forceXYZ();
@@ -1402,7 +1404,7 @@ function setWorkPlane(abc) {
       conditional(machineConfiguration.isMachineCoordinate(2) && c_axis_unclamped, "C" + abcFormat.format(abc.z))); //turn machine
     onCommand(COMMAND_LOCK_MULTI_AXIS);
     if (abc.isNonZero()) {
-      gSpindleModal.format(111); //cancel cross-machining as it is not compatible with G68.5
+      writeBlock(gSpindleModal.format(111), writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining"))); //cancel cross-machining as it is not compatible with G68.5
       writeBlock( //set frame
         gFormat.format(125),
         conditional(currentSection.workOrigin.x != 0, "X" + spatialFormat.format(currentSection.workOrigin.x)),
