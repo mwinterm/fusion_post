@@ -1405,7 +1405,7 @@ function setWorkPlane(abc) {
       conditional(machineConfiguration.isMachineCoordinate(2) && c_axis_unclamped, "C" + abcFormat.format(abc.z))); //turn machine
     onCommand(COMMAND_LOCK_MULTI_AXIS);
     if (abc.isNonZero()) {
-      writeBlock(gSpindleModal.format(111), writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining"))); //cancel cross-machining as it is not compatible with G68.5
+      writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining")); //cancel cross-machining as it is not compatible with G68.5
       writeBlock( //set frame
         gFormat.format(125),
         conditional(currentSection.workOrigin.x != 0, "X" + spatialFormat.format(currentSection.workOrigin.x)),
