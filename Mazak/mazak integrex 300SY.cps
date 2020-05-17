@@ -1823,9 +1823,9 @@ function onSection() {
           zFormat.setScale(-1);
           zOutput = createVariable({ prefix: "Z" }, zFormat);
         }
-        if (newSpindle && !machineState.spindleSync) {
+        //if (newSpindle && !machineState.spindleSync) {
           writeBlock(gSpindleModal.format(110) + " C2", writeDebugInfo("Activating cross machining control to C2")); //  cOutput.setPrefix("U");
-        }
+        //}
         break;
     }
     if (!gotYAxis) {
