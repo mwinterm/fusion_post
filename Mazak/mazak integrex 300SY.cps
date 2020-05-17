@@ -169,6 +169,7 @@ var pitchOutput = createVariable({ prefix: "F", force: true }, pitchFormat);
 var sLatheOutput = createVariable({ prefix: "S", force: true }, rpmFormat);
 var sMillOutput = createVariable({ prefix: "S", force: true }, rpmFormat);
 
+
 // circular output
 var iOutput = createReferenceVariable({ prefix: "I", force: true }, spatialFormat);
 var jOutput = createReferenceVariable({ prefix: "J", force: true }, spatialFormat);
@@ -525,7 +526,7 @@ function startSpindle(forceRPMMode, initialPosition, rpm) {
         ); // R1 is the default
         sLatheOutput.reset();
       } else {
-        writeBlock(spindleMode, sMillOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
+        writeBlock(spindleMode, gFormat.format(112), sMillOutput.format(_spindleSpeed), tool.clockwise ? getCode("START_LIVE_TOOL_CW") : getCode("START_LIVE_TOOL_CCW"));
       }
       break;
   }
