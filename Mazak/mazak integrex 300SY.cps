@@ -21,6 +21,8 @@
 //     usePolarMode               - Force Polar mode for next operation
 //     startSpindleSync           - Syncs sub-spindle to main spindle for milling
 //     stopSpindleSync            - Stops sync of sub-spindle to main spindle
+//     CAxisOptimizationOff       - Disables optimization for C-Axis when XYZ-milling
+//     CAxisOptimizationOn        - Enables optimization for C-Axis when XYZ-milling
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -266,7 +268,8 @@ var machineState = {
   currentTurret: undefined,
   mazatrolCS: undefined,
   manualToolNumber: 0,
-  spindleSync: false
+  spindleSync: false,
+  CAxisOptimization: true //specifiecs if C-Axis orientation is on during XYZ-milling
 };
 
 function writeDebugInfo(text) {
@@ -1481,6 +1484,9 @@ function getBestABC(section, workPlane, which) {
           y = R.right.y;
           break;
       }
+      if (section.spindle == SPINDLE_SECONDARY) {
+        x = -x; //reverse for sub-spindle
+      }
       abc.setCoordinate(ix, getCClosest(x, y, cOutput.getCurrent()));
     }
   }
@@ -1494,8 +1500,13 @@ var currentMachineABC;
 function getWorkPlaneMachineABC(section, workPlane) {
   var W = workPlane; // map to global frame
 
-  // var abc = machineConfiguration.getABC(W);
-  var abc = getBestABC(section, workPlane, bestABCIndex);
+  var abc;
+  if (machineState.CAxisOptimization) {
+    abc = getBestABC(section, workPlane, bestABCIndex);
+  } else {
+    abc = getBestABC(section, workPlane, 0);
+  }
+
   if (closestABC) {
     if (currentMachineABC) {
       abc = machineConfiguration.remapToABC(abc, currentMachineABC);
@@ -1825,7 +1836,7 @@ function onSection() {
           zOutput = createVariable({ prefix: "Z" }, zFormat);
         }
         //if (newSpindle && !machineState.spindleSync) {
-          writeBlock(gSpindleModal.format(110) + " C2", writeDebugInfo("Activating cross machining control to C2")); //  cOutput.setPrefix("U");
+        writeBlock(gSpindleModal.format(110) + " C2", writeDebugInfo("Activating cross machining control to C2")); //  cOutput.setPrefix("U");
         //}
         break;
     }
@@ -2122,6 +2133,11 @@ function doesToolpathFitInXYRange(abc) {
 
   if (currentSection.getGlobalRange) {
     var xRange = currentSection.getGlobalRange(dx);
+
+    if (currentSection.spindle == SPINDLE_SECONDARY) {
+      xRange = [-xRange[0], -xRange[1]];
+    }
+
     var yRange = currentSection.getGlobalRange(dy);
 
     if (writeDebug) { // DEBUG
@@ -3193,6 +3209,10 @@ function onParameter(name, value) {
         machineState.spindleSync = true;
       } else if (String(value).toUpperCase() == "STOPSPINDLESYNC") {
         machineState.spindleSync = false;
+      } else if (String(value).toUpperCase() == "CAXISOPTIMIZATIONOFF") {
+        machineState.CAxisOptimization = false;
+      } else if (String(value).toUpperCase() == "CAXISOPTIMIZATIONON") {
+        machineState.CAxisOptimization = true;
       } else {
         invalid = true;
       }
