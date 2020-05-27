@@ -603,7 +603,7 @@ function writeRetract() {
     }
     writeBlock(gAbsIncModal.format(90), gMotionModal.format(0), gFormat.format(53), words); // retract
     if (Z2retracts) {
-      writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining"));
+      writeBlock(gFormat.format(111), writeDebugInfo("Cancel cross machining"));
     }
   }
   forceXYZ();
@@ -1408,7 +1408,7 @@ function setWorkPlane(abc) {
       conditional(machineConfiguration.isMachineCoordinate(2) && c_axis_unclamped, "C" + abcFormat.format(abc.z))); //turn machine
     onCommand(COMMAND_LOCK_MULTI_AXIS);
     if (abc.isNonZero()) {
-      writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining")); //cancel cross-machining as it is not compatible with G68.5
+      writeBlock(gFormat.format(111), writeDebugInfo("Cancel cross machining")); //cancel cross-machining as it is not compatible with G68.5
       writeBlock( //set frame
         gFormat.format(125),
         conditional(currentSection.workOrigin.x != 0, "X" + spatialFormat.format(currentSection.workOrigin.x)),
@@ -1814,7 +1814,7 @@ function onSection() {
         zFormat.setScale(1);
         zOutput = createVariable({ prefix: "Z" }, zFormat);
         if (gotSecondarySpindle) {
-          writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining control")); // cOutput.setPrefix("C");
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel cross machining control")); // cOutput.setPrefix("C");
         }
         break;
       case SPINDLE_SECONDARY: // sub spindle
@@ -1836,7 +1836,7 @@ function onSection() {
           zOutput = createVariable({ prefix: "Z" }, zFormat);
         }
         //if (newSpindle && !machineState.spindleSync) {
-        writeBlock(gSpindleModal.format(110) + " C2", writeDebugInfo("Activating cross machining control to C2")); //  cOutput.setPrefix("U");
+        writeBlock(gFormat.format(110) + " C2", writeDebugInfo("Activating cross machining control to C2")); //  cOutput.setPrefix("U");
         //}
         break;
     }
@@ -2932,7 +2932,7 @@ function onCycle() {
           writeBlock(getCode("ENGAGE_C_SUB_AXIS"));
           writeBlock(gFormat.format(110), "C2", writeDebugInfo("C-axis position active for second spindle"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(0), c2Output.format(cycle.spindleOrientation), writeDebugInfo("position secondary spindle relative to main spindle"));
-          writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel prevvoius G110"));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
           writeBlock(mSubFormat.format(6), writeDebugInfo("Open second chuck"));
           writeBlock(mFormat.format(540), writeDebugInfo("Transfer-Chuck-Mode"));
           writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
@@ -2941,7 +2941,7 @@ function onCycle() {
           writeBlock(gFormat.format(31), z2Output.format(cycle.chuckPosition), feed2Output.format(50), writeDebugInfo("Start pressing of second spindle"));
           writeBlock(getCode("DISENGAGE_C_MAIN_AXIS"));
           writeBlock(mSubFormat.format(509), writeDebugInfo("Cancel pressing mode of second spindle"));
-          writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel prevvoius G110"));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
           writeBlock(mFormat.format(541), writeDebugInfo("Cancel Transfer-Chuck-Mode"));
           writeBlock(mSubFormat.format(7), writeDebugInfo("Close second chuck"));
         } else { //Secondary spindle is active therefore main spindle is grabbing
@@ -2950,7 +2950,7 @@ function onCycle() {
           writeBlock(getCode("ENGAGE_C_SUB_AXIS"));
           writeBlock(gFormat.format(110), "C2", writeDebugInfo("C-axis position active for second spindle"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(0), c2Output.format(0.0), writeDebugInfo("position second spindle to C0.0"));
-          writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel prevvoius G110"));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
           writeBlock(getCode("ENGAGE_C_MAIN_AXIS"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(0), cOutput.format(cycle.spindleOrientation), writeDebugInfo("position main spindle relative to main spindle"));
           writeBlock(mFormat.format(6), writeDebugInfo("Open main chuck"));
@@ -2961,7 +2961,7 @@ function onCycle() {
           writeBlock(gFormat.format(31), z2Output.format(cycle.chuckPosition), feed2Output.format(50), writeDebugInfo("Start pressing of second spindle"));
           writeBlock(getCode("DISENGAGE_C_SUB_AXIS"));
           writeBlock(mSubFormat.format(509), writeDebugInfo("Cancel pressing mode of second spindle"));
-          writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel prevvoius G110"));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
           writeBlock(mFormat.format(541), writeDebugInfo("Cancel Transfer-Chuck-Mode"));
           writeBlock(mFormat.format(7), writeDebugInfo("Close main chuck"));
         }
@@ -2982,11 +2982,11 @@ function onCycle() {
         if (getParameter("operation:feedPlaneHeight_mode") == "machine coordinates") {
           writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(1), z2Output.format(cycle.feedPosition), feed2Output.format(cycle.feedrate));
-          writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel prevvoius G110"));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
         } else {
           writeBlock(gFormat.format(110), "Z2", writeDebugInfo("Positioning mode for second spindle / tail-stock"));
           writeBlock(gAbsIncModal.format(90), gFormat.format(1), gFormat.format(53), z2Output.format(cycle.feedPosition), feed2Output.format(cycle.feedrate));
-          writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel prevvoius G110"));
+          writeBlock(gFormat.format(111), writeDebugInfo("Cancel prevvoius G110"));
         }
         break;
       default:
@@ -3536,7 +3536,7 @@ function onClose() {
 
   writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation"));
   if (gotSecondarySpindle) {
-    writeBlock(gSpindleModal.format(111), writeDebugInfo("Cancel cross machining control"));
+    writeBlock(gFormat.format(111), writeDebugInfo("Cancel cross machining control"));
   }
   writeln("");
   onImpliedCommand(COMMAND_END);
