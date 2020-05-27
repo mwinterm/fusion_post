@@ -303,9 +303,11 @@ function getCode(code) {
       machineState.cAxisIsEngaged = true;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
         machineState.cMainAxisIsEngaged = true;
+        machineState.mainSpindleIsActive = false;
         return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
       } else {
         machineState.cSubAxisIsEngaged = true;
+        machineState.subSpindleIsActive = false;
         return combineCommands(c2AxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
       }
     case "ENGAGE_C_MAIN_AXIS":
@@ -1668,6 +1670,7 @@ function onSection() {
 
   updateMachiningMode(currentSection); // sets the needed machining mode to machineState (usePolarMode, useXZCMode, axialCenterDrilling)
 
+  
   if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
     if (machineState.liveToolIsActive) {
       writeBlock(getCode("STOP_LIVE_TOOL"));
