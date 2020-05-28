@@ -303,11 +303,11 @@ function getCode(code) {
       machineState.cAxisIsEngaged = true;
       if (currentSection.spindle == SPINDLE_PRIMARY) {
         machineState.cMainAxisIsEngaged = true;
-        machineState.mainSpindleIsActive = false;
+        machineState.isTurningOperation = false;
         return combineCommands(cAxisEngageModal.format(200), writeDebugInfo("Milling mode main spindle"));
       } else {
         machineState.cSubAxisIsEngaged = true;
-        machineState.subSpindleIsActive = false;
+        machineState.isTurningOperation = false;
         return combineCommands(c2AxisEngageModal.format(200), writeDebugInfo("Milling mode sub-spindle"));
       }
     case "ENGAGE_C_MAIN_AXIS":
@@ -355,9 +355,7 @@ function getCode(code) {
       } else if (machineState.subSpindleIsActive) {
         return combineCommands(mSubFormat.format(203), writeDebugInfo("Start live tool CW"));
       } else {
-        //error(localize("No Spindle is active"));
-        writeln(machineState.mainSpindleIsActive);
-        writeln(machineState.subSpindleIsActive);
+        error(localize("No Spindle is active"));
       }
     case "START_LIVE_TOOL_CCW":
       machineState.liveToolIsActive = true;
@@ -1676,10 +1674,10 @@ function onSection() {
       writeBlock(getCode("STOP_LIVE_TOOL"));
     }
   } else {
-    if (machineState.mainSpindleIsActive) {
+    if (machineState.mainSpindleIsActive && machineState.isTurningOperation) {
       writeBlock(getCode("STOP_MAIN_SPINDLE"));
     }
-    if (machineState.subSpindleIsActive) {
+    if (machineState.subSpindleIsActive && machineState.isTurningOperation) {
       writeBlock(getCode("STOP_SUB_SPINDLE"));
     }
   }
