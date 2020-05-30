@@ -626,8 +626,8 @@ function defineMachine() {
   if (properties.machineType == "PUMA") {
     machineConfiguration.setModel("3100LM");
     gotYAxis = false;
-    yAxisMinimum = toPreciseUnit(-50, MM); // specifies the minimum range for the Y-axis
-    yAxisMaximum = toPreciseUnit(50, MM); // specifies the maximum range for the Y-axis
+    //yAxisMinimum = toPreciseUnit(-50, MM); // specifies the minimum range for the Y-axis
+    //yAxisMaximum = toPreciseUnit(50, MM); // specifies the maximum range for the Y-axis
     xAxisMinimum = toPreciseUnit(0, MM); // specifies the maximum range for the X-axis (RADIUS MODE VALUE)
     gotBAxis = false; // B-axis always requires customization to match the machine specific functions for doing rotations
     bAxisIsManual = true; // B-axis is manually set and not programmable
@@ -811,13 +811,13 @@ function onOpen() {
   if (properties.writeMachine && (vendor || model || description)) {
     writeComment(localize("--- Machine ---"));
     if (vendor) {
-      writeComment("  " + localize("vendor") + ": " + vendor);
+      writeComment(localize("vendor") + ": " + vendor);
     }
     if (model) {
-      writeComment("  " + localize("model") + ": " + model);
+      writeComment(localize("model") + ": " + model);
     }
     if (description) {
-      writeComment("  " + localize("description") + ": " + description);
+      writeComment(localize("description") + ": " + description);
     }
     writeln("");
   }
