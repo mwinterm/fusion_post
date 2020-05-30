@@ -907,7 +907,7 @@ function onOpen() {
   { // stock - workpiece
     writeln("");
     if ((getGlobalParameter("stock-upper-x") > 0)) {
-      writeBlock("G55 G1900 D" + spatialFormat.format(getGlobalParameter("stock-upper-x") * 2) +
+      writeBlock("G1900 D" + spatialFormat.format(getGlobalParameter("stock-upper-x") * 2) +
         " L" + spatialFormat.format(-(getGlobalParameter("part-lower-z"))) +
         " K" + spatialFormat.format(-(getGlobalParameter("part-upper-z"))));
     }
@@ -2192,7 +2192,8 @@ function updateMachiningMode(section) {
           }
         } else {
           // several holes not on XY center, use live tool in XZCMode
-          machineState.useXZCMode = true;
+          //machineState.useXZCMode = true;
+          machineState.usePolarMode = true; //no XZCmode as no G17 available
         }
       } else { // milling
         if (gotPolarInterpolation && forcePolarMode) { // polar mode is requested by user
