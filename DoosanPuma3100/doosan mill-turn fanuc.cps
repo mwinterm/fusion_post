@@ -213,6 +213,7 @@ var gSpindleModal = createModal({}, mFormat); // M176/177 SPINDLE MODE
 var gUnitModal = createModal({}, gFormat); // modal group 6 // G20-21
 var gCycleModal = createModal({}, gFormat); // modal group 9 // G81, ...
 var gPolarModal = createModal({}, g1Format); // G12.1, G13.1
+var gHobbingModal = createModal({}, g1Format); // G51.2, G50.2
 var cAxisBrakeModal = createModal({}, mFormat);
 var mInterferModal = createModal({}, mFormat);
 var cAxisEngageModal = createModal({}, mFormat);
@@ -311,7 +312,8 @@ var machineState = {
   spindlesAreAttached: false,
   spindlesAreSynchronized: false,
   stockTransferIsActive: false,
-  cAxesAreSynchronized: false
+  cAxesAreSynchronized: false,
+  hobbing: false
 };
 
 function getCode(code, spindle) {
@@ -1934,6 +1936,19 @@ function onSection() {
 */
   }
 
+  //get parameters for hobbing and insert milling command if hobbing tool is used
+  if (tool.description) {
+    var hobbingStr = tool.description.split(" ");
+    if (hobbingStr[0] == "Hobbing" && hobbingStr[1].charAt(0) == "P" && hobbingStr[2].charAt(0) == "Q" && hobbingStr.length == 3) {
+      var hobbingP = parseInt(hobbingStr[1].slice(1));
+      var hobbingQ = parseInt(hobbingStr[2].slice(1));
+      machineState.hobbing = true;
+      writeBlock(cAxisEngageModal.format(getCode("ENABLE_C_AXIS", SPINDLE_MAIN)));
+    } else {
+      machineState.hobbing = false;
+    }
+  }
+
   // Turn on coolant
   setCoolant(tool.coolant);
 
@@ -1992,6 +2007,11 @@ function onSection() {
     if (!tapping) {
       forceRPMMode = (tool.getSpindleMode() == SPINDLE_CONSTANT_SURFACE_SPEED) && !machineState.spindlesAreAttached && !machineState.spindlesAreSynchronized;
       startSpindle(false, forceRPMMode, getFramePosition(currentSection.getInitialPosition()));
+
+      if (machineState.hobbing) {
+        writeBlock(mFormat.format(28));
+        writeBlock(gHobbingModal.format(51.2), "P" + hobbingP, "Q" + hobbingQ);
+      }
     }
   }
 
@@ -4285,6 +4305,12 @@ function onSectionEnd() {
 }
 
 function onClose() {
+
+  //cancel hobbing mode
+  if(machineState.hobbing){
+    writeBlock(gHobbingModal.format(50.2));
+    machineState.hobbing = false;
+  }
 
   var liveTool = getSpindle(TOOL) == SPINDLE_LIVE;
   optionalSection = false;
