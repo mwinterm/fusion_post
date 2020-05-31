@@ -83,6 +83,7 @@ properties = {
   useSimpleThread: true, // outputs a G92 threading cycle, false outputs a G76 (standard) threading cycle
   machineType: "PUMA", // type of machine "PUMA", "LYNX", "LYNX_YAXIS", "PUMA_MX"
   useG400: false, // use G400 for milling tools
+  hasG17: false, // if no G17 is available use G12.1/13.1 for milling and G18 for drilling
   reverseAxes: true, // reverse YC-axes on sub-spindle
   useSpindlePcodes: true // use P11, P12, P13, etc. to specify the spindle, otherwise use unique M-codes
 };
@@ -148,6 +149,7 @@ propertyDefinitions = {
     ]
   },
   useG400: { title: "Use G400 for milling tools", description: "Enable to output the G400 compensation block with milling/drilling operations. This option is only valid for the Puma MX model.", type: "boolean" },
+  useG17: { title: "Use G17 for milling and drilling tools", description: "Use G17 for milling and drilling parallel to Z-axis.", type: "boolean" },
   reverseAxes: { title: "Invert AC axes on sub-spindle", description: "Enable to reverse the Y and C axes when programming on the sub-spindle.  If you notice that the geometry is mirrored or conventional cutting on the machine, then disable this property.", type: "boolean" },
   useSpindlePcodes: { title: "Use P-codes for spindle selection", description: "Enable if P11, P12, etc. are used for spindle selection.  Disable if unique M-codes are used for spindle selection.", type: "boolean" }
 };
@@ -1753,7 +1755,11 @@ function onSection() {
     if (insertToolCall || wcsOut || feedMode) {
       forceUnlockMultiAxis();
       onCommand(COMMAND_UNLOCK_MULTI_AXIS);
-      var plane = getMachiningDirection(currentSection) == MACHINING_DIRECTION_AXIAL ? getG17Code() : 18;
+      if (properties.useG17) {
+        var plane = getMachiningDirection(currentSection) == MACHINING_DIRECTION_AXIAL ? getG17Code() : 18;
+      } else {
+        var plane = 18;
+      }
       gPlaneModal.reset();
       if (!properties.optimizeCaxisSelect) {
         cAxisEngageModal.reset();
@@ -2192,8 +2198,7 @@ function updateMachiningMode(section) {
           }
         } else {
           // several holes not on XY center, use live tool in XZCMode
-          //machineState.useXZCMode = true;
-          machineState.usePolarMode = true; //no XZCmode as no G17 available
+          machineState.useXZCMode = true;
         }
       } else { // milling
         if (gotPolarInterpolation && forcePolarMode) { // polar mode is requested by user
