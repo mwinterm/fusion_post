@@ -2011,6 +2011,8 @@ function onSection() {
       if (machineState.hobbing) {
         writeBlock(mFormat.format(28));
         writeBlock(gHobbingModal.format(51.2), "P" + hobbingP, "Q" + hobbingQ);
+      }else{
+        
       }
     }
   }
@@ -3891,10 +3893,11 @@ function startSpindle(tappingMode, forceRPMMode, initialPosition) {
     _spindleSpeed = spindleSpeed;
     spindleMode = getCode("CONSTANT_SURFACE_SPEED_OFF", getSpindle(TOOL));
   }
+  
   writeBlock(
     gSpindleModeModal.format(spindleMode),
     sOutput.format(_spindleSpeed),
-    spindleDir,
+    conditional(!machineState.hobbing, spindleDir),
     spOutput.format(getCode("SELECT_SPINDLE", getSpindle(TOOL)))
   );
   // wait for spindle here if required
