@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2020-06-03 19:35:58 $
+  $Date: 2020-06-03 20:11:33 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -1676,7 +1676,7 @@ function onSection() {
 
   updateMachiningMode(currentSection); // sets the needed machining mode to machineState (usePolarMode, useXZCMode, axialCenterDrilling)
 
-  
+
   if (machineState.isTurningOperation || machineState.axialCenterDrilling) {
     if (machineState.liveToolIsActive) {
       writeBlock(getCode("STOP_LIVE_TOOL"));
