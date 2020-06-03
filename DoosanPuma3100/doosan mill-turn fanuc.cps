@@ -149,7 +149,7 @@ propertyDefinitions = {
     ]
   },
   useG400: { title: "Use G400 for milling tools", description: "Enable to output the G400 compensation block with milling/drilling operations. This option is only valid for the Puma MX model.", type: "boolean" },
-  useG17: { title: "Use G17 for milling and drilling tools", description: "Use G17 for milling and drilling parallel to Z-axis.", type: "boolean" },
+  hasG17: { title: "Use G17 for milling and drilling tools", description: "Use G17 for milling and drilling parallel to Z-axis.", type: "boolean" },
   reverseAxes: { title: "Invert AC axes on sub-spindle", description: "Enable to reverse the Y and C axes when programming on the sub-spindle.  If you notice that the geometry is mirrored or conventional cutting on the machine, then disable this property.", type: "boolean" },
   useSpindlePcodes: { title: "Use P-codes for spindle selection", description: "Enable if P11, P12, etc. are used for spindle selection.  Disable if unique M-codes are used for spindle selection.", type: "boolean" }
 };
