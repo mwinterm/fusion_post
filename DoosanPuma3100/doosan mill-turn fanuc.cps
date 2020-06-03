@@ -5,7 +5,7 @@
   Doosan Lathe post processor configuration.
 
   $Revision: 42715 bb7490cbf7744be0fe016711cd4e85bc17ebe8da $
-  $Date: 2020-03-31 06:16:43 $
+  $Date: 2020-06-03 18:57:08 $
 
   FORKID {C7A4BD6C-CF7A-4299-BF94-3C18351E8FA7}
 */
@@ -25,7 +25,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-description = "Doosan Mill/Turn with Fanuc 31i control";
+description = "Doosan 3100LM";
 vendor = "Doosan";
 vendorUrl = "https://www.doosanmachinetools.com";
 legal = "Copyright (C) 2012-2020 by Autodesk, Inc.";
@@ -78,8 +78,8 @@ properties = {
   transferUseTorque: false, // use torque control for stock-transfer
   looping: false, //output program for M98 looping
   numberOfRepeats: 1, //how many times to loop program
-  cutoffConfirmation: true, // use G350 after cutoff for parting confirmation
-  writeVersion: false, // include version info
+  cutoffConfirmation: false, // use G350 after cutoff for parting confirmation
+  writeVersion: true, // include version info
   useSimpleThread: true, // outputs a G92 threading cycle, false outputs a G76 (standard) threading cycle
   machineType: "PUMA", // type of machine "PUMA", "LYNX", "LYNX_YAXIS", "PUMA_MX"
   useG400: false, // use G400 for milling tools
@@ -781,7 +781,6 @@ function onOpen() {
 
   //write program generation date and time
   let current_datetime = new Date();
-  let formatted_date = current_datetime.getDate() + "." + current_datetime.getMonth() + "." + current_datetime.getFullYear() + " - " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
   var date = current_datetime.getDate();
   var month = current_datetime.getMonth() + 1;
   var year = current_datetime.getFullYear();
@@ -799,12 +798,14 @@ function onOpen() {
   writeln("");
 
   if (properties.writeVersion) {
+    writeComment(localize("--- POST ---"));
     if ((typeof getHeaderVersion == "function") && getHeaderVersion()) {
       writeComment(localize("post version") + ": " + getHeaderVersion());
     }
     if ((typeof getHeaderDate == "function") && getHeaderDate()) {
-      writeComment(localize("post modified") + ": " + getHeaderDate());
+      writeComment(localize("post modified") + ": " + getHeaderDate().replace(/:/g, "-"));
     }
+    writeln("");
   }
 
   // dump machine configuration
