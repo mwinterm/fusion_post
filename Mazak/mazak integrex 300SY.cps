@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2019-07-12 11:58:47 $
+  $Date: 2020-06-03 19:35:58 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -75,6 +75,7 @@ properties = {
   maximumSpindleSpeed: 3500, // specifies the maximum spindle speed
   useParametricFeed: false, // specifies that feed should be output using Q values
   showNotes: true, // specifies that operation notes should be output.
+  writeVersion: true, // include version info
   useCycles: true, // specifies that drilling cycles should be used.
   useSmoothing: false, // specifies if smoothing should be used or not
   mazatrolCS: true, // specifies if Mazatrol or G54, G55... coordiante systems shall be used
@@ -107,6 +108,7 @@ propertyDefinitions = {
   maximumSpindleSpeed: { title: "Max spindle speed", description: "Defines the maximum spindle speed allowed by your machines.", group: 13, type: "integer", range: [0, 999999999] },
   useParametricFeed: { title: "Parametric feed", description: "Specifies the feed value that should be output using a Q value.", group: 50, type: "boolean" },
   showNotes: { title: "Show notes", description: "Writes operation notes as comments in the outputted code.", group: 50, type: "boolean" },
+  writeVersion: { title: "Write version", description: "Write the version number in the header of the code.", group: 0, type: "boolean" },
   useCycles: { title: "Use cycles", description: "Specifies if canned drilling cycles should be used.", group: 40, type: "boolean" },
   useSmoothing: { title: "Use smoothing", description: "Specifies if smoothing should be used or not.", group: 40, type: "boolean" },
   mazatrolCS: { title: "Mazatrol coordinate syststems", description: "Specifies if Mazatrol or G54, G55... coordiante systems shall be used.", group: 30, type: "boolean" },
@@ -950,10 +952,16 @@ function onOpen() {
   writeStructureComment("Program created " + yearFormatted + "-" + monthFormatted + "-" + dateFormatted + "  " + hoursFormatted + "-" + minutesFormatted + "-" + secondsFormatted);
   writeln("");
 
-  // dump machine configuration
-  // var vendor = machineConfiguration.getVendor();
-  // var model = machineConfiguration.getModel();
-  // var description = machineConfiguration.getDescription();
+  if (properties.writeVersion) {
+    writeComment(localize("--- POST ---"));
+    if ((typeof getHeaderVersion == "function") && getHeaderVersion()) {
+      writeComment(localize("post version") + ": " + getHeaderVersion());
+    }
+    if ((typeof getHeaderDate == "function") && getHeaderDate()) {
+      writeComment(localize("post modified") + ": " + getHeaderDate().replace(/:/g, "-"));
+    }
+    writeln("");
+  }
 
   if (properties.writeMachine && (vendor || model || description)) {
     writeComment(localize("--- Machine ---"));
