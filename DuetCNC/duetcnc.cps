@@ -5,7 +5,7 @@
   Mach3Mill post processor configuration.
 
   $Revision: 41981 b469d519b41034f7622245f52b01f620c0e5ec7e $
-  $Date: 2020-06-03 20:12:49 $
+  $Date: 2020-07-31 19:59:58 $
   
   FORKID {A4D747BD-FEEF-4CE2-86CD-0D56966792FA}
 */
@@ -81,9 +81,9 @@ propertyDefinitions = {
       { title: "Without spindle direction", id: "without" }
     ]
   },
-  homeOnToolChange: { title: "Home axis on tool change", description: "Homes all axis after tool is changed and before it is potentailly probed." },
-  probeToolOnChange: { title: "Probe tool on tool change", description: "Probes a tool after changed in with by calling /macros/Tool Probe Auto." },
-  manualToolChange: { title: "Manual tool change", description: "Asks for manual tool change and program is interrupted until tool change is confirmed." }
+  homeOnToolChange: { title: "Home axis on tool change", description: "Homes all axis after tool is changed and before it is potentailly probed.", type: "boolean" },
+  probeToolOnChange: { title: "Probe tool on tool change", description: "Probes a tool after changed in with by calling /macros/Tool Probe Auto.", type: "boolean" },
+  manualToolChange: { title: "Manual tool change", description: "Asks for manual tool change and program is interrupted until tool change is confirmed.", type: "boolean" }
 };
 
 // samples:
