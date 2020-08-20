@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2020-06-03 20:11:33 $
+  $Date: 2020-08-20 13:07:08 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -207,7 +207,7 @@ var g53HomePositionSubZParameter = 103;
 var gotYAxis = true;
 var yAxisMinimum = toPreciseUnit(gotYAxis ? -105 : 0, MM); // specifies the minimum range for the Y-axis
 var yAxisMaximum = toPreciseUnit(gotYAxis ? 105 : 0, MM); // specifies the maximum range for the Y-axis
-var xAxisMinimum = toPreciseUnit(-20, MM); // specifies the maximum range for the X-axis (RADIUS MODE VALUE)
+var xAxisMinimum = toPreciseUnit(-40, MM); // specifies the maximum range for the X-axis (RADIUS MODE VALUE)
 
 var gotPolarInterpolation = false; // specifies if the machine has XY polar interpolation (G12.1) capabilities
 var gotBAxis = true;
