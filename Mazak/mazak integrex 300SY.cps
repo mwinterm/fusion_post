@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2020-08-20 18:06:42 $
+  $Date: 2020-08-21 16:02:33 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -3487,7 +3487,7 @@ function onSectionEnd() {
   writeBlock(gFormat.format(126), writeDebugInfo("cancel any coordinate shift"));
 
   //move back to y=0
-  writeBlock(gFormat.format(0), xOutput.format(0), yOutput.format(0), writeDebugInfo("TEMP HACK")); //temporary hack as G53 has bug for y-axis
+  writeBlock(gFormat.format(0), yOutput.format(0), writeDebugInfo("TEMP HACK")); //temporary hack as G53 has bug for y-axis
   writeRetract(Y);
 
   forceAny();
