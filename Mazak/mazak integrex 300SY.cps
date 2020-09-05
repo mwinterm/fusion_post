@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2020-08-21 16:02:33 $
+  $Date: 2020-09-05 17:52:17 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -61,7 +61,7 @@ properties = {
   writeStructureComments: true, //write program structure comments
   writeDebugInformation: false, // writes the tools
   preloadTool: true, // preloads next tool on tool change if any
-  useToolCompensation: false, // specifies if tool compensation table should be employed
+  useToolCompensation: true, // specifies if tool compensation table should be employed
   showSequenceNumbers: true, // show sequence numbers
   sequenceNumberStart: 1, // first sequence number
   sequenceNumberIncrement: 1, // increment for sequence numbers
