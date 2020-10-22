@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2020-09-05 17:52:17 $
+  $Date: 2020-10-08 00:11:23 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -603,7 +603,7 @@ function writeRetract() {
     if (Z2retracts) {
       writeBlock(gFormat.format(110), "Z2");
     }
-    writeBlock(gAbsIncModal.format(90), gMotionModal.format(0), gFormat.format(53), words); // retract
+    writeBlock(gAbsIncModal.format(90), gFormat.format(53), words); // retract
     if (Z2retracts) {
       writeBlock(gFormat.format(111), writeDebugInfo("Cancel cross machining"));
     }
