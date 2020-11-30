@@ -991,6 +991,7 @@ function onOpen() {
       var toolType = "";
       if (tool.comment.length == 2) {
         toolOrientation = tool.comment;
+        writeln(tool.comment);
         toolType = "";
       } else if (tool.comment.length == 4) {
         toolOrientation = tool.comment.slice(0, 2);
@@ -1000,7 +1001,7 @@ function onOpen() {
       }
 
       //switch tool type when working on sub-spindle
-      if (section.spindle == SPINDLE_SECONDARY) {
+      if (section.spindle == SPINDLE_SECONDARY && tool.isTurningTool()) {
         toolOrientation = subToolOrient[toolOrientation];
       }
 
@@ -1046,6 +1047,7 @@ function onOpen() {
 
 
     for (var i in toolData) {
+      writeln(i);
       comment = i + " - " + toolData[i];
       if (zRanges[i]) {
         comment += " - " + localize("ZMIN") + "=" + spatialFormat.format(zRanges[i].getMinimum());
@@ -1053,6 +1055,8 @@ function onOpen() {
       writeComment(comment);
     }
   }
+ 
+writeln("AAA");
 
   if (false) {
     // check for duplicate tool number
