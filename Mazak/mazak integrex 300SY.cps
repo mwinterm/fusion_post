@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date:2020/11/30 14:02:25 $
+  $Date:2020/11/30 18:00:48 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -2233,9 +2233,7 @@ function updateMachiningMode(section) {
           }
         } else {
           // several holes not on XY center, use live tool in XZCMode
-          writeln("aaaa");
           machineState.useXZCMode = true;
-          writeln("machineState.useXZCMode");
         }
       } else { // milling
         if (forcePolarMode) {
