@@ -5,10 +5,10 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2020-10-08 00:11:23 $
+  $Date: 2020-10-08 00:11:23$
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
-
+// Created: 2018/02/04 12:24:41
   https://cam.autodesk.com/posts/reference/
 */
 
@@ -26,7 +26,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-description = "Werkzeugbaumueller GmbH - Fraesdrehzentrum";
+description = "WZBM Mazak";
 vendor = "Mazak";
 model = "Integrex 300SY"
 vendorUrl = "https://www.mazak.com";
@@ -991,7 +991,6 @@ function onOpen() {
       var toolType = "";
       if (tool.comment.length == 2) {
         toolOrientation = tool.comment;
-        writeln(tool.comment);
         toolType = "";
       } else if (tool.comment.length == 4) {
         toolOrientation = tool.comment.slice(0, 2);
@@ -1047,7 +1046,6 @@ function onOpen() {
 
 
     for (var i in toolData) {
-      writeln(i);
       comment = i + " - " + toolData[i];
       if (zRanges[i]) {
         comment += " - " + localize("ZMIN") + "=" + spatialFormat.format(zRanges[i].getMinimum());
@@ -1055,8 +1053,6 @@ function onOpen() {
       writeComment(comment);
     }
   }
- 
-writeln("AAA");
 
   if (false) {
     // check for duplicate tool number
@@ -1961,9 +1957,12 @@ function onSection() {
   }
   gMotionModal.reset();
 
+
+
   var abc;
   if (machineConfiguration.isMultiAxisConfiguration()) {
     if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) { // turning toolpath
+      writeln("isTurningOperation");
       if (gotBAxis) {
         cancelTransformation();
         abc = bAxisOrientationTurning;
@@ -2017,10 +2016,10 @@ function onSection() {
             }
           } else {
             abc = getWorkPlaneMachineABC(currentSection, currentSection.workPlane);
-            setWorkPlane(abc);
+            //setWorkPlane(abc);
           }
         }
-
+        setWorkPlane(abc);
       }
     }
   } else { // pure 3D
@@ -2234,7 +2233,9 @@ function updateMachiningMode(section) {
           }
         } else {
           // several holes not on XY center, use live tool in XZCMode
+          writeln("aaaa");
           machineState.useXZCMode = true;
+          writeln("machineState.useXZCMode");
         }
       } else { // milling
         if (forcePolarMode) {
