@@ -5,10 +5,10 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date: 2020-10-08 00:11:23$
+  $Date:2020/11/30 14:02:25 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
-// Created: 2018/02/04 12:24:41
+
   https://cam.autodesk.com/posts/reference/
 */
 
