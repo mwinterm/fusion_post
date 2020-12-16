@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 42946 1d014a520263d593eb6365054d90ea4ebd35e4b7 $
-  $Date: 2020-11-25 23:22:54 $
+  $Date:2020/12/16 16:36:05 $
   
   FORKID {6C6ED875-AC4B-436E-8E9A-25863C91FC82}
 */
@@ -50,7 +50,7 @@ properties = {
   optionalStop: true, // optional stop
   structureComments: true, // show structure comments
   useM92: false, // use M92 instead of M91
-  useM140: true, // Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions
+  useM140: false, // Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions
   useSubroutines: false, // specifies that subroutines per each operation should be generated
   useSubroutinePatterns: false, // generates subroutines for patterned operation
   useSubroutineCycles: false, // generates subroutines for cycle operations on same holes
@@ -263,12 +263,11 @@ function onOpen() {
     optimizeMachineAngles2(0); // using M128 mode
   }
 
-  /*
+  
   // NOTE: setup your home positions here
-  machineConfiguration.setRetractPlane(-20.415); // home position Z
-  machineConfiguration.setHomePositionX(-200); // home position X
-  machineConfiguration.setHomePositionY(-5); // home position Y
-*/
+  machineConfiguration.setRetractPlane(750); // home position Z
+  machineConfiguration.setHomePositionX(0); // home position X
+  machineConfiguration.setHomePositionY(0); // home position Y
 
   if (!machineConfiguration.isMachineCoordinate(0)) {
     aOutput.disable();
