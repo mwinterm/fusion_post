@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 42946 1d014a520263d593eb6365054d90ea4ebd35e4b7 $
-  $Date:2020/12/16 16:36:05 $
+  $Date:2020/12/17 15:13:48 $
   
   FORKID {6C6ED875-AC4B-436E-8E9A-25863C91FC82}
 */
@@ -1143,7 +1143,7 @@ function onSection() {
 
     if (!isFirstSection() && properties.optionalStop) {
       onCommand(COMMAND_STOP_CHIP_TRANSPORT);
-      onCommand(COMMAND_OPTIONAL_STOP);
+      //onCommand(COMMAND_OPTIONAL_STOP);
     }
 
     if (!isFirstSection()) {
@@ -2582,7 +2582,7 @@ function getCoolantCodes(coolant, isGunDrilling) {
 
 var mapCommand = {
   COMMAND_STOP: 0,
-  COMMAND_OPTIONAL_STOP: 1,
+  //COMMAND_OPTIONAL_STOP: 1,
   COMMAND_END: 30,
   COMMAND_SPINDLE_CLOCKWISE: 3,
   COMMAND_SPINDLE_COUNTERCLOCKWISE: 4,
