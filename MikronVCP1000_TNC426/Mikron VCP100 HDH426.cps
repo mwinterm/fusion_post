@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 42946 1d014a520263d593eb6365054d90ea4ebd35e4b7 $
-  $Date:2020/12/17 15:13:48 $
+  $Date:2020/12/21 19:28:01 $
   
   FORKID {6C6ED875-AC4B-436E-8E9A-25863C91FC82}
 */
@@ -47,7 +47,8 @@ properties = {
   preloadTool: true, // preloads next tool on tool change if any
   expandCycles: true, // expands unhandled cycles
   smoothingTolerance: 0, // smoothing tolerance (0 ~ disabled)
-  optionalStop: true, // optional stop
+  optionalStop: false, // optional stop
+  linearizeVerticalCircle: true, // linearize vertical circles in XZ- and YZ-plane
   structureComments: true, // show structure comments
   useM92: false, // use M92 instead of M91
   useM140: false, // Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions
@@ -73,6 +74,7 @@ propertyDefinitions = {
   expandCycles: { title: "Expand cycles", description: "If enabled, unhandled cycles are expanded.", type: "boolean" },
   smoothingTolerance: { title: "Smoothing tolerance", description: "Smoothing tolerance (0 for disabled).", type: "number" },
   optionalStop: { title: "Optional stop", description: "Outputs optional stop code during when necessary in the code.", type: "boolean" },
+  linearizeVerticalCircle: { title: "linearce vertical circles", description: "Linearize vertical circles in XZ- and YZ-plane to allow for basic rotation in HDH control.", type: "boolean" },
   structureComments: { title: "Structure comments", description: "Shows structure comments.", type: "boolean" },
   useM92: { title: "Use M92", description: "If enabled, M91 is used instead of M91.", type: "boolean" },
   useM140: { title: "Use M140", description: "Specifies to use M140 MB MAX for Z-axis retracts instead of M91/M92 positions.", type: "boolean" },
@@ -263,7 +265,7 @@ function onOpen() {
     optimizeMachineAngles2(0); // using M128 mode
   }
 
-  
+
   // NOTE: setup your home positions here
   machineConfiguration.setRetractPlane(750); // home position Z
   machineConfiguration.setHomePositionX(0); // home position X
@@ -1143,7 +1145,7 @@ function onSection() {
 
     if (!isFirstSection() && properties.optionalStop) {
       onCommand(COMMAND_STOP_CHIP_TRANSPORT);
-      //onCommand(COMMAND_OPTIONAL_STOP);
+      onCommand(COMMAND_OPTIONAL_STOP);
     }
 
     if (!isFirstSection()) {
@@ -2373,10 +2375,15 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
         linearize(t);
         return;
       }
-      if (incrementalMode) {
-        writeBlock("CC IX" + xyzFormat.format(cx - start.x) + " IZ" + xyzFormat.format(cz - start.z));
+      if (properties.linearizeVerticalCircle) {
+        var t = tolerance;
+        linearize(t);
       } else {
-        writeBlock("CC X" + xyzFormat.format(cx) + " Z" + xyzFormat.format(cz));
+        if (incrementalMode) {
+          writeBlock("CC IX" + xyzFormat.format(cx - start.x) + " IZ" + xyzFormat.format(cz - start.z));
+        } else {
+          writeBlock("CC X" + xyzFormat.format(cx) + " Z" + xyzFormat.format(cz));
+        }
       }
       break;
     case PLANE_YZ:
@@ -2388,10 +2395,15 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
         linearize(t);
         return;
       }
-      if (incrementalMode) {
-        writeBlock("CC IY" + xyzFormat.format(cy - start.y) + " IZ" + xyzFormat.format(cz - start.z));
+      if (properties.linearizeVerticalCircle) {
+        var t = tolerance;
+        linearize(t);
       } else {
-        writeBlock("CC Y" + xyzFormat.format(cy) + " Z" + xyzFormat.format(cz));
+        if (incrementalMode) {
+          writeBlock("CC IY" + xyzFormat.format(cy - start.y) + " IZ" + xyzFormat.format(cz - start.z));
+        } else {
+          writeBlock("CC Y" + xyzFormat.format(cy) + " Z" + xyzFormat.format(cz));
+        }
       }
       break;
     default:
@@ -2582,13 +2594,13 @@ function getCoolantCodes(coolant, isGunDrilling) {
 
 var mapCommand = {
   COMMAND_STOP: 0,
-  //COMMAND_OPTIONAL_STOP: 1,
+  COMMAND_OPTIONAL_STOP: 1,
   COMMAND_END: 30,
   COMMAND_SPINDLE_CLOCKWISE: 3,
   COMMAND_SPINDLE_COUNTERCLOCKWISE: 4,
   // COMMAND_START_SPINDLE
-  COMMAND_STOP_SPINDLE: 5
-  //COMMAND_ORIENTATE_SPINDLE:19,
+  COMMAND_STOP_SPINDLE: 5,
+  COMMAND_ORIENTATE_SPINDLE: 19
   //COMMAND_LOAD_TOOL:6, // do not use
   //COMMAND_COOLANT_ON,
   //COMMAND_COOLANT_OFF,
