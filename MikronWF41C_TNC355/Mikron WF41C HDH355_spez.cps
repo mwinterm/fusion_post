@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 42174 d5bb8e27cffa2298ba10e28fc516c35fa00fd065 $
-  $Date: 2020-06-03 20:12:02 $
+  $Date:2020/12/21 19:49:15 $
   
   FORKID {3F192E9F-68B9-4453-B200-5807827EADD3}
 */
@@ -53,6 +53,7 @@ properties = {
   expandCycles: true, // expands unhandled cycles
   useRigidTapping: false, // rigid tapping
   optionalStop: false, // optional stop
+  linearizeVerticalCircle: true, // linearize vertical circles in XZ- and YZ-plane
   structureComments: false, // show structure comments
   useParametricFeed: false, // specifies that feed should be output using Q values
   discreteSpindleSpeeds: true, //sets spindle speeds only to discrete values provieded in the PP
@@ -74,6 +75,7 @@ propertyDefinitions = {
   expandCycles: { title: "Expand cycles", description: "If enabled, unhandled cycles are expanded.", type: "boolean" },
   useRigidTapping: { title: "Use rigid tapping", description: "Enable to allow rigid tapping.", type: "boolean" },
   optionalStop: { title: "Optional stop", description: "Outputs optional stop code during when necessary in the code.", type: "boolean" },
+  linearizeVerticalCircle: { title: "linearce vertical circles", description: "Linearize vertical circles in XZ- and YZ-plane to allow for basic rotation in HDH control.", type: "boolean" },
   structureComments: { title: "Structure comments", description: "Shows structure comments.", type: "boolean" },
   useParametricFeed: { title: "Parametric feed", description: "Specifies the feed value that should be output using a Q value.", type: "boolean" },
   discreteSpindleSpeeds: { title: "Discrete Spindle Speeds", description: "Sets spindle speeds only to machine specific discrete values", type: "boolean" },
@@ -1037,7 +1039,12 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
         linearize(t);
         return;
       }
-      writeBlock("CC X" + xyzFormat.format(cx) + " Z" + xyzFormat.format(cz));
+      if (properties.linearizeVerticalCircle) {
+        var t = tolerance;
+        linearize(t);
+      } else {
+        writeBlock("CC X" + xyzFormat.format(cx) + " Z" + xyzFormat.format(cz));
+      }
       break;
     case PLANE_YZ:
       if (isHelical()) {
@@ -1048,7 +1055,12 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
         linearize(t);
         return;
       }
-      writeBlock("CC Y" + xyzFormat.format(cy) + " Z" + xyzFormat.format(cz));
+      if (properties.linearizeVerticalCircle) {
+        var t = tolerance;
+        linearize(t);
+      } else {
+        writeBlock("CC X" + xyzFormat.format(cx) + " Z" + xyzFormat.format(cz));
+      }
       break;
     default:
       var t = tolerance;
