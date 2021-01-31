@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 42174 d5bb8e27cffa2298ba10e28fc516c35fa00fd065 $
-  $Date:2020/12/21 19:36:53 $
+  $Date:2020/12/28 12:36:58 $
   
   FORKID {3F192E9F-68B9-4453-B200-5807827EADD3}
 */
@@ -27,7 +27,7 @@ if (getCodePage() == 932) { // shift-jis is not supported
   setCodePage("ansi"); // setCodePage("utf-8");
 }
 
-capabilities = CAPABILITY_MILLING;
+capabilities = CAPABILITY_MILLING | CAPABILITY_TURNING;
 tolerance = spatial(0.002, MM);
 
 minimumChordLength = spatial(0.25, MM);
