@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 42946 1d014a520263d593eb6365054d90ea4ebd35e4b7 $
-  $Date:2021/03/25 18:49:08 $
+  $Date:2021/04/19 21:45:15 $
   
   FORKID {6C6ED875-AC4B-436E-8E9A-25863C91FC82}
 */
@@ -2378,6 +2378,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
       if (properties.linearizeVerticalCircle) {
         var t = tolerance;
         linearize(t);
+        return;
       } else {
         if (incrementalMode) {
           writeBlock("CC IX" + xyzFormat.format(cx - start.x) + " IZ" + xyzFormat.format(cz - start.z));
@@ -2398,6 +2399,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
       if (properties.linearizeVerticalCircle) {
         var t = tolerance;
         linearize(t);
+        return;
       } else {
         if (incrementalMode) {
           writeBlock("CC IY" + xyzFormat.format(cy - start.y) + " IZ" + xyzFormat.format(cz - start.z));
@@ -2467,6 +2469,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
         t = getParameter("operation:tolerance");
       }
       linearize(t);
+      return;
     }
   } else {
     // IPA must have same sign as DR
