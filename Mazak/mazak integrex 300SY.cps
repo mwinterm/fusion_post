@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date:2020/11/30 18:00:48 $
+  $Date:2021/09/10 17:41:15 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -1815,7 +1815,9 @@ function onSection() {
         machineState.mainSpindleIsActive = true;
         machineState.subSpindleIsActive = false;
         writeBlock(mFormat.format(302), writeDebugInfo("Primary Spindle"));
-        if (tool.productId) { //coorect y-offset if specified in ProductID
+        if (isNaN(tool.productId) || !tool.productId){
+          yFormat.setOffset(0.0) // makes sure that the center offset is back to zero if not specified
+        }else{ //coorect y-offset if specified in ProductID
           yFormat.setOffset(parseFloat(tool.productId)) // set y-Offset defined via productID for turning tools with large center offset
         }
         yFormat.setScale(1);
@@ -1830,20 +1832,15 @@ function onSection() {
         machineState.mainSpindleIsActive = false;
         machineState.subSpindleIsActive = true;
         writeBlock(mFormat.format(300), writeDebugInfo("Secondary Spindle"));
-        if (currentSection.isMultiAxis() || machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) {
-          if (tool.productId) { //coorect y-offset if specified in ProductID
-            yFormat.setOffset(-parseFloat(tool.productId)) // set y-Offset defined via productID for turning tools with large center offset
-          }
-          yFormat.setScale(-1);
-          yOutput = createVariable({ prefix: "Y" }, yFormat);
-          zFormat.setScale(-1);
-          zOutput = createVariable({ prefix: "Z" }, zFormat);
-        } else {
-          yFormat.setScale(-1);
-          yOutput = createVariable({ prefix: "Y" }, yFormat);
-          zFormat.setScale(-1);
-          zOutput = createVariable({ prefix: "Z" }, zFormat);
+        if (isNaN(tool.productId) || !tool.productId){
+          yFormat.setOffset(0.0) // makes sure that the center offset is back to zero if not specified
+        }else{ //coorect y-offset if specified in ProductID
+          yFormat.setOffset(-parseFloat(tool.productId)) // set y-Offset defined via productID for turning tools with large center offset
         }
+        yFormat.setScale(-1);
+        yOutput = createVariable({ prefix: "Y" }, yFormat);
+        zFormat.setScale(-1);
+        zOutput = createVariable({ prefix: "Z" }, zFormat);
         //if (newSpindle && !machineState.spindleSync) {
         writeBlock(gFormat.format(110) + " C2", writeDebugInfo("Activating cross machining control to C2")); //  cOutput.setPrefix("U");
         //}
@@ -1962,7 +1959,6 @@ function onSection() {
   var abc;
   if (machineConfiguration.isMultiAxisConfiguration()) {
     if (machineState.isTurningOperation || (machineState.axialCenterDrilling && !machineState.liveToolIsActive)) { // turning toolpath
-      writeln("isTurningOperation");
       if (gotBAxis) {
         cancelTransformation();
         abc = bAxisOrientationTurning;
@@ -3455,7 +3451,8 @@ function engagePartCatcher(engage) {
 
 function onSectionEnd() {
   //reset yOutput
-  if (tool.productId) {
+  if (!(isNaN(tool.productId) || !tool.productId)) {
+    yFormat.setOffset(0.0)
     yOutput = createVariable({ prefix: "Y" }, yFormat);
   }
 
