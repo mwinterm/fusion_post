@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Date:2021/09/12 21:47:07 $
+  $Date:2021/09/12 23:30:15 $
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -1911,20 +1911,17 @@ function onSection() {
   }
   var workOffset = currentSection.workOffset;
   if (workOffset == 0) {
-    warningOnce(localize("Work offset has not been specified. Using G54 as WCS."), WARNING_WORK_OFFSET);
-    workOffset = 1;
+    warningOnce(localize("Work offset has not been specified. Using G54 on main spindle and G55 on sub-spindle as WCS."), WARNING_WORK_OFFSET);
+    if (currentSection.spindle == SPINDLE_PRIMARY) {
+      workOffset = 1;
+    }else{
+      workOffset = 2;
+    }
   }
   if (workOffset > 0) {
     if (workOffset > 6) {
-      var code = workOffset - 6;
-      if (code > 48) {
-        error(localize("Work offset out of range."));
-        return;
-      }
-      if (workOffset != currentWorkOffset) {
-        writeBlock(gFormat.format(54.1), "P" + code);
-        currentWorkOffset = workOffset;
-      }
+      error(localize("Work offset out of range."));
+      return;
     } else {
       if (workOffset != currentWorkOffset && !properties.mazatrolCS) {
         writeBlock(gG50Modal.format(53 + workOffset)); // G54->G59
