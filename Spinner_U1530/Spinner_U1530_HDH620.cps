@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 43385 20fef9796070d8501bb63ca57f173459408d4508 $
-  $Date:2021/11/06 00:19:23 $
+  $Date:2021/11/06 00:45:23 $
   
   FORKID {36E63822-3A79-42b9-96EA-6B661FE8D0C8}
 */
@@ -3113,8 +3113,10 @@ function onCommand(command) {
     onCommand(tool.clockwise ? COMMAND_SPINDLE_CLOCKWISE : COMMAND_SPINDLE_COUNTERCLOCKWISE);
     return;
   case COMMAND_LOCK_MULTI_AXIS:
+    writeBlock(mFormat.format(54));
     return;
   case COMMAND_UNLOCK_MULTI_AXIS:
+    writeBlock(mFormat.format(44));
     return;
   case COMMAND_START_CHIP_TRANSPORT:
     return;
