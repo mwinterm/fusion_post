@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 43385 20fef9796070d8501bb63ca57f173459408d4508 $
-  $Date:2021/11/06 00:45:23 $
+  $Date:2021/11/06 01:40:29 $
   
   FORKID {36E63822-3A79-42b9-96EA-6B661FE8D0C8}
 */
@@ -192,6 +192,13 @@ properties = {
   homeXYAtEnd: {
     title: "Home XY at end",
     description: "Specifies that the machine moves to the home position in XY at the end of the program.",
+    type: "boolean",
+    value: false,
+    scope: "post"
+  }, 
+  only_3_axis: {
+    title: "Only allow for 3-axis machining",
+    description: "Only allows for 3-axis machining for situation when working with rigid table",
     type: "boolean",
     value: false,
     scope: "post"
@@ -746,12 +753,18 @@ function setWorkPlane(abc, turn, isPrepositioned) {
   }
 
   if (!((currentWorkPlaneABC == undefined) ||
-        abcFormat.areDifferent(abc.x, currentWorkPlaneABC.x) ||
-        abcFormat.areDifferent(abc.y, currentWorkPlaneABC.y) ||
-        abcFormat.areDifferent(abc.z, currentWorkPlaneABC.z) ||
-        (!currentWorkPlaneABCTurned && turn))) {
+    abcFormat.areDifferent(abc.x, currentWorkPlaneABC.x) ||
+    abcFormat.areDifferent(abc.y, currentWorkPlaneABC.y) ||
+    abcFormat.areDifferent(abc.z, currentWorkPlaneABC.z) ||
+    (!currentWorkPlaneABCTurned && turn))) {
     return; // no change
   }
+
+  if (getProperty("only_3_axis")) {
+    error(localize("Move of B- and C-axis not allow when option only_3_axis is set."));
+    return; // ignore if only 3-axis machining is allowed
+  }
+
   currentWorkPlaneABC = abc;
   currentWorkPlaneABCTurned = turn;
 
