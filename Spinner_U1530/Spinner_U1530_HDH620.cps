@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 43385 20fef9796070d8501bb63ca57f173459408d4508 $
-  $Date:2021/11/06 01:40:29 $
+  $Date:2022/03/12 09:13:38 $
   
   FORKID {36E63822-3A79-42b9-96EA-6B661FE8D0C8}
 */
@@ -217,7 +217,7 @@ var coolants = [
   {id: COOLANT_AIR_THROUGH_TOOL, on: 185, off: 186},
   {id: COOLANT_SUCTION, on: 6, off: 26},
   {id: COOLANT_FLOOD_MIST, on: [166, 168], off: [167, 169]},
-  {id: COOLANT_FLOOD_THROUGH_TOOL},
+  {id: COOLANT_FLOOD_THROUGH_TOOL, on: [7, 8], off: 9},
   {id: COOLANT_OFF, off: 29}
 ];
 
