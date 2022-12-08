@@ -202,6 +202,13 @@ properties = {
     type: "boolean",
     value: false,
     scope: "post"
+  },
+  coolantDwell: {
+    title: "Coolant dwell",
+    description: "Dwell for an amount of seconds when turning on coolant",
+    type: "number",
+    value: 1.0,
+    scope: "post"
   }
 };
 
@@ -3029,9 +3036,13 @@ function setCoolant(coolant) {
   if (Array.isArray(coolantCodes)) {
     if (singleLineCoolant) {
       writeBlock(coolantCodes.join(getWordSeparator()));
+      writeBlock("CYCL DEF 9.0 " + localize("DWELL TIME"));
+      writeBlock("CYCL DEF 9.1 " + secFormat.format(getProperty("coolantDwell")));
     } else {
       for (var c in coolantCodes) {
         writeBlock(coolantCodes[c]);
+        writeBlock("CYCL DEF 9.0 " + localize("DWELL TIME"));
+        writeBlock("CYCL DEF 9.1 " + secFormat.format(getProperty("coolantDwell")));
       }
     }
     return undefined;
