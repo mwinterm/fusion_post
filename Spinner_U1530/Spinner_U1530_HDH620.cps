@@ -5,11 +5,10 @@
   Heidenhain post processor configuration.
 
   $Revision: 43385 20fef9796070d8501bb63ca57f173459408d4508 $
-  $Date:2022/03/12 09:13:38 $
-  
+  $Last Modified: 2022/12/11 23:59:50
   FORKID {36E63822-3A79-42b9-96EA-6B661FE8D0C8}
-*/
-
+*/  
+    
 description = "Heidenhain";
 vendor = "Heidenhain";
 vendorUrl = "http://www.heidenhain.com";

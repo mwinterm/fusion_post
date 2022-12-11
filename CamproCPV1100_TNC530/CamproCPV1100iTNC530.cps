@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 42738 357ff47924af4c7291a286bb921b7cc8e397a340 $
-  $Date: 2020-06-03 20:13:23 $
+  $Last Modified: 2022/12/12 00:02:31
   
   FORKID {36E63822-3A79-42b9-96EA-6B661FE8D0C8}
 */
