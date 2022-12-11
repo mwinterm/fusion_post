@@ -5,7 +5,7 @@
   Heidenhain post processor configuration.
 
   $Revision: 43385 20fef9796070d8501bb63ca57f173459408d4508 $
-  $Last Modified: 2022/12/11 23:59:50
+  $Last Modified: 2022/12/12 00:45:13
   FORKID {36E63822-3A79-42b9-96EA-6B661FE8D0C8}
 */  
     
@@ -206,7 +206,7 @@ properties = {
     title: "Coolant dwell",
     description: "Dwell for an amount of seconds when turning on coolant",
     type: "number",
-    value: 1.0,
+    value: 1.5,
     scope: "post"
   }
 };
