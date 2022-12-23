@@ -3041,7 +3041,7 @@ function setCoolant(coolant) {
       for (var c in coolantCodes) {
         writeBlock(coolantCodes[c]);
         writeBlock("CYCL DEF 9.0 " + localize("DWELL TIME"));
-        writeBlock("CYCL DEF 9.1 " + secFormat.format(getProperty("coolantDwell")));
+        writeBlock("CYCL DEF 9.1 DWELL" + secFormat.format(getProperty("coolantDwell")));
       }
     }
     return undefined;
