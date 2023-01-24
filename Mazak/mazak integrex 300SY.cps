@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Last Modified: 2022/12/12 00:01:44
+  $Last Modified: 2023/01/25 00:03:06
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -989,6 +989,10 @@ function onOpen() {
       var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
       var toolOrientation = "";
       var toolType = "";
+      var spindleComp = "01";
+      if (section.spindle == SPINDLE_SECONDARY) {
+        spindleComp = "02";
+      }
       if (tool.comment.length == 2) {
         toolOrientation = tool.comment;
         toolType = "";
@@ -1004,7 +1008,7 @@ function onOpen() {
         toolOrientation = subToolOrient[toolOrientation];
       }
 
-      var toolID = "T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)) + conditional(tool.comment, "." + toolOrientation + toolType);
+      var toolID = "T" + toolFormat.format(tool.number) + spindleComp + conditional(tool.comment, "." + toolOrientation + toolType);
       if (is3D()) {
         var zRange = section.getGlobalZRange();
         if (zRanges[toolID]) {
@@ -1713,7 +1717,7 @@ function onSection() {
 
     setCoolant(COOLANT_OFF, machineState.currentTurret);
     var toolFormat = createFormat({ decimals: 0, width: properties.numberOfToolDigits, zeropad: true });
-    var compensationOffset = tool.isTurningTool() ? tool.compensationOffset : tool.lengthOffset;
+    var compensationOffset = (currentSection.spindle == SPINDLE_PRIMARY) ? 1 : 2;
     var toolOrientation = "--";
     var toolType = "--";
 
