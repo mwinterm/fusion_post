@@ -1,31 +1,33 @@
 O1002
 
-(Milling flat HD1)
+(Milling flat HD2)
+
 G122.1
 
-#101=20. (Center Distance)
-#102=40. (Y-Width)
-#103=15. (Z-Position)
+#101=24. (Center Distance)
+#102=50. (Y-Width)
+#103=10. (Z-Position)
 #104=16 (Mill diameter)
 
-T2500.0102
+T6400.0102
 
 M300
 G112 M200
 G112 M203 G112 S3000
 
+G0 X#101
 G0 Y[#102/2]
 G0 Z[#103-#104/2]
 M8
 G1 Y[-#102/2] F200
 M9
-G0 Z10.
-G0 Y[-#104/2-#101]. 
-G0 X-25.
+G0 Z-10.
+G0 Y[-#104/2-#101]
+G0 X-10.
 M8
 G1 Z#103 F200
 G1 Y-50.
-G1 Z-10.
+G0 Z-10.
 M9
 
 G112 M205

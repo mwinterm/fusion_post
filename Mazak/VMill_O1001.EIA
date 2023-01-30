@@ -4,23 +4,25 @@ O1001
 
 G122.1
 
-#101=20. (Center Distance)
-#102=40. (Y-Width)
-#103=-15. (Z-Position)
+#101=24. (Center Distance)
+#102=50. (Y-Width)
+#103=-12. (Z-Position)
 #104=16 (Mill diameter)
 
-T2500.0102
+T6400.0102
 
+M302
 M200
 M203 S3000
 
+G0 X#101
 G0 Y[-#102/2]
 G0 Z[#103+#104/2]
 M8
 G1 Y[#102/2] F200
 M9
 G0 Z50.
-G0 Y-50. X-25.
+G0 Y-50. X-10.
 G0 Z#103 
 M8
 G1 Y[-#104/2-#101] F200
