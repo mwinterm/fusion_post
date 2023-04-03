@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Last Modified: 2023/01/26 13:20:47
+  $Last Modified: 2023/04/03 23:33:46
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -1413,36 +1413,53 @@ function setWorkPlane(abc) {
       writeBlock(gFormat.format(53.1)); // turn machine
     }
   } else if (usePartialMultiAxisFeature) {
-    var initialToolAxisBC = machineConfiguration.getABC(currentSection.workPlane);
-    writeBlock(
-      gMotionModal.format(0),
-      conditional(machineConfiguration.isMachineCoordinate(1) && b_axis_unclamped, "B" + abcFormat.format(abc.y)),
-      conditional(machineConfiguration.isMachineCoordinate(2) && c_axis_unclamped, "C" + abcFormat.format(abc.z))); //turn machine
-    onCommand(COMMAND_LOCK_MULTI_AXIS);
-    if (abc.isNonZero()) {
-      writeBlock(gFormat.format(111), writeDebugInfo("Cancel cross machining")); //cancel cross-machining as it is not compatible with G68.5
-      writeBlock( //set frame
-        gFormat.format(125),
-        conditional(currentSection.workOrigin.x != 0, "X" + spatialFormat.format(currentSection.workOrigin.x)),
-        conditional(currentSection.workOrigin.y != 0, "Y" + spatialFormat.format(currentSection.workOrigin.y)),
-        conditional(currentSection.workOrigin.z != 0, "Z" + spatialFormat.format(currentSection.workOrigin.z)),
-        "B" + abcFormat.format(abc.y),
-        "I1", writeDebugInfo("Coordinate system rotation")); //If G68.5 shall be issued or as part of the G125 or not 
-    } else {
-      writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
-      writeBlock( //cancel any tool compensation
-        gFormat.format(125),
-        "B" + abcFormat.format(0),
-        "I0"); // cancel frame
-    }
-    writeBlock(gFormat.format(17));
+      var initialToolAxisBC = machineConfiguration.getABC(currentSection.workPlane);
+      writeBlock(
+        gMotionModal.format(0),
+        conditional(machineConfiguration.isMachineCoordinate(1) && b_axis_unclamped, "B" + abcFormat.format(abc.y)),
+        conditional(machineConfiguration.isMachineCoordinate(2) && c_axis_unclamped, "C" + abcFormat.format(abc.z))); //turn machine
+      onCommand(COMMAND_LOCK_MULTI_AXIS);
+      if (abc.isNonZero()) {
+        writeBlock(gFormat.format(111), writeDebugInfo("Cancel cross machining")); //cancel cross-machining as it is not compatible with G68.5
+        writeBlock( //set frame
+          gFormat.format(125),
+          conditional(currentSection.workOrigin.x != 0, "X" + spatialFormat.format(currentSection.workOrigin.x)),
+          conditional(currentSection.workOrigin.y != 0, "Y" + spatialFormat.format(currentSection.workOrigin.y)),
+          conditional(currentSection.workOrigin.z != 0, "Z" + spatialFormat.format(currentSection.workOrigin.z)),
+          "B" + abcFormat.format(abc.y),
+          "I1", writeDebugInfo("Coordinate system rotation")); //If G68.5 shall be issued or as part of the G125 or not 
+      } else {
+        writeBlock(gFormat.format(126), writeDebugInfo("Cancel any coordinate system rotation")); // cancel frame
+        writeBlock( //cancel any tool compensation
+          gFormat.format(125),
+          "B" + abcFormat.format(0),
+          "I0"); // cancel frame
+      }
+      writeBlock(gFormat.format(17));
   } else {
-    writeBlock(
-      gMotionModal.format(0),
-      conditional(machineConfiguration.isMachineCoordinate(0), "A" + abcFormat.format(abc.x)),
-      conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
-      conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))
-    );
+    if(currentSection.spindle == SPINDLE_PRIMARY){
+      xFormat.setScale(1);
+      xOutput = createVariable({ prefix: "X" }, xFormat);
+      yFormat.setScale(1);
+      yOutput = createVariable({ prefix: "Y" }, yFormat);
+      zFormat.setScale(1);
+      zOutput = createVariable({ prefix: "Z" }, zFormat);
+    }else{
+      xFormat.setScale(-1);
+      xOutput = createVariable({ prefix: "X" }, xFormat);
+      yFormat.setScale(-1);
+      yOutput = createVariable({ prefix: "Y" }, yFormat);
+      zFormat.setScale(1);
+      zOutput = createVariable({ prefix: "Z" }, zFormat);
+    }
+    
+
+    // writeBlock(
+    //   gMotionModal.format(0),
+    //   conditional(machineConfiguration.isMachineCoordinate(0), "A" + abcFormat.format(abc.x)),
+    //   conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
+    //   conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))
+    // );
   }
 
   //onCommand(COMMAND_LOCK_MULTI_AXIS);
@@ -1740,7 +1757,21 @@ function onSection() {
       if (currentSection.spindle == SPINDLE_SECONDARY) {
         toolOrientation = subToolOrient[toolOrientation];
       }
+    }else{
+      if (currentSection.spindle == SPINDLE_SECONDARY) {
+        if(toolOrientation == "00"){
+          toolOrientation = "11";
+        } else if(toolOrientation == "01"){
+          toolOrientation = "01";
+        }else{
+          error(localize("Tool comment not correct. For milling operation needs to be to be 00 or 01. "));
+        }
+      }
+      if(toolOrientation){
+        usePartialMultiAxisFeature = false;
+      }
     }
+
 
     if (tool.manualToolChange && (machineState.manualToolNumber != tool.number)) {
       writeToolBlock("T" + toolFormat.format(tool.number) + (properties.useToolCompensation ? toolFormat.format(compensationOffset) : toolFormat.format(0)));
@@ -1819,9 +1850,9 @@ function onSection() {
         machineState.mainSpindleIsActive = true;
         machineState.subSpindleIsActive = false;
         writeBlock(mFormat.format(302), writeDebugInfo("Primary Spindle"));
-        if (isNaN(tool.productId) || !tool.productId){
+        if (isNaN(tool.productId) || !tool.productId) {
           yFormat.setOffset(0.0) // makes sure that the center offset is back to zero if not specified
-        }else{ //coorect y-offset if specified in ProductID
+        } else { //coorect y-offset if specified in ProductID
           yFormat.setOffset(parseFloat(tool.productId)) // set y-Offset defined via productID for turning tools with large center offset
         }
         yFormat.setScale(1);
@@ -1836,11 +1867,12 @@ function onSection() {
         machineState.mainSpindleIsActive = false;
         machineState.subSpindleIsActive = true;
         writeBlock(mFormat.format(300), writeDebugInfo("Secondary Spindle"));
-        if (isNaN(tool.productId) || !tool.productId){
+        if (isNaN(tool.productId) || !tool.productId) {
           yFormat.setOffset(0.0) // makes sure that the center offset is back to zero if not specified
-        }else{ //coorect y-offset if specified in ProductID
+        } else { //coorect y-offset if specified in ProductID
           yFormat.setOffset(-parseFloat(tool.productId)) // set y-Offset defined via productID for turning tools with large center offset
         }
+
         yFormat.setScale(-1);
         yOutput = createVariable({ prefix: "Y" }, yFormat);
         zFormat.setScale(-1);
@@ -1918,7 +1950,7 @@ function onSection() {
     warningOnce(localize("Work offset has not been specified. Using G54 on main spindle and G55 on sub-spindle as WCS."), WARNING_WORK_OFFSET);
     if (currentSection.spindle == SPINDLE_PRIMARY) {
       workOffset = 1;
-    }else{
+    } else {
       workOffset = 2;
     }
   }
@@ -2230,7 +2262,7 @@ function updateMachiningMode(section) {
           }
         } else {
           // several holes not on XY center, use live tool in XZCMode
-          machineState.useXZCMode = true;
+          machineState.useXZCMode = false; //TOOOOOO
         }
       } else { // milling
         if (forcePolarMode) {
