@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Last Modified: 2023/04/03 23:33:46
+  $Last Modified: 2023/04/04 15:59:30
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -2262,7 +2262,7 @@ function updateMachiningMode(section) {
           }
         } else {
           // several holes not on XY center, use live tool in XZCMode
-          machineState.useXZCMode = false; //TOOOOOO
+          machineState.useXZCMode = true; //TOOOOOO
         }
       } else { // milling
         if (forcePolarMode) {
@@ -2776,7 +2776,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
   }
 
   if (currentSection.spindle == SPINDLE_SECONDARY) {
-    clockwise = !clockwise; //reverse circular interpolation G2 / G3 for secondary spindle
+    //clockwise = !clockwise; //reverse circular interpolation G2 / G3 for secondary spindle
   }
 
   if (machineState.useXZCMode) {
@@ -3526,6 +3526,7 @@ function onSectionEnd() {
   forceAny();
   forceXZCMode = false;
   forcePolarMode = false;
+  usePartialMultiAxisFeature = true;
 
   if (hasNextSection()) {
     if (getNextSection().getTool().coolant != currentSection.getTool().coolant) {
