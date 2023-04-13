@@ -5,7 +5,7 @@
   Mach3Mill post processor configuration.
 
   $Revision: 41981 b469d519b41034f7622245f52b01f620c0e5ec7e $
-  $Last Modified: 2022/12/12 00:02:00
+  $Last Modified: 2023/04/12 18:30:35
   
   FORKID {A4D747BD-FEEF-4CE2-86CD-0D56966792FA}
 */
@@ -591,6 +591,8 @@ function onSection() {
       writeBlock(
         mFormat.format(tool.clockwise ? 3 : 4), sOutput.format(tool.spindleRPM)
       );
+      writeBlock(mFormat.format(291) + " P\"Switch Router On\" S2");
+      
     }
   }
 
