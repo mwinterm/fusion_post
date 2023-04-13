@@ -5,7 +5,7 @@
   Mazak Integrex post processor configuration.
 
   $Revision: 42380 94d0f99908c1d4e7cabeeb9bf7c83bb04d7aae8b $
-  $Last Modified: 2023/04/04 15:59:30
+  $Last Modified: 2023/04/13 13:40:22
 
   FORKID {62F61C65-979D-4f9f-97B0-C5F9634CC6A7}
 
@@ -1763,12 +1763,14 @@ function onSection() {
           toolOrientation = "11";
         } else if(toolOrientation == "01"){
           toolOrientation = "01";
+          bOutput.format(90.0);
         }else{
           error(localize("Tool comment not correct. For milling operation needs to be to be 00 or 01. "));
         }
       }
       if(toolOrientation){
         usePartialMultiAxisFeature = false;
+        gotBAxis = false;
       }
     }
 
@@ -2095,6 +2097,9 @@ function onSection() {
     forceABC();
     if (currentSection.isOptimizedForMachine()) {
       abc = currentSection.getInitialToolAxisABC();
+      if(toolOrientation == "01"){
+        bOutput.format(abc.y);
+      }
       var b_out = bOutput.format(abc.y);
       if (b_out) {
         writeBlock(gFormat.format(128), b_out);
@@ -3527,6 +3532,7 @@ function onSectionEnd() {
   forceXZCMode = false;
   forcePolarMode = false;
   usePartialMultiAxisFeature = true;
+  gotBAxis = true;
 
   if (hasNextSection()) {
     if (getNextSection().getTool().coolant != currentSection.getTool().coolant) {
