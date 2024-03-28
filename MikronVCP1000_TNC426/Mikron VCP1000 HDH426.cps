@@ -108,7 +108,7 @@ var coolants = [
 // fixed settings
 var closestABC = false; // choose closest machine angles
 var forceMultiAxisIndexing = false; // force multi-axis indexing for 3D programs
-var useCycl247 = true; // use CYCL 247 for work offset
+var useCycl247 = false; // use CYCL 247 for work offset
 var useCycl205 = false; // use CYCL 205 for universal pecking
 var useTCPPositioning = false; // enable to use prepositioning with TCP, recommended for head/head or head/table kinematics
 var maximumLineLength = 80; // the maximum number of charaters allowed in a line
