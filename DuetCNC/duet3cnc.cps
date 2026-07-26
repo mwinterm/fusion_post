@@ -5,7 +5,7 @@
   RRF 3.6.3 post processor configuration.
 
   $Revision: 41981 b469d519b41034f7622245f52b01f620c0e5ec7e $
-  $Last Modified: 2026/07/26 22:41:12
+  $Last Modified: 2026/07/26 23:36:47
   
   FORKID {A4D747BD-FEEF-4CE2-86CD-0D56966792FA}
 */
@@ -562,21 +562,23 @@ function onSection() {
     }
   }
 
-  if (properties.manualToolChange) {
+  if (insertToolCall ||
+    isFirstSection() ||
+    (rpmFormat.areDifferent(tool.spindleRPM, sOutput.getCurrent())) ||
+    (tool.clockwise != getPreviousSection().getTool().clockwise)) {
+
+
+    if (properties.manualToolChange) {
       writeBlock(mFormat.format(291) + " P\"Insert Tool " + toolFormat.format(tool.number) + ", D=" + xyzFormat.format(tool.diameter) + "\" R\"Tool Change\" S4 K{\"Probe\",\"Close\"}");
       writeln("if input == 0");
       writeln("  " + mFormat.format(98) + " P\"ToolProbe.g\"");
     }
 
-  if (insertToolCall ||
-    isFirstSection() ||
-    (rpmFormat.areDifferent(tool.spindleRPM, sOutput.getCurrent())) ||
-    (tool.clockwise != getPreviousSection().getTool().clockwise)) {
-    if (tool.spindleRPM < 1) {
+    if (tool.spindleRPM < 5000) {
       error(localize("Spindle speed out of range."));
       return;
     }
-    if (tool.spindleRPM > 99999) {
+    if (tool.spindleRPM > 24000) {
       warning(localize("Spindle speed exceeds maximum value."));
     }
     var tapping = hasParameter("operation:cycleType") &&
