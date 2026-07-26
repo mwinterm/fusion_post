@@ -1,3 +1,6 @@
 {
-    "lpubsppop01.autoTimeStamp.lineLimit": 50
+    "lpubsppop01.autoTimeStamp.lineLimit": 50,
+    "files.associations": {
+        "*.cps": "javascript"
+    }
 }
