@@ -2,10 +2,10 @@
   Copyright (C) 2012-2018 by Autodesk, Inc.
   All rights reserved.
 
-  Mach3Mill post processor configuration.
+  RRF 3.6.3 post processor configuration.
 
   $Revision: 41981 b469d519b41034f7622245f52b01f620c0e5ec7e $
-  $Last Modified: 2023/04/12 18:30:35
+  $Last Modified: 2026/07/26 22:41:12
   
   FORKID {A4D747BD-FEEF-4CE2-86CD-0D56966792FA}
 */
@@ -50,8 +50,7 @@ properties = {
   dwellInSeconds: true, // specifies the unit for dwelling: true:seconds and false:milliseconds.
   useDustCollector: false, // specifies if M7 and M9 are output for dust collector
   useRigidTapping: "whitout", // output rigid tapping block
-  homeOnToolChange: true,  //homes all axis after tool is changed and before it is potentailly probed
-  probeToolOnChange: true, // probes a tool after changed in with by calling /macros/Tool Probe Auto
+  homeOnToolChange: false,  //homes all axis after tool is changed and before it is potentailly probed
   manualToolChange: true //Asks for manual tool change and program is interrupted until tool change is confirmed.
 };
 
@@ -82,7 +81,6 @@ propertyDefinitions = {
     ]
   },
   homeOnToolChange: { title: "Home axis on tool change", description: "Homes all axis after tool is changed and before it is potentailly probed.", type: "boolean" },
-  probeToolOnChange: { title: "Probe tool on tool change", description: "Probes a tool after changed in with by calling /macros/Tool Probe Auto.", type: "boolean" },
   manualToolChange: { title: "Manual tool change", description: "Asks for manual tool change and program is interrupted until tool change is confirmed.", type: "boolean" }
 };
 
@@ -223,6 +221,7 @@ function onOpen() {
   minutesFormatted = minutes < 10 ? "0" + minutes : minutes;
   secondsFormatted = seconds < 10 ? "0" + seconds : seconds;
   writeln("");
+  writeComment("Program created by duet3cnc.cps");
   writeComment("Program created " + yearFormatted + "-" + monthFormatted + "-" + dateFormatted + "  " + hoursFormatted + "-" + minutesFormatted + "-" + secondsFormatted);
   writeln("");
 
@@ -514,12 +513,8 @@ function onSection() {
       onCommand(COMMAND_OPTIONAL_STOP);
     }
 
-    if (tool.number > 256) {
+    if (tool.number > 49) {
       warning(localize("Tool number exceeds maximum value."));
-    }
-
-    if (properties.manualToolChange) {
-      writeBlock(mFormat.format(291) + " P\"Insert Tool " + toolFormat.format(tool.number) + ", D=" + xyzFormat.format(tool.diameter) + "\" R\"Tool Change\" S2");
     }
 
     if (properties.useM6) {
@@ -530,10 +525,6 @@ function onSection() {
 
     if (properties.homeOnToolChange) {
       writeBlock(gFormat.format(28));
-    }
-
-    if (properties.probeToolOnChange) {
-      writeBlock(mFormat.format(98) + " P\"/macros/Tool Probe Auto\"");
     }
 
     if (tool.comment) {
@@ -571,6 +562,12 @@ function onSection() {
     }
   }
 
+  if (properties.manualToolChange) {
+      writeBlock(mFormat.format(291) + " P\"Insert Tool " + toolFormat.format(tool.number) + ", D=" + xyzFormat.format(tool.diameter) + "\" R\"Tool Change\" S4 K{\"Probe\",\"Close\"}");
+      writeln("if input == 0");
+      writeln("  " + mFormat.format(98) + " P\"ToolProbe.g\"");
+    }
+
   if (insertToolCall ||
     isFirstSection() ||
     (rpmFormat.areDifferent(tool.spindleRPM, sOutput.getCurrent())) ||
@@ -591,7 +588,6 @@ function onSection() {
       writeBlock(
         mFormat.format(tool.clockwise ? 3 : 4), sOutput.format(tool.spindleRPM)
       );
-      writeBlock(mFormat.format(291) + " P\"Switch Router On\" S2");
       
     }
   }
