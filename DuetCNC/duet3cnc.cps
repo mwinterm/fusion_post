@@ -5,7 +5,7 @@
   RRF 3.6.3 post processor configuration.
 
   $Revision: 41981 b469d519b41034f7622245f52b01f620c0e5ec7e $
-  $Last Modified: 2026/07/26 23:36:47
+  $Last Modified: 2026/07/27 16:41:19
   
   FORKID {A4D747BD-FEEF-4CE2-86CD-0D56966792FA}
 */
@@ -44,7 +44,7 @@ properties = {
   showSequenceNumbers: false, // show sequence numbers
   sequenceNumberStart: 10, // first sequence number
   sequenceNumberIncrement: 5, // increment for sequence numbers
-  optionalStop: true, // optional stop
+  optionalStop: false, // optional stop
   separateWordsWithSpace: true, // specifies that the words should be separated with a white space
   useRadius: true, // specifies that arcs should be output using the radius (R word) instead of the I, J, and K words.
   dwellInSeconds: true, // specifies the unit for dwelling: true:seconds and false:milliseconds.
@@ -587,6 +587,7 @@ function onSection() {
         (getParameter("operation:cycleType") == "left-tapping") ||
         (getParameter("operation:cycleType") == "tapping-with-chip-breaking"));
     if (!tapping || (tapping && !(properties.useRigidTapping == "without"))) {
+      sOutput.reset();
       writeBlock(
         mFormat.format(tool.clockwise ? 3 : 4), sOutput.format(tool.spindleRPM)
       );
