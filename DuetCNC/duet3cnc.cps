@@ -5,7 +5,7 @@
   RRF 3.6.3 post processor configuration.
 
   $Revision: 41981 b469d519b41034f7622245f52b01f620c0e5ec7e $
-  $Last Modified: 2026/07/27 16:41:19
+  $Last Modified: 2026/07/27 16:49:08
   
   FORKID {A4D747BD-FEEF-4CE2-86CD-0D56966792FA}
 */
@@ -49,7 +49,7 @@ properties = {
   useRadius: true, // specifies that arcs should be output using the radius (R word) instead of the I, J, and K words.
   dwellInSeconds: true, // specifies the unit for dwelling: true:seconds and false:milliseconds.
   useDustCollector: false, // specifies if M7 and M9 are output for dust collector
-  useRigidTapping: "whitout", // output rigid tapping block
+  useRigidTapping: "no", // output rigid tapping block
   homeOnToolChange: false,  //homes all axis after tool is changed and before it is potentailly probed
   manualToolChange: true //Asks for manual tool change and program is interrupted until tool change is confirmed.
 };
